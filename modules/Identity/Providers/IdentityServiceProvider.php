@@ -14,6 +14,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Modules\Identity\Application\Queries\GetAuthenticatedUser;
@@ -24,7 +25,9 @@ use Modules\Identity\Infrastructure\Authentication\CreateNewUser;
 use Modules\Identity\Infrastructure\Authentication\Listeners\AnnounceEmailVerified;
 use Modules\Identity\Infrastructure\Authentication\Listeners\AnnounceLogout;
 use Modules\Identity\Infrastructure\Authentication\Listeners\RecordLogin;
+use Modules\Identity\Infrastructure\Authentication\Middleware\ThrottlePasswordResetRequests;
 use Modules\Identity\Infrastructure\Authentication\ResetUserPassword;
+use Modules\Identity\Infrastructure\Authentication\Responses\GenericPasswordResetLinkResponse;
 use Modules\Identity\Presentation\Http\Resources\AuthenticatedUserResource;
 
 /**
@@ -35,6 +38,17 @@ use Modules\Identity\Presentation\Http\Resources\AuthenticatedUserResource;
  */
 class IdentityServiceProvider extends ServiceProvider
 {
+    /**
+     * Register the module's bindings.
+     */
+    public function register(): void
+    {
+        $this->app->bind(
+            FailedPasswordResetLinkRequestResponse::class,
+            GenericPasswordResetLinkResponse::class,
+        );
+    }
+
     /**
      * Bootstrap the module.
      */
@@ -96,6 +110,10 @@ class IdentityServiceProvider extends ServiceProvider
 
     /**
      * Configure rate limiting for the authentication surface.
+     *
+     * Password reset link requests are throttled by
+     * {@see ThrottlePasswordResetRequests}
+     * because Fortify does not expose a named limiter for that route.
      */
     private function configureRateLimiting(): void
     {
