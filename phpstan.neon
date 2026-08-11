@@ -8,6 +8,7 @@ parameters:
         - bootstrap/app.php
         - config/
         - database/
+        - modules/
         - routes/
 
     level: 7

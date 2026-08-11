@@ -1,6 +1,7 @@
 <?php
 
 use Laravel\Fortify\Features;
+use Modules\Identity\Infrastructure\Authentication\Middleware\ThrottlePasswordResetRequests;
 
 return [
 
@@ -101,7 +102,7 @@ return [
     |
     */
 
-    'middleware' => ['web'],
+    'middleware' => ['web', ThrottlePasswordResetRequests::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -118,6 +119,7 @@ return [
         'login' => 'login',
         'two-factor' => 'two-factor',
         'passkeys' => 'passkeys',
+        'verification' => '6,1',
     ],
 
     /*

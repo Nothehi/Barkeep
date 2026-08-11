@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\Settings\ProfileController;
-use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Support\Facades\Route;
+use Modules\Identity\Presentation\Http\Controllers\Settings\ProfileController;
+use Modules\Identity\Presentation\Http\Controllers\Settings\SecurityController;
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', '/settings/profile');
