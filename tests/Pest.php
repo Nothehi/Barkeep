@@ -19,6 +19,13 @@ pest()->extend(TestCase::class)
     ->in('Feature');
 
 /*
+ * Unit tests get the application container but no database, so domain code
+ * that reaches for framework services such as the translator can be tested
+ * without booting a schema.
+ */
+pest()->extend(TestCase::class)->in('Unit');
+
+/*
 |--------------------------------------------------------------------------
 | Expectations
 |--------------------------------------------------------------------------
