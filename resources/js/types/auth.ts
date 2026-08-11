@@ -1,18 +1,13 @@
-export type User = {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string;
-    email_verified_at: string | null;
-    two_factor_enabled?: boolean;
-    created_at: string;
-    updated_at: string;
-    [key: string]: unknown;
-};
-
-export type Auth = {
-    user: User;
-};
+/**
+ * Identity owns the account shape, so it lives with the auth feature and is
+ * re-exported here for the rest of the application.
+ */
+export type {
+    Auth,
+    AuthStatus,
+    User,
+    UserStatus,
+} from '@/features/auth/types/auth';
 
 /* @chisel-passkeys */
 export type Passkey = {
