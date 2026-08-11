@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
+use Modules\Identity\Domain\Models\User;
 
 beforeEach(function () {
     $this->skipUnlessFortifyHas(Features::emailVerification());
