@@ -14,6 +14,12 @@ createInertiaApp({
         switch (true) {
             case name === 'welcome':
                 return null;
+            /**
+             * An invitation link may be opened by somebody with no account
+             * yet, so it cannot sit inside the signed-in shell.
+             */
+            case name === 'workspaces/invitation':
+                return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

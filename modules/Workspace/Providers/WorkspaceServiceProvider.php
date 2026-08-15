@@ -1,0 +1,125 @@
+<?php
+
+namespace Modules\Workspace\Providers;
+
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Modules\Identity\Domain\Models\User;
+use Modules\Workspace\Application\Queries\GetUserWorkspaces;
+use Modules\Workspace\Domain\Exceptions\WorkspaceRuleViolation;
+use Modules\Workspace\Domain\Models\Workspace;
+use Modules\Workspace\Domain\Policies\WorkspacePolicy;
+use Modules\Workspace\Presentation\Http\Resources\WorkspaceResource;
+
+/**
+ * Wires the Workspace bounded context into the application.
+ *
+ * Workspace owns the tenancy boundary, so everything that decides who may see
+ * or change a workspace is configured here rather than being spread across
+ * the application's own providers.
+ */
+class WorkspaceServiceProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap the module.
+     */
+    public function boot(): void
+    {
+        $this->configureAuthorization();
+        $this->configureExceptionRendering();
+        $this->configureSharedData();
+    }
+
+    /**
+     * Point the gate at the module's policy.
+     */
+    private function configureAuthorization(): void
+    {
+        Gate::policy(Workspace::class, WorkspacePolicy::class);
+    }
+
+    /**
+     * Turn the module's domain rules into HTTP responses.
+     *
+     * Registered as one renderer for the whole family rather than as a catch
+     * at each call site, so a rule added later surfaces correctly without any
+     * controller having to know about it.
+     *
+     * A violation that names a field is reported as a validation error, which
+     * is what puts "that address is already taken" next to the address input
+     * instead of in a toast.
+     */
+    private function configureExceptionRendering(): void
+    {
+        $this->callAfterResolving(ExceptionHandler::class, function (ExceptionHandler $handler): void {
+            if (! $handler instanceof Handler) {
+                return;
+            }
+
+            $handler->renderable(function (WorkspaceRuleViolation $violation, Request $request) {
+                $field = $violation->field();
+
+                if ($field !== null && ! $request->expectsJson()) {
+                    throw ValidationException::withMessages([$field => $violation->getMessage()]);
+                }
+
+                if ($request->expectsJson()) {
+                    return response()->json(
+                        ['message' => $violation->getMessage()],
+                        $violation->status(),
+                    );
+                }
+
+                return back()->withErrors(['workspace' => $violation->getMessage()]);
+            });
+        });
+    }
+
+    /**
+     * Share the caller's workspaces with every Inertia page.
+     *
+     * The switcher needs this on every screen, and Workspace contributes it
+     * itself so no layout has to know how membership is stored. The list is
+     * scoped to membership, so it can only ever offer workspaces the account
+     * actually belongs to.
+     *
+     * This is navigation data. Which workspace the client thinks is selected
+     * carries no authority — every request is authorized against the
+     * workspace the URL actually resolves to.
+     */
+    private function configureSharedData(): void
+    {
+        Inertia::share('workspaces', function (Request $request): ?array {
+            $user = $request->user();
+
+            if (! $user instanceof User) {
+                return null;
+            }
+
+            $workspaces = $this->app->make(GetUserWorkspaces::class)->handle($user);
+
+            return [
+                'available' => WorkspaceResource::collection($workspaces)->resolve($request),
+                'current' => $this->currentWorkspaceSlug($request),
+            ];
+        });
+    }
+
+    /**
+     * The workspace the current URL is about, if any.
+     *
+     * Read from the resolved route binding rather than from client state, so
+     * "the current workspace" always means the one the server is serving.
+     */
+    private function currentWorkspaceSlug(Request $request): ?string
+    {
+        $workspace = $request->route()?->parameter('workspace');
+
+        return $workspace instanceof Workspace ? $workspace->slug : null;
+    }
+}
