@@ -33,7 +33,8 @@ export function useWorkspaceMembers(
         members,
         owner: withRole('owner')[0] ?? null,
         admins: withRole('admin'),
-        self: members.find((member) => member.user_id === currentUserId) ?? null,
+        self:
+            members.find((member) => member.user_id === currentUserId) ?? null,
         others: members.filter((member) => member.user_id !== currentUserId),
     };
 }
