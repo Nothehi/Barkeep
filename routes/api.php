@@ -6,6 +6,17 @@ use Modules\GameDesign\Presentation\Http\Controllers\Api\GameController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameDesignPhaseController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameStatusController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameVersionController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\FeedbackController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\ObservationController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\ParticipantController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\PlaytestCancellationController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\PlaytestCompletionController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\PlaytestController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\PlaytestSessionController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\PlaytestSummaryController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\SessionCancellationController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\SessionCompletionController;
+use Modules\Playtesting\Presentation\Http\Controllers\Api\SessionStartController;
 use Modules\Workspace\Presentation\Http\Controllers\Api\WorkspaceArchiveController;
 use Modules\Workspace\Presentation\Http\Controllers\Api\WorkspaceController;
 use Modules\Workspace\Presentation\Http\Controllers\Api\WorkspaceInvitationController;
@@ -68,6 +79,56 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('versions', [GameVersionController::class, 'index'])->name('api.workspaces.games.versions.index');
             Route::post('versions', [GameVersionController::class, 'store'])->name('api.workspaces.games.versions.store');
             Route::get('versions/{version}', [GameVersionController::class, 'show'])->name('api.workspaces.games.versions.show');
+
+            /*
+             * Playtests are nested the whole way down rather than exposed at a
+             * shorter top-level address, because each segment is resolved
+             * *through* the one before it by Playtesting's own bindings. A
+             * session id from somebody else's playtest fails to resolve rather
+             * than being caught later by a policy — which is what lets these
+             * ids be opaque uuids in a URL without any of them being a
+             * capability. See routes/playtests.php for the same arrangement on
+             * the screens.
+             */
+            Route::prefix('playtests')->group(function () {
+                Route::get('/', [PlaytestController::class, 'index'])->name('api.workspaces.games.playtests.index');
+                Route::post('/', [PlaytestController::class, 'store'])->name('api.workspaces.games.playtests.store');
+
+                Route::prefix('{playtest}')->group(function () {
+                    Route::get('/', [PlaytestController::class, 'show'])->name('api.workspaces.games.playtests.show');
+                    Route::patch('/', [PlaytestController::class, 'update'])->name('api.workspaces.games.playtests.update');
+
+                    Route::get('summary', [PlaytestSummaryController::class, 'show'])->name('api.workspaces.games.playtests.summary');
+                    Route::post('complete', [PlaytestCompletionController::class, 'store'])->name('api.workspaces.games.playtests.complete');
+                    Route::post('cancel', [PlaytestCancellationController::class, 'store'])->name('api.workspaces.games.playtests.cancel');
+
+                    Route::get('sessions', [PlaytestSessionController::class, 'index'])->name('api.workspaces.games.playtests.sessions.index');
+                    Route::post('sessions', [PlaytestSessionController::class, 'store'])->name('api.workspaces.games.playtests.sessions.store');
+
+                    Route::prefix('sessions/{session}')->group(function () {
+                        Route::get('/', [PlaytestSessionController::class, 'show'])->name('api.workspaces.games.playtests.sessions.show');
+                        Route::patch('/', [PlaytestSessionController::class, 'update'])->name('api.workspaces.games.playtests.sessions.update');
+
+                        Route::post('start', [SessionStartController::class, 'store'])->name('api.workspaces.games.playtests.sessions.start');
+                        Route::post('complete', [SessionCompletionController::class, 'store'])->name('api.workspaces.games.playtests.sessions.complete');
+                        Route::post('cancel', [SessionCancellationController::class, 'store'])->name('api.workspaces.games.playtests.sessions.cancel');
+
+                        Route::get('participants', [ParticipantController::class, 'index'])->name('api.workspaces.games.playtests.sessions.participants.index');
+                        Route::post('participants', [ParticipantController::class, 'store'])->name('api.workspaces.games.playtests.sessions.participants.store');
+                        Route::delete('participants/{participant}', [ParticipantController::class, 'destroy'])->name('api.workspaces.games.playtests.sessions.participants.destroy');
+
+                        Route::get('observations', [ObservationController::class, 'index'])->name('api.workspaces.games.playtests.sessions.observations.index');
+                        Route::post('observations', [ObservationController::class, 'store'])->name('api.workspaces.games.playtests.sessions.observations.store');
+                        Route::patch('observations/{observation}', [ObservationController::class, 'update'])->name('api.workspaces.games.playtests.sessions.observations.update');
+                        Route::delete('observations/{observation}', [ObservationController::class, 'destroy'])->name('api.workspaces.games.playtests.sessions.observations.destroy');
+
+                        Route::get('feedback', [FeedbackController::class, 'index'])->name('api.workspaces.games.playtests.sessions.feedback.index');
+                        Route::post('feedback', [FeedbackController::class, 'store'])->name('api.workspaces.games.playtests.sessions.feedback.store');
+                        Route::patch('feedback/{feedback}', [FeedbackController::class, 'update'])->name('api.workspaces.games.playtests.sessions.feedback.update');
+                        Route::delete('feedback/{feedback}', [FeedbackController::class, 'destroy'])->name('api.workspaces.games.playtests.sessions.feedback.destroy');
+                    });
+                });
+            });
         });
     });
 
