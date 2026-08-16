@@ -11,3 +11,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 require __DIR__.'/settings.php';
 require __DIR__.'/workspaces.php';
 require __DIR__.'/games.php';
+require __DIR__.'/playtests.php';
