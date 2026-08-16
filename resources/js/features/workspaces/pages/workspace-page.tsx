@@ -1,7 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
-import { Settings, Users } from 'lucide-react';
+import { Gamepad2, Settings, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import games from '@/routes/games';
 import members from '@/routes/workspaces/members';
 import settings from '@/routes/workspaces/settings';
 import WorkspaceHeader from '../components/workspace-header';
@@ -15,8 +16,14 @@ type WorkspacePageProps = {
 /**
  * A workspace's home screen.
  *
- * Deliberately sparse: what lives inside a workspace — games, playtests,
- * content — belongs to bounded contexts that do not exist yet.
+ * Still sparse: games are the only thing that lives inside a workspace so
+ * far, and playtests and content belong to bounded contexts that do not exist
+ * yet.
+ *
+ * The games card is offered unconditionally because seeing the games in a
+ * workspace asks exactly what seeing the workspace does — membership, and a
+ * status that is still readable. Anybody rendering this screen has already
+ * passed that gate.
  */
 export default function WorkspacePage({
     workspace: { data: workspace },
@@ -31,6 +38,25 @@ export default function WorkspacePage({
                 <WorkspaceHeader workspace={workspace} />
 
                 <div className="grid gap-4 sm:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Games</CardTitle>
+                        </CardHeader>
+
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                The board games being designed here.
+                            </p>
+
+                            <Button variant="outline" asChild>
+                                <Link href={games.index(workspace.slug)}>
+                                    <Gamepad2 className="size-4" />
+                                    View games
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+
                     <Card>
                         <CardHeader>
                             <CardTitle>Members</CardTitle>
