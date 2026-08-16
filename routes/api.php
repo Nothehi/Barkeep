@@ -1,6 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\GameArchiveController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\GameController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\GameDesignPhaseController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\GameStatusController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\GameVersionController;
 use Modules\Workspace\Presentation\Http\Controllers\Api\WorkspaceArchiveController;
 use Modules\Workspace\Presentation\Http\Controllers\Api\WorkspaceController;
 use Modules\Workspace\Presentation\Http\Controllers\Api\WorkspaceInvitationController;
@@ -39,6 +44,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('members/invitations', [WorkspaceMemberInvitationController::class, 'store'])->name('api.workspaces.members.invitations.store');
         Route::patch('members/{member}', [WorkspaceMemberController::class, 'update'])->name('api.workspaces.members.update');
         Route::delete('members/{member}', [WorkspaceMemberController::class, 'destroy'])->name('api.workspaces.members.destroy');
+    });
+
+    /*
+     * Games are nested under their workspace because a game address is only
+     * unique inside one. `{game}` is resolved by GameDesign's own explicit
+     * binding, which looks it up through the workspace in the URL — so a game
+     * from elsewhere 404s at resolution rather than being caught later by a
+     * policy. See routes/games.php for the same arrangement on the screens.
+     */
+    Route::prefix('workspaces/{workspace}/games')->group(function () {
+        Route::get('/', [GameController::class, 'index'])->name('api.workspaces.games.index');
+        Route::post('/', [GameController::class, 'store'])->name('api.workspaces.games.store');
+
+        Route::prefix('{game}')->group(function () {
+            Route::get('/', [GameController::class, 'show'])->name('api.workspaces.games.show');
+            Route::patch('/', [GameController::class, 'update'])->name('api.workspaces.games.update');
+
+            Route::post('status', [GameStatusController::class, 'store'])->name('api.workspaces.games.status');
+            Route::post('design-phase', [GameDesignPhaseController::class, 'store'])->name('api.workspaces.games.design-phase');
+            Route::post('archive', [GameArchiveController::class, 'store'])->name('api.workspaces.games.archive');
+
+            Route::get('versions', [GameVersionController::class, 'index'])->name('api.workspaces.games.versions.index');
+            Route::post('versions', [GameVersionController::class, 'store'])->name('api.workspaces.games.versions.store');
+            Route::get('versions/{version}', [GameVersionController::class, 'show'])->name('api.workspaces.games.versions.show');
+        });
     });
 
     Route::post('workspace-invitations/{token}/accept', [WorkspaceInvitationController::class, 'accept'])

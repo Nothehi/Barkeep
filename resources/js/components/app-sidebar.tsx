@@ -1,5 +1,11 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Boxes } from 'lucide-react';
+import {
+    BookOpen,
+    FolderGit2,
+    Gamepad2,
+    LayoutGrid,
+    Boxes,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -13,11 +19,15 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { WorkspaceSwitcher } from '@/features/workspaces';
+import { useWorkspaces, WorkspaceSwitcher } from '@/features/workspaces';
 import { dashboard } from '@/routes';
+import games from '@/routes/games';
 import workspaces from '@/routes/workspaces';
 import type { NavItem } from '@/types';
 
+/**
+ * The destinations that mean the same thing wherever you are.
+ */
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -45,6 +55,25 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { current } = useWorkspaces();
+
+    /**
+     * Games hang off a workspace, so the entry only exists once the URL says
+     * which one — the same slug the switcher above is showing. Off a
+     * workspace there is nowhere for it to point, so it is absent rather than
+     * disabled.
+     */
+    const navItems: NavItem[] = current
+        ? [
+              ...mainNavItems,
+              {
+                  title: 'Games',
+                  href: games.index(current.slug),
+                  icon: Gamepad2,
+              },
+          ]
+        : mainNavItems;
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -62,7 +91,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>
