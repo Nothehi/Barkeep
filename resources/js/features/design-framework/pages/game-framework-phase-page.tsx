@@ -147,7 +147,18 @@ export default function GameFrameworkPhasePage({
                 )}
 
                 <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
-                    <aside className="lg:sticky lg:top-6 lg:self-start">
+                    {/*
+                     * The sticky nav is bounded to the viewport and scrolls
+                     * inside itself. Without that it is only well behaved for
+                     * short methodologies: a ten phase arc is taller than most
+                     * screens, and a sticky block taller than its scrollport
+                     * pins at the top with its bottom hanging past the fold,
+                     * where it sits over whatever scrolls underneath it.
+                     *
+                     * The 3rem subtracted is the 1.5rem offset above it and the
+                     * same again below, so the list never runs to the edge.
+                     */}
+                    <aside className="lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-1">
                         <PhaseNav
                             workspace={workspace.slug}
                             game={game.slug}
