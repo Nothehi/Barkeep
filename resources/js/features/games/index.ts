@@ -8,19 +8,24 @@
 
 export {
     archiveGame,
+    archiveMechanic,
     changeDesignPhase,
     changeGameStatus,
     createGame,
     createGameVersion,
+    createMechanic,
     GameApiError,
     getGame,
     getGames,
     getGameVersions,
     updateGame,
+    updateMechanic,
 } from './api';
-export type { MutationOptions } from './api';
+export type { MechanicInput, MutationOptions } from './api';
 export { default as ChangeStatusDialog } from './components/change-status-dialog';
 export { default as CreateGameDialog } from './components/create-game-dialog';
+export { default as CreateMechanicDialog } from './components/create-mechanic-dialog';
+export { default as MechanicList } from './components/mechanic-list';
 export { default as CreateVersionDialog } from './components/create-version-dialog';
 export { default as DesignPhaseBadge } from './components/design-phase-badge';
 export { default as DesignPhasePicker } from './components/design-phase-picker';
@@ -46,6 +51,7 @@ export { default as GamesPage } from './pages/games-page';
 export { default as GameSettingsPage } from './pages/game-settings-page';
 export { default as GameVersionPage } from './pages/game-version-page';
 export { default as GameVersionsPage } from './pages/game-versions-page';
+export { default as MechanicsPage } from './pages/mechanics-page';
 export * from './schemas/game';
 export type {
     DesignPhase,
@@ -59,3 +65,10 @@ export type {
     GameTransition,
     GameVersion,
 } from './types/game';
+export type {
+    Mechanic,
+    MechanicCategory,
+    MechanicOptions,
+    MechanicPermissions,
+    MechanicStatus,
+} from './types/mechanic';

@@ -13,11 +13,15 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
 use Modules\GameDesign\Application\Queries\GetGame;
 use Modules\GameDesign\Application\Queries\GetGameVersion;
+use Modules\GameDesign\Application\Queries\GetMechanic;
 use Modules\GameDesign\Domain\Exceptions\GameRuleViolation;
 use Modules\GameDesign\Domain\Models\Game;
 use Modules\GameDesign\Domain\Models\GameVersion;
+use Modules\GameDesign\Domain\Models\Mechanic;
 use Modules\GameDesign\Domain\Policies\GamePolicy;
+use Modules\GameDesign\Domain\Policies\MechanicPolicy;
 use Modules\GameDesign\Domain\ValueObjects\GameSlug;
+use Modules\GameDesign\Domain\ValueObjects\MechanicSlug;
 use Modules\GameDesign\Domain\ValueObjects\VersionNumber;
 use Modules\Workspace\Application\Queries\GetWorkspace;
 use Modules\Workspace\Domain\Exceptions\InvalidWorkspaceSlug;
@@ -87,6 +91,24 @@ class GameDesignServiceProvider extends ServiceProvider
 
             return $version ?? throw (new ModelNotFoundException)->setModel(GameVersion::class, [$value]);
         });
+
+        /*
+         * The one binding in this module that resolves through nothing. A
+         * mechanic is the platform's, so there is no parent segment to scope it
+         * by and no tenancy to enforce — which is exactly why it is worth
+         * flagging here rather than letting it read as an oversight.
+         *
+         * `{mechanic}` is checked against the other modules' parameter names
+         * before being claimed; see `.ai/rules/providers.md`, which records what
+         * happens when two providers bind the same one.
+         */
+        Route::bind('mechanic', function (string $value): Mechanic {
+            $mechanic = MechanicSlug::isValid($value)
+                ? $this->app->make(GetMechanic::class)->handle(MechanicSlug::fromString($value))
+                : null;
+
+            return $mechanic ?? throw (new ModelNotFoundException)->setModel(Mechanic::class, [$value]);
+        });
     }
 
     /**
@@ -130,11 +152,18 @@ class GameDesignServiceProvider extends ServiceProvider
     }
 
     /**
-     * Point the gate at the module's policy.
+     * Point the gate at the module's policies.
+     *
+     * Two, because there are two kinds of thing here. A game is a studio's and
+     * is authorized through its workspace; the mechanics vocabulary is the
+     * platform's and is authorized by a configured list of curators. Folding
+     * them into one policy would put a workspace role within reach of a
+     * decision that must never depend on one.
      */
     private function configureAuthorization(): void
     {
         Gate::policy(Game::class, GamePolicy::class);
+        Gate::policy(Mechanic::class, MechanicPolicy::class);
     }
 
     /**

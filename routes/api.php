@@ -19,6 +19,8 @@ use Modules\GameDesign\Presentation\Http\Controllers\Api\GameController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameDesignPhaseController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameStatusController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameVersionController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\MechanicArchiveController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\MechanicController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\FeedbackController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\ObservationController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\ParticipantController;
@@ -232,6 +234,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('prompts', [FrameworkContentController::class, 'prompts'])->name('api.frameworks.versions.prompts.index');
                 Route::get('checklists', [FrameworkContentController::class, 'checklists'])->name('api.frameworks.versions.checklists.index');
             });
+        });
+    });
+
+    /*
+     * The design vocabulary.
+     *
+     * Not nested under a workspace, and the only collection here that is not.
+     * A mechanic belongs to the platform rather than to a studio, so there is
+     * nothing to scope it by — and the vocabulary is only worth having because
+     * every game picks from the same one.
+     */
+    Route::prefix('mechanics')->group(function () {
+        Route::get('/', [MechanicController::class, 'index'])->name('api.mechanics.index');
+        Route::post('/', [MechanicController::class, 'store'])->name('api.mechanics.store');
+
+        Route::prefix('{mechanic}')->group(function () {
+            Route::get('/', [MechanicController::class, 'show'])->name('api.mechanics.show');
+            Route::patch('/', [MechanicController::class, 'update'])->name('api.mechanics.update');
+
+            Route::post('archive', [MechanicArchiveController::class, 'store'])->name('api.mechanics.archive');
         });
     });
 

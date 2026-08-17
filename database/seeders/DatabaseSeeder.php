@@ -23,11 +23,19 @@ class DatabaseSeeder extends Seeder
         ]);
 
         /*
-         * The design framework is content rather than test data: a designer cannot
-         * adopt a methodology nobody has written, so a fresh install ships with
-         * Barkeep's own. The seeder is idempotent and keyed by address, so running
-         * it again edits rather than duplicates.
+         * Both of these are content rather than test data, and both are keyed by
+         * address so that running them again edits rather than duplicates.
+         *
+         * The vocabulary comes first because it is the more basic of the two: a
+         * designer describing their game needs words to describe it with, and an
+         * empty picker sends everybody back to free text — which is the thing the
+         * vocabulary exists to replace.
+         *
+         * The design framework follows for the same reason it exists at all: a
+         * designer cannot adopt a methodology nobody has written, so a fresh
+         * install ships with Barkeep's own.
          */
+        $this->call(MechanicSeeder::class);
         $this->call(DesignFrameworkSeeder::class);
     }
 }

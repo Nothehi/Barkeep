@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import {
+    Blocks,
     BookOpen,
     FolderGit2,
     Gamepad2,
@@ -24,6 +25,7 @@ import { useWorkspaces, WorkspaceSwitcher } from '@/features/workspaces';
 import { dashboard } from '@/routes';
 import frameworks from '@/routes/frameworks';
 import games from '@/routes/games';
+import mechanics from '@/routes/mechanics';
 import workspaces from '@/routes/workspaces';
 import type { NavItem } from '@/types';
 
@@ -51,6 +53,17 @@ const mainNavItems: NavItem[] = [
         title: 'Frameworks',
         href: frameworks.index(),
         icon: Library,
+    },
+    /*
+     * Beside frameworks for the same reason, and it is the same reason twice:
+     * a methodology and a vocabulary are both the platform's rather than a
+     * studio's. Every game picks mechanics from this one list, which is the
+     * only thing that makes two games comparable.
+     */
+    {
+        title: 'Mechanics',
+        href: mechanics.index(),
+        icon: Blocks,
     },
 ];
 
