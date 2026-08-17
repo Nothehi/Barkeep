@@ -4,10 +4,13 @@ namespace Modules\GameDesign\Application\Validation;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
+use Modules\GameDesign\Domain\Enums\Complexity;
 use Modules\GameDesign\Domain\Enums\DesignPhase;
 use Modules\GameDesign\Domain\Enums\GameStatus;
 use Modules\GameDesign\Domain\Models\Game;
 use Modules\GameDesign\Domain\ValueObjects\GameSlug;
+use Modules\GameDesign\Domain\ValueObjects\PlayerCountRange;
+use Modules\GameDesign\Domain\ValueObjects\PlayTimeRange;
 
 trait GameValidationRules
 {
@@ -125,6 +128,79 @@ trait GameValidationRules
     protected function versionDescriptionRules(): array
     {
         return ['nullable', 'string', 'max:5000'];
+    }
+
+    /**
+     * Get the validation rules used to validate a game's design record.
+     *
+     * Every field is optional and every field is nullable, because deciding is
+     * the work: a game in ideation has answered none of this, and a required
+     * field would be the tool insisting on an answer before there is one.
+     *
+     * The bounds come from the value objects rather than being restated, so a
+     * form and a console command are held to the same numbers. What is *not*
+     * here is the "max cannot be below min" rule for either range — that lives
+     * in `PlayerCountRange` and `PlayTimeRange`, because a caller arriving
+     * without a form has to be held to it too, and duplicating it here would be
+     * two definitions of one invariant.
+     *
+     * @return array<string, array<int, ValidationRule|array<mixed>|string>>
+     */
+    protected function designRecordRules(): array
+    {
+        return [
+            'pitch' => ['nullable', 'string', 'max:300'],
+            'player_count_min' => $this->playerCountRules(),
+            'player_count_max' => $this->playerCountRules(),
+            'play_time_min' => $this->playTimeRules(),
+            'play_time_max' => $this->playTimeRules(),
+            'target_age_min' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'complexity' => ['nullable', Rule::enum(Complexity::class)],
+            'audience' => ['nullable', 'string', 'max:300'],
+            'core_action' => $this->coreLoopRules(),
+            'core_cost' => $this->coreLoopRules(),
+            'core_reward' => $this->coreLoopRules(),
+            'win_condition' => $this->coreLoopRules(),
+            'failure_condition' => $this->coreLoopRules(),
+        ];
+    }
+
+    /**
+     * @return array<int, ValidationRule|array<mixed>|string>
+     */
+    protected function playerCountRules(): array
+    {
+        return [
+            'nullable',
+            'integer',
+            'min:'.PlayerCountRange::MINIMUM,
+            'max:'.PlayerCountRange::MAXIMUM,
+        ];
+    }
+
+    /**
+     * @return array<int, ValidationRule|array<mixed>|string>
+     */
+    protected function playTimeRules(): array
+    {
+        return [
+            'nullable',
+            'integer',
+            'min:'.PlayTimeRange::MINIMUM,
+            'max:'.PlayTimeRange::MAXIMUM,
+        ];
+    }
+
+    /**
+     * Generous, because these are the answers a designer works on hardest and a
+     * ceiling that cut them off mid-thought would be the tool arguing with the
+     * process.
+     *
+     * @return array<int, ValidationRule|array<mixed>|string>
+     */
+    protected function coreLoopRules(): array
+    {
+        return ['nullable', 'string', 'max:2000'];
     }
 
     /**

@@ -10,10 +10,15 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Modules\GameDesign\Application\Commands\ArchiveGame;
 use Modules\GameDesign\Application\Commands\UpdateGame;
+use Modules\GameDesign\Application\Queries\GetDesignRecord;
+use Modules\GameDesign\Application\Queries\GetMechanics;
+use Modules\GameDesign\Domain\Enums\Complexity;
 use Modules\GameDesign\Domain\Enums\DesignPhase;
 use Modules\GameDesign\Domain\Models\Game;
 use Modules\GameDesign\Presentation\Http\Requests\UpdateGameRequest;
+use Modules\GameDesign\Presentation\Http\Resources\DesignRecordResource;
 use Modules\GameDesign\Presentation\Http\Resources\GameResource;
+use Modules\GameDesign\Presentation\Http\Resources\MechanicResource;
 use Modules\Workspace\Domain\Models\Workspace;
 use Modules\Workspace\Presentation\Http\Resources\WorkspaceResource;
 
@@ -29,13 +34,38 @@ class GameSettingsController extends Controller
     /**
      * Show the game's settings.
      */
-    public function edit(Request $request, Workspace $workspace, Game $game): Response
-    {
+    public function edit(
+        Request $request,
+        Workspace $workspace,
+        Game $game,
+        GetDesignRecord $getDesignRecord,
+        GetMechanics $getMechanics,
+    ): Response {
         Gate::authorize('view', $game);
+
+        $record = $getDesignRecord->handle($game);
 
         return Inertia::render('games/settings', [
             'workspace' => WorkspaceResource::make($workspace),
             'game' => GameResource::make($game->loadCount('versions')),
+
+            /*
+             * Null when the designer has decided nothing, which is most games.
+             * The screen renders an empty form from that rather than being sent
+             * a record full of nulls, so "not decided" stays distinguishable
+             * from "decided to leave blank".
+             */
+            'design_record' => $record === null ? null : DesignRecordResource::make($record),
+
+            /*
+             * The whole vocabulary, because the mechanics picker cannot be
+             * filled in from the client and the list is small enough to send.
+             * Retired terms are excluded: a designer must not be offered a word
+             * the platform has withdrawn, and the ones they already claimed
+             * arrive on the record itself.
+             */
+            'mechanics' => MechanicResource::collection($getMechanics->handle()),
+
             'options' => [
                 'design_phases' => array_map(
                     fn (DesignPhase $phase): array => [
@@ -45,6 +75,15 @@ class GameSettingsController extends Controller
                         'position' => $phase->position(),
                     ],
                     DesignPhase::cases(),
+                ),
+                'complexities' => array_map(
+                    fn (Complexity $complexity): array => [
+                        'value' => $complexity->value,
+                        'label' => $complexity->label(),
+                        'description' => $complexity->description(),
+                        'position' => $complexity->position(),
+                    ],
+                    Complexity::cases(),
                 ),
             ],
         ]);

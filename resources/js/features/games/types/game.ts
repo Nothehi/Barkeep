@@ -41,6 +41,15 @@ export type DesignPhase =
 export type GamePermissions = {
     canView: boolean;
     canUpdate: boolean;
+
+    /**
+     * Recording what has been decided about the design. Its own ability rather
+     * than a reuse of `canUpdate`, even though both currently answer the same
+     * way: deciding a player count and renaming a project are different acts,
+     * and the place they will come apart is a game shared with a reviewer.
+     */
+    canUpdateDesignRecord: boolean;
+
     canChangeStatus: boolean;
     canChangeDesignPhase: boolean;
     canArchive: boolean;

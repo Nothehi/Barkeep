@@ -10,15 +10,29 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Workspace } from '@/features/workspaces';
 import { archiveGame } from '../api';
 import DesignPhasePicker from '../components/design-phase-picker';
+import DesignRecordForm from '../components/design-record-form';
 import GameHeader from '../components/game-header';
 import { useGamePermissions } from '../hooks/use-game-permissions';
 import { useUpdateGame } from '../hooks/use-update-game';
+import type { ComplexityOptions, DesignRecord } from '../types/design-record';
 import type { Game, GameOptions } from '../types/game';
+import type { Mechanic } from '../types/mechanic';
 
 type GameSettingsPageProps = {
     workspace: { data: Workspace };
     game: { data: Game };
-    options: Pick<GameOptions, 'design_phases'>;
+
+    /**
+     * Null when the designer has decided nothing, which is most games. The form
+     * renders empty from that rather than being handed a record full of nulls,
+     * so "not decided" stays distinguishable from "decided to leave blank".
+     */
+    design_record: { data: DesignRecord } | null;
+
+    /** The whole vocabulary, because the picker cannot be filled in client-side. */
+    mechanics: { data: Mechanic[] };
+
+    options: Pick<GameOptions, 'design_phases'> & ComplexityOptions;
 };
 
 /**
@@ -33,6 +47,8 @@ type GameSettingsPageProps = {
 export default function GameSettingsPage({
     workspace: { data: workspace },
     game: { data: game },
+    design_record: designRecord,
+    mechanics,
     options,
 }: GameSettingsPageProps) {
     const permissions = useGamePermissions(game);
@@ -155,6 +171,30 @@ export default function GameSettingsPage({
                         game={game}
                         workspace={workspace.slug}
                         options={options.design_phases}
+                    />
+                </section>
+
+                <Separator />
+
+                {/*
+                 * Wider than the sections above it, because the mechanics picker
+                 * is a wrapping set of chips and a vocabulary of forty terms in a
+                 * single column is a scroll rather than a choice.
+                 */}
+                <section className="max-w-3xl space-y-6">
+                    <Heading
+                        variant="small"
+                        title="Design"
+                        description="What has been decided about the game itself. A framework reads these to answer its own factual questions, so an empty field means 'not yet' rather than 'no'."
+                    />
+
+                    <DesignRecordForm
+                        workspace={workspace.slug}
+                        game={game}
+                        record={designRecord?.data ?? null}
+                        mechanics={mechanics.data}
+                        options={options}
+                        canEdit={permissions.canUpdateDesignRecord}
                     />
                 </section>
 

@@ -20,4 +20,5 @@ export { getGameVersions } from './get-game-versions';
 export { archiveMechanic, createMechanic, updateMechanic } from './mechanics';
 export type { MechanicInput } from './mechanics';
 export type { MutationOptions } from './mutation';
+export { updateDesignRecord } from './update-design-record';
 export { updateGame } from './update-game';

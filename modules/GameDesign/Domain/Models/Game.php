@@ -23,9 +23,16 @@ use Modules\Workspace\Domain\Models\Workspace;
  *
  * The aggregate the whole product is about. It is deliberately small: a name,
  * an address, where the project is and where the design is. Everything a
- * designer will eventually want to record — mechanics, components, rules,
- * player experience — belongs to capabilities that do not exist yet, and
- * putting placeholder columns here now would fix decisions nobody has made.
+ * designer records *about* the design lives beside it rather than on it — the
+ * mechanics, the player count, the core loop and the rest are
+ * {@see DesignRecord}, reached through `designRecord()`, and components and
+ * rules belong to capabilities that still do not exist.
+ *
+ * That split is the standing rule rather than a staging post. Columns added here
+ * would be paid for by every query that touches a game, and would fix the shape
+ * of decisions before anybody has made them; a related record can grow fields
+ * without the aggregate noticing, and is absent entirely on a game that has
+ * decided nothing.
  *
  * A game belongs to exactly one workspace and never moves. That is the
  * security boundary: every read is scoped to a workspace and every write is
@@ -49,6 +56,7 @@ use Modules\Workspace\Domain\Models\Workspace;
  * @property-read User|null $creator
  * @property-read Collection<int, GameVersion> $versions
  * @property-read GameVersion|null $latestVersion
+ * @property-read DesignRecord|null $designRecord
  * @property-read int|null $versions_count
  */
 #[Fillable(['name', 'slug', 'description'])]
@@ -138,6 +146,20 @@ class Game extends Model
     public function latestVersion(): HasOne
     {
         return $this->hasOne(GameVersion::class)->ofMany('version_number', 'max');
+    }
+
+    /**
+     * What has been decided about the game's design.
+     *
+     * Absent until a designer saves something, and that absence is meaningful
+     * rather than a loading state: a game in ideation has decided nothing, and a
+     * record full of nulls would say the same thing less honestly.
+     *
+     * @return HasOne<DesignRecord, $this>
+     */
+    public function designRecord(): HasOne
+    {
+        return $this->hasOne(DesignRecord::class);
     }
 
     /**

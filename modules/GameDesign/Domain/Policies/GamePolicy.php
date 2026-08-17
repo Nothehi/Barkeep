@@ -80,6 +80,25 @@ class GamePolicy
     }
 
     /**
+     * Record what has been decided about the game's design.
+     *
+     * The same standing as changing the game's name, and deliberately not a
+     * narrower one. Deciding the player count or writing down the core loop is
+     * ordinary design work; restricting it to whoever administers the studio
+     * would be a strange shape for a design tool, and would leave the framework's
+     * factual criteria answerable only by an administrator.
+     *
+     * Its own ability rather than a reuse of `update` because the two will
+     * diverge: an archived game refuses both today, and a game shared with a
+     * reviewer is exactly the case where reading the design and editing the
+     * project come apart.
+     */
+    public function updateDesignRecord(User $user, Game $game): Response
+    {
+        return $this->requireWriteAccess($user, $game);
+    }
+
+    /**
      * Move a game through its project lifecycle.
      *
      * Which moves are legal is the domain's business, not the policy's; this

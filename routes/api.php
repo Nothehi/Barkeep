@@ -14,6 +14,7 @@ use Modules\DesignFramework\Presentation\Http\Controllers\Api\GameFrameworkLifec
 use Modules\DesignFramework\Presentation\Http\Controllers\Api\GameFrameworkProgressController;
 use Modules\DesignFramework\Presentation\Http\Controllers\Api\PracticeCompletionController;
 use Modules\DesignFramework\Presentation\Http\Controllers\Api\PromptResponseController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\DesignRecordController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameArchiveController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameDesignPhaseController;
@@ -90,6 +91,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('status', [GameStatusController::class, 'store'])->name('api.workspaces.games.status');
             Route::post('design-phase', [GameDesignPhaseController::class, 'store'])->name('api.workspaces.games.design-phase');
             Route::post('archive', [GameArchiveController::class, 'store'])->name('api.workspaces.games.archive');
+
+            /*
+             * The design record: a singleton sub-resource, because a game has one
+             * design. There is no POST — the record is created by the first
+             * PATCH, since the design exists as soon as anything about it is
+             * known and making a caller create a container first would be the
+             * storage shape leaking into the API.
+             */
+            Route::get('design', [DesignRecordController::class, 'show'])->name('api.workspaces.games.design.show');
+            Route::patch('design', [DesignRecordController::class, 'update'])->name('api.workspaces.games.design.update');
 
             Route::get('versions', [GameVersionController::class, 'index'])->name('api.workspaces.games.versions.index');
             Route::post('versions', [GameVersionController::class, 'store'])->name('api.workspaces.games.versions.store');

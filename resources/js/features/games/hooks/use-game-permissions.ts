@@ -6,6 +6,7 @@ import type { Game, GamePermissions } from '../types/game';
 const NOTHING: GamePermissions = {
     canView: false,
     canUpdate: false,
+    canUpdateDesignRecord: false,
     canChangeStatus: false,
     canChangeDesignPhase: false,
     canArchive: false,
