@@ -1,6 +1,5 @@
 import { Link } from '@inertiajs/react';
 import { Check } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import phases from '@/routes/games/framework/phases';
 import type { DesignPhase, PhaseProgress } from '../types/framework';
@@ -23,6 +22,10 @@ type PhaseNavProps = {
  * A phase with nothing countable in it shows no figure at all. Drawing "100%"
  * against a phase that is entirely principles would be the interface claiming
  * work was done when there was none to do.
+ *
+ * Each phase is a bordered row rather than a card, because a card carries
+ * `py-6` of its own and an arc of ten of them is a page in its own right. This
+ * is a table of contents; it should cost a glance, not a scroll.
  */
 export default function PhaseNav({
     workspace,
@@ -46,7 +49,7 @@ export default function PhaseNav({
 
     return (
         <nav
-            className="grid gap-2"
+            className="grid gap-1"
             aria-label="Framework phases"
             data-test="phase-nav"
         >
@@ -55,46 +58,40 @@ export default function PhaseNav({
                 const current = phase.slug === currentSlug;
 
                 return (
-                    <Card
+                    <Link
                         key={phase.id}
+                        href={phases.show.url({
+                            workspace,
+                            game,
+                            phase: phase.slug,
+                        })}
                         className={cn(
-                            'transition-colors hover:border-primary/40',
-                            current && 'border-primary',
+                            'flex items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors hover:border-primary/40 hover:bg-muted/50',
+                            current && 'border-primary bg-muted/50',
                         )}
+                        data-test={`phase-link-${phase.slug}`}
                     >
-                        <CardContent className="py-3">
-                            <Link
-                                href={phases.show.url({
-                                    workspace,
-                                    game,
-                                    phase: phase.slug,
-                                })}
-                                className="flex items-center justify-between gap-3"
-                                data-test={`phase-link-${phase.slug}`}
-                            >
-                                <span className="min-w-0">
-                                    <span className="block truncate text-sm font-medium">
-                                        {phase.position}. {phase.name}
-                                    </span>
+                        <span className="min-w-0">
+                            <span className="block truncate text-sm font-medium">
+                                {phase.position}. {phase.name}
+                            </span>
 
-                                    {phase.description && (
-                                        <span className="block truncate text-xs text-muted-foreground">
-                                            {phase.description}
-                                        </span>
-                                    )}
+                            {phase.description && (
+                                <span className="block truncate text-xs text-muted-foreground">
+                                    {phase.description}
                                 </span>
+                            )}
+                        </span>
 
-                                {stats && !stats.is_empty && (
-                                    <span className="inline-flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-                                        {stats.is_complete && (
-                                            <Check className="size-3.5 text-primary" />
-                                        )}
-                                        {stats.percentage}%
-                                    </span>
+                        {stats && !stats.is_empty && (
+                            <span className="inline-flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+                                {stats.is_complete && (
+                                    <Check className="size-3.5 text-primary" />
                                 )}
-                            </Link>
-                        </CardContent>
-                    </Card>
+                                {stats.percentage}%
+                            </span>
+                        )}
+                    </Link>
                 );
             })}
         </nav>
