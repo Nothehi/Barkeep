@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Modules\DesignFramework\Domain\Enums\FrameworkContentStatus;
 use Modules\DesignFramework\Domain\Enums\FrameworkStatus;
+use Modules\DesignFramework\Domain\Models\AnsweredByADesignFact;
 use Modules\DesignFramework\Domain\Models\Checklist;
 use Modules\DesignFramework\Domain\Models\ChecklistItem;
 use Modules\DesignFramework\Domain\Models\DesignCriterion;
@@ -219,8 +220,12 @@ class DesignFrameworkSeeder extends Seeder
             $content->status = FrameworkContentStatus::Published;
             $content->setAttribute($bodyColumn, $body);
 
-            if (in_array('satisfied_by', $content->getFillable(), strict: true)) {
-                $content->satisfied_by = $row[2] ?? null;
+            /*
+             * Only two content types can be answered by a fact, and the contract is
+             * what says which — a principle has no column for one.
+             */
+            if ($content instanceof AnsweredByADesignFact) {
+                $content->setAttribute('satisfied_by', $row[2] ?? null);
             }
 
             $content->save();

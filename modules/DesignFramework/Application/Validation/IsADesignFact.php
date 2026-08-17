@@ -4,6 +4,7 @@ namespace Modules\DesignFramework\Application\Validation;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Translation\PotentiallyTranslatedString;
 use Modules\DesignFramework\Infrastructure\GameDesign\DesignFacts;
 
 /**
@@ -25,7 +26,7 @@ final class IsADesignFact implements ValidationRule
     /**
      * Run the validation rule.
      *
-     * @param  Closure(string, ?string=): void  $fail
+     * @param  Closure(string, ?string=): PotentiallyTranslatedString  $fail
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -36,7 +37,7 @@ final class IsADesignFact implements ValidationRule
         if (! is_string($value) || ! $this->facts->knows($value)) {
             $fail(__('Nothing in a game\'s design record answers ":value".', [
                 'value' => is_string($value) ? $value : gettype($value),
-            ]));
+            ]))->translate();
         }
     }
 }

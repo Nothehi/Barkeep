@@ -7,6 +7,7 @@ use Illuminate\Support\Collection as Items;
 use Modules\DesignFramework\Application\DTOs\ChecklistProgress;
 use Modules\DesignFramework\Application\DTOs\FrameworkProgress;
 use Modules\DesignFramework\Application\DTOs\PhaseProgress;
+use Modules\DesignFramework\Domain\Models\AnsweredByADesignFact;
 use Modules\DesignFramework\Domain\Models\Checklist;
 use Modules\DesignFramework\Domain\Models\ChecklistItem;
 use Modules\DesignFramework\Domain\Models\DesignCriterion;
@@ -230,12 +231,26 @@ final class FrameworkProgressCalculator
      */
     private function satisfied(Items $content, ?DesignRecord $record): array
     {
-        return $content
-            ->filter(fn (PhaseContent|ChecklistItem $row): bool => $row->isAnsweredByTheDesignRecord()
-                && $this->facts->recorded($record, (string) $row->satisfied_by))
-            ->map(fn (PhaseContent|ChecklistItem $row): string => (string) $row->getKey())
-            ->values()
-            ->all();
+        $ids = [];
+
+        foreach ($content as $row) {
+            /*
+             * Narrowed to the contract rather than to a content class, because
+             * "can a fact answer this?" is only a question two of the types can be
+             * asked — a principle has no `satisfied_by` and never will.
+             */
+            if (! $row instanceof AnsweredByADesignFact) {
+                continue;
+            }
+
+            $fact = $row->designFactKey();
+
+            if ($fact !== null && $this->facts->recorded($record, $fact)) {
+                $ids[] = (string) $row->getKey();
+            }
+        }
+
+        return $ids;
     }
 
     /**

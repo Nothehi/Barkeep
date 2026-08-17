@@ -50,7 +50,7 @@ use Modules\DesignFramework\Infrastructure\Persistence\Eloquent\Factories\Checkl
  * @property-read Collection<int, ChecklistItemCompletion> $completions
  */
 #[Fillable(['title', 'description', 'required', 'satisfied_by'])]
-class ChecklistItem extends Model
+class ChecklistItem extends Model implements AnsweredByADesignFact
 {
     /** @use HasFactory<ChecklistItemFactory> */
     use HasFactory, HasUuids;
@@ -146,6 +146,14 @@ class ChecklistItem extends Model
     public function isAnsweredByTheDesignRecord(): bool
     {
         return $this->satisfied_by !== null;
+    }
+
+    /**
+     * The fact that meets it, or null when a designer ticks it themselves.
+     */
+    public function designFactKey(): ?string
+    {
+        return $this->satisfied_by;
     }
 
     /**

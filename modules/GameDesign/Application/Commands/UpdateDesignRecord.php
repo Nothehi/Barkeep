@@ -129,7 +129,7 @@ final class UpdateDesignRecord
             gameId: $game->getKey(),
             workspaceId: $game->workspace_id,
             updatedBy: $actor->id,
-            changed: array_values($changed),
+            changed: $changed,
         ));
 
         return $record;

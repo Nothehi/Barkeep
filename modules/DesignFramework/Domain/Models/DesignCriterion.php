@@ -37,7 +37,7 @@ use Modules\DesignFramework\Infrastructure\Persistence\Eloquent\Factories\Design
  * @property-read Collection<int, CriterionEvaluation> $evaluations
  */
 #[Fillable(['title', 'description', 'satisfied_by'])]
-class DesignCriterion extends PhaseContent
+class DesignCriterion extends PhaseContent implements AnsweredByADesignFact
 {
     /** @use HasFactory<DesignCriterionFactory> */
     use HasFactory;
@@ -77,6 +77,14 @@ class DesignCriterion extends PhaseContent
     public function isAnsweredByTheDesignRecord(): bool
     {
         return $this->satisfied_by !== null;
+    }
+
+    /**
+     * The fact that answers it, or null when the designer grades it themselves.
+     */
+    public function designFactKey(): ?string
+    {
+        return $this->satisfied_by;
     }
 
     /**

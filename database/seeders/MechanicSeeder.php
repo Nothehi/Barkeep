@@ -55,7 +55,7 @@ class MechanicSeeder extends Seeder
             $mechanic->save();
         }
 
-        $this->command?->info(sprintf('Seeded %d design mechanics.', count($this->mechanics())));
+        $this->command->info(sprintf('Seeded %d design mechanics.', count($this->mechanics())));
     }
 
     /**
