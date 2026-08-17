@@ -1,5 +1,11 @@
 import { Link, router } from '@inertiajs/react';
-import { Check, ChevronsUpDown, LayoutGrid, Plus } from 'lucide-react';
+import {
+    Check,
+    ChevronsUpDown,
+    LayoutGrid,
+    Plus,
+    Settings2,
+} from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,10 +29,13 @@ import { useWorkspaces } from '../hooks/use-workspaces';
  *
  * The list comes from the server's shared props, already scoped to
  * membership, so the switcher cannot offer somewhere the account does not
- * belong. Switching is a navigation — it does not "set" anything, because the
- * workspace a request is about is the one in its URL.
+ * belong. Switching posts the choice rather than navigating to it: it changes
+ * the workspace the account is working in, which is the same choice the step
+ * after sign in asks for, and it has to outlast the page it was made on.
  *
- * No authorization decision is made here.
+ * No authorization decision is made here. The server authorizes the workspace
+ * against the policy before it remembers the choice, and every request after
+ * that is authorized against the workspace its own URL resolves to.
  */
 export default function WorkspaceSwitcher() {
     const { workspaces: available, current, hasWorkspaces } = useWorkspaces();
@@ -87,8 +96,8 @@ export default function WorkspaceSwitcher() {
                             <DropdownMenuItem
                                 key={workspace.id}
                                 onSelect={() =>
-                                    router.visit(
-                                        workspaces.show(workspace.slug),
+                                    router.post(
+                                        workspaces.activate.url(workspace.slug),
                                     )
                                 }
                                 className="gap-2"
@@ -107,6 +116,19 @@ export default function WorkspaceSwitcher() {
                         ))}
 
                         <DropdownMenuSeparator />
+
+                        {current && (
+                            <DropdownMenuItem
+                                onSelect={() =>
+                                    router.visit(workspaces.show(current.slug))
+                                }
+                                className="gap-2"
+                                data-test="manage-workspace"
+                            >
+                                <Settings2 className="size-4" />
+                                Manage workspace
+                            </DropdownMenuItem>
+                        )}
 
                         <DropdownMenuItem
                             onSelect={() => router.visit(workspaces.create())}

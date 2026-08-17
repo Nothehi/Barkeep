@@ -6,7 +6,6 @@ import {
     Gamepad2,
     LayoutGrid,
     Library,
-    Boxes,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -26,22 +25,20 @@ import { dashboard } from '@/routes';
 import frameworks from '@/routes/frameworks';
 import games from '@/routes/games';
 import mechanics from '@/routes/mechanics';
-import workspaces from '@/routes/workspaces';
 import type { NavItem } from '@/types';
 
 /**
  * The destinations that mean the same thing wherever you are.
+ *
+ * There is no entry for workspaces. A workspace is not somewhere you go
+ * alongside the rest of the app, it is which app you are in — chosen after
+ * signing in and changed from the switcher above these items.
  */
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
-    },
-    {
-        title: 'Workspaces',
-        href: workspaces.index(),
-        icon: Boxes,
     },
     /*
      * Sits beside workspaces rather than inside one, because that is the truth
