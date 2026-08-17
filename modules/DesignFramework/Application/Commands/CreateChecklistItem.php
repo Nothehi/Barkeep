@@ -48,6 +48,7 @@ final class CreateChecklistItem
             'title' => $title,
             'description' => $data->description,
             'required' => $data->required,
+            'satisfied_by' => $data->satisfiedBy,
         ]);
 
         $item->checklist_id = $checklist->getKey();

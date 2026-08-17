@@ -5,6 +5,7 @@ namespace Modules\DesignFramework\Presentation\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\DesignFramework\Domain\Models\DesignCriterion;
+use Modules\DesignFramework\Infrastructure\GameDesign\DesignFacts;
 
 /**
  * One assessment question.
@@ -36,6 +37,18 @@ class CriterionResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'description' => $this->description,
+
+            /*
+             * The fact that answers this question, when one does. Whether the game
+             * has recorded it is not here: that belongs to the game rather than to
+             * the methodology, and arrives as its own map on the screen.
+             */
+            'satisfied_by' => $this->satisfied_by,
+            'satisfied_by_label' => $this->satisfied_by === null
+                ? null
+                : app(DesignFacts::class)->label($this->satisfied_by),
+            'is_answered_by_the_design_record' => $this->isAnsweredByTheDesignRecord(),
+
             'position' => $this->position,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),

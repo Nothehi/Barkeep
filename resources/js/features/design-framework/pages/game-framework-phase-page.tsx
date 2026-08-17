@@ -22,6 +22,7 @@ import type {
     DesignPrinciple,
     DesignPrompt,
     FrameworkProgress,
+    GameDesignFacts,
     GameFramework,
     PracticeCompletion,
     PromptResponse,
@@ -43,6 +44,14 @@ type GameFrameworkPhasePageProps = {
     completions: { data: PracticeCompletion[] };
     checklists: { data: ChecklistProgress[] };
     responses: { data: PromptResponse[] };
+
+    /**
+     * What this game has recorded about its own design, and where to record more.
+     * Joined to the criteria and checklist items by fact key — the content is the
+     * methodology's, this is the game's answer, and they arrive apart.
+     */
+    design: GameDesignFacts;
+
     options: { ratings: RatingOption[] };
 };
 
@@ -75,6 +84,7 @@ export default function GameFrameworkPhasePage({
     completions: { data: completions },
     checklists: { data: checklists },
     responses: { data: responses },
+    design,
     options,
 }: GameFrameworkPhasePageProps) {
     const canRecord = adoption.permissions.canRecordProgress;
@@ -179,6 +189,7 @@ export default function GameFrameworkPhasePage({
                             criteria={criteria}
                             evaluations={evaluations}
                             ratings={options.ratings}
+                            design={design}
                             canRecord={canRecord}
                         />
 
@@ -194,6 +205,7 @@ export default function GameFrameworkPhasePage({
                             workspace={workspace.slug}
                             game={game.slug}
                             checklists={checklists}
+                            design={design}
                             canRecord={canRecord}
                         />
 

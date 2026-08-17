@@ -32,6 +32,17 @@ final class UpdateCriterion
             $body['description'] = $data->description;
         }
 
+        /*
+         * Attaching a fact turns a graded criterion into an answered one, and
+         * detaching it turns it back. Either way the grades already recorded stay
+         * where they are: they are the studio's, and an author changing their mind
+         * about how a question should be answered is not grounds for deleting
+         * somebody's assessment. A detached criterion shows them again.
+         */
+        if ($data->sent('satisfied_by')) {
+            $body['satisfied_by'] = $data->satisfiedBy;
+        }
+
         /** @var DesignCriterion $updated */
         $updated = $this->writer->update($criterion, $data, $body);
 

@@ -46,6 +46,7 @@ class CreateCriterionRequest extends FrameworkRequest
         return [
             'title' => $this->contentTitleRules(),
             'description' => $this->contentDescriptionRules(),
+            'satisfied_by' => $this->designFactRules(),
             'phase_id' => $this->phaseReferenceRules($this->version()),
             'status' => $this->contentStatusRules(),
         ];

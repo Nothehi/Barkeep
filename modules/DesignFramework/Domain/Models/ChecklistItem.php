@@ -41,6 +41,7 @@ use Modules\DesignFramework\Infrastructure\Persistence\Eloquent\Factories\Checkl
  * @property string $title
  * @property string $slug
  * @property string|null $description
+ * @property string|null $satisfied_by
  * @property int $position
  * @property bool $required
  * @property CarbonImmutable|null $created_at
@@ -48,7 +49,7 @@ use Modules\DesignFramework\Infrastructure\Persistence\Eloquent\Factories\Checkl
  * @property-read Checklist|null $checklist
  * @property-read Collection<int, ChecklistItemCompletion> $completions
  */
-#[Fillable(['title', 'description', 'required'])]
+#[Fillable(['title', 'description', 'required', 'satisfied_by'])]
 class ChecklistItem extends Model
 {
     /** @use HasFactory<ChecklistItemFactory> */
@@ -132,6 +133,19 @@ class ChecklistItem extends Model
     public function countsTowardsProgress(): bool
     {
         return $this->required;
+    }
+
+    /**
+     * Determine whether this requirement is met by a fact rather than by a tick.
+     *
+     * "Player count decided" used to be a box a designer checked on their own
+     * word while the platform had no idea whether it was true. An item naming a
+     * fact is answered by the game's design record instead, and cannot be ticked
+     * by hand at all — the way to meet it is to go and decide the thing.
+     */
+    public function isAnsweredByTheDesignRecord(): bool
+    {
+        return $this->satisfied_by !== null;
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Modules\DesignFramework\Presentation\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\DesignFramework\Domain\Models\ChecklistItem;
+use Modules\DesignFramework\Infrastructure\GameDesign\DesignFacts;
 
 /**
  * The representation of one checklist requirement.
@@ -34,6 +35,11 @@ class ChecklistItemResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'description' => $this->description,
+            'satisfied_by' => $this->satisfied_by,
+            'satisfied_by_label' => $this->satisfied_by === null
+                ? null
+                : app(DesignFacts::class)->label($this->satisfied_by),
+            'is_answered_by_the_design_record' => $this->isAnsweredByTheDesignRecord(),
             'position' => $this->position,
             'required' => $this->required,
             'created_at' => $this->created_at?->toIso8601String(),

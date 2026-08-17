@@ -206,9 +206,19 @@ export type DesignPrinciple = PhaseContent & {
 
 /**
  * A question the methodology asks of the design.
+ *
+ * Two kinds. Most are judgements — "is the core decision meaningful?" — and only
+ * a designer can answer one. Some are not: a criterion naming a fact in
+ * `satisfied_by` asks whether something has been written down in the game's
+ * design record, is answered from there, and cannot be graded at all. Grading
+ * yourself on whether you have recorded your player count was always the wrong
+ * shape.
  */
 export type DesignCriterion = PhaseContent & {
     description: string | null;
+    satisfied_by: string | null;
+    satisfied_by_label: string | null;
+    is_answered_by_the_design_record: boolean;
 };
 
 /**
@@ -242,6 +252,15 @@ export type ChecklistItem = {
     title: string;
     slug: string;
     description: string | null;
+
+    /**
+     * The design-record fact that meets this requirement, when one does. Such an
+     * item is not tickable: the way to meet it is to go and decide the thing.
+     */
+    satisfied_by: string | null;
+    satisfied_by_label: string | null;
+    is_answered_by_the_design_record: boolean;
+
     position: number;
     required: boolean;
     created_at: string | null;
@@ -436,4 +455,18 @@ export type RatingOption = {
     value: CriterionRating;
     label: string;
     description: string;
+};
+
+/**
+ * What this game has written down about its own design.
+ *
+ * One map of fact to whether it is recorded, plus where to go and record it. Kept
+ * separate from the framework content that reads it, exactly as the evaluations
+ * are kept separate from the criteria — the content is the methodology's and
+ * identical for every game, and this is one game's answer. The client joins them
+ * by the fact key.
+ */
+export type GameDesignFacts = {
+    facts: Record<string, boolean>;
+    settings_url: string;
 };

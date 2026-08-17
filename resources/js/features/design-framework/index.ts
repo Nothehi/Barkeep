@@ -36,6 +36,7 @@ export type {
     VersionInput,
 } from './api';
 export { default as AdoptFrameworkPanel } from './components/adopt-framework-panel';
+export { default as AnsweredFromDesign } from './components/answered-from-design';
 export { default as AdoptionStatusBadge } from './components/adoption-status-badge';
 export { default as BuilderSection } from './components/builder-section';
 export type { BuilderRow } from './components/builder-section';
@@ -83,6 +84,7 @@ export type {
     FrameworkTransition,
     FrameworkVersion,
     FrameworkVersionPermissions,
+    GameDesignFacts,
     GameFramework,
     GameFrameworkPermissions,
     GameFrameworkStatus,

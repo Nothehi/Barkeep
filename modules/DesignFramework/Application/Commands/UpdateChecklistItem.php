@@ -35,6 +35,10 @@ final class UpdateChecklistItem
             $item->description = $data->description;
         }
 
+        if ($data->sent('satisfied_by')) {
+            $item->satisfied_by = $data->satisfiedBy;
+        }
+
         if ($data->sent('required')) {
             $item->required = $data->required;
         }

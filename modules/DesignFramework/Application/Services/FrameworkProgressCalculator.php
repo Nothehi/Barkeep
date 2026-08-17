@@ -16,8 +16,10 @@ use Modules\DesignFramework\Domain\Models\DesignPrompt;
 use Modules\DesignFramework\Domain\Models\GameFramework;
 use Modules\DesignFramework\Domain\Models\PhaseContent;
 use Modules\DesignFramework\Domain\ValueObjects\ProgressRatio;
+use Modules\DesignFramework\Infrastructure\GameDesign\DesignFacts;
 use Modules\DesignFramework\Infrastructure\Persistence\Repositories\FrameworkRepository;
 use Modules\DesignFramework\Infrastructure\Persistence\Repositories\GameFrameworkRepository;
+use Modules\GameDesign\Domain\Models\DesignRecord;
 
 /**
  * The one place framework progress is worked out.
@@ -60,6 +62,7 @@ final class FrameworkProgressCalculator
     public function __construct(
         private readonly FrameworkRepository $frameworks,
         private readonly GameFrameworkRepository $adoptions,
+        private readonly DesignFacts $facts,
     ) {}
 
     /**
@@ -118,6 +121,22 @@ final class FrameworkProgressCalculator
         $doneItems = $this->adoptions->completedItemIds($adoption);
         $answered = $this->adoptions->answeredPromptIds($adoption);
 
+        /*
+         * Content answered by the game's own design record counts as done without
+         * anybody having graded or ticked it. A criterion asking whether the
+         * player count is decided is answered by the player count being decided,
+         * and the design record is where that lives.
+         *
+         * Folded into the same id lists as the manual answers rather than counted
+         * separately, so there is still one definition of "done" per content type
+         * and the phase and version figures cannot disagree about which it used.
+         * The record is read once per calculation, not once per criterion.
+         */
+        $record = $adoption->game === null ? null : $this->facts->recordFor($adoption->game);
+
+        $evaluated = array_merge($evaluated, $this->satisfied($criteria, $record));
+        $doneItems = array_merge($doneItems, $this->satisfied($items, $record));
+
         $phaseProgress = $phases
             ->map(fn (DesignPhaseDefinition $phase): PhaseProgress => PhaseProgress::of(
                 phaseId: (string) $phase->getKey(),
@@ -159,6 +178,18 @@ final class FrameworkProgressCalculator
     {
         $completed = $this->adoptions->completedItemIds($adoption);
 
+        /*
+         * The same folding as the version totals, and for the same reason: an item
+         * met by a fact has to read as ticked here too, or the box beside "Player
+         * count decided" would sit empty while the phase percentage counted it.
+         */
+        $record = $adoption->game === null ? null : $this->facts->recordFor($adoption->game);
+
+        $completed = array_merge($completed, $this->satisfied(
+            $checklists->flatMap(fn (Checklist $checklist): array => $checklist->items->all())->toBase(),
+            $record,
+        ));
+
         return $checklists
             ->map(function (Checklist $checklist) use ($completed): ChecklistProgress {
                 $items = $checklist->items;
@@ -183,6 +214,26 @@ final class FrameworkProgressCalculator
                     completions: $completions,
                 );
             })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * The ids of content the game's design record already answers.
+     *
+     * Only content that names a fact is considered, so the ordinary judgement
+     * criteria are untouched — they are graded or they are outstanding, exactly as
+     * before.
+     *
+     * @param  Items<int, PhaseContent>|Items<int, ChecklistItem>  $content
+     * @return list<string>
+     */
+    private function satisfied(Items $content, ?DesignRecord $record): array
+    {
+        return $content
+            ->filter(fn (PhaseContent|ChecklistItem $row): bool => $row->isAnsweredByTheDesignRecord()
+                && $this->facts->recorded($record, (string) $row->satisfied_by))
+            ->map(fn (PhaseContent|ChecklistItem $row): string => (string) $row->getKey())
             ->values()
             ->all();
     }

@@ -6,6 +6,7 @@ use Modules\DesignFramework\Application\DTOs\CompletionData;
 use Modules\DesignFramework\Application\Services\FrameworkContentLocator;
 use Modules\DesignFramework\Application\Services\GameFrameworkGuard;
 use Modules\DesignFramework\Domain\Events\ChecklistItemCompleted;
+use Modules\DesignFramework\Domain\Exceptions\AnsweredByTheDesignRecord;
 use Modules\DesignFramework\Domain\Models\ChecklistItem;
 use Modules\DesignFramework\Domain\Models\ChecklistItemCompletion;
 use Modules\DesignFramework\Domain\Models\GameFramework;
@@ -44,6 +45,16 @@ final class CompleteChecklistItem
     ): ?ChecklistItemCompletion {
         $this->guard->ensureAdoptionAcceptsProgress($adoption);
         $this->content->ensureItemAdopted($adoption, $item);
+
+        /*
+         * A requirement met by a fact is not tickable. "Player count decided" used
+         * to be a box somebody checked on their own word; the way to meet it now is
+         * to go and decide the player count, and accepting a tick would let a game
+         * claim the box while the record stayed empty.
+         */
+        if ($item->isAnsweredByTheDesignRecord()) {
+            throw AnsweredByTheDesignRecord::forChecklistItem((string) $item->satisfied_by);
+        }
 
         $existing = $this->adoptions->findItemCompletion($adoption, $item);
 

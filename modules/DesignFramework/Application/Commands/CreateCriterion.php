@@ -35,6 +35,7 @@ final class CreateCriterion
         /** @var DesignCriterion $criterion */
         $criterion = $this->writer->create($version, DesignCriterion::class, $data, [
             'description' => $data->description,
+            'satisfied_by' => $data->satisfiedBy,
         ]);
 
         event(new CriterionCreated(

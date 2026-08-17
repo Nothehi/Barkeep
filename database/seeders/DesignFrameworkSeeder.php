@@ -184,7 +184,12 @@ class DesignFrameworkSeeder extends Seeder
      * this and why they share an Eloquent base class.
      *
      * @param  class-string<DesignPrinciple|DesignCriterion|DesignPractice|DesignPrompt>  $type
-     * @param  array<int, array{0: string, 1: string}>  $rows  title and body, in order
+     *                                                                                           A row may carry a third element: the key of a design-record fact that answers it. Only
+     *                                                                                           criteria use it, and only the factual ones — "are the player count and playing time decided?"
+     *                                                                                           is answered by the player count being decided, while "is the core decision meaningful?" is a
+     *                                                                                           judgement nothing can answer for a designer and carries nothing.
+     * @param  array<int, array{0: string, 1: string, 2?: string}>  $rows  title, body, and the fact
+     *                                                                     that answers it
      */
     private function fill(
         FrameworkVersion $version,
@@ -195,7 +200,8 @@ class DesignFrameworkSeeder extends Seeder
     ): void {
         $position = 0;
 
-        foreach ($rows as [$title, $body]) {
+        foreach ($rows as $row) {
+            [$title, $body] = $row;
             $position++;
 
             $slug = Str::slug($title);
@@ -212,6 +218,11 @@ class DesignFrameworkSeeder extends Seeder
             $content->position = $position;
             $content->status = FrameworkContentStatus::Published;
             $content->setAttribute($bodyColumn, $body);
+
+            if (in_array('satisfied_by', $content->getFillable(), strict: true)) {
+                $content->satisfied_by = $row[2] ?? null;
+            }
+
             $content->save();
         }
     }
@@ -219,7 +230,11 @@ class DesignFrameworkSeeder extends Seeder
     /**
      * Write one readiness gate and its requirements.
      *
-     * @param  array{title: string, description: string, items: array<int, string>}  $definition
+     * An item is either a title, or a title paired with the design-record fact that meets it. The
+     * paired ones stop being tickable: "Player count decided" used to be a box somebody checked on
+     * their own word, and it is now met by going and deciding the player count.
+     *
+     * @param  array{title: string, description: string, items: array<int, string|array{0: string, 1: string}>}  $definition
      */
     private function checklist(
         FrameworkVersion $version,
@@ -248,8 +263,10 @@ class DesignFrameworkSeeder extends Seeder
 
         $itemPosition = 0;
 
-        foreach ($definition['items'] as $title) {
+        foreach ($definition['items'] as $row) {
             $itemPosition++;
+
+            [$title, $fact] = is_array($row) ? $row : [$row, null];
 
             $itemSlug = Str::slug($title);
 
@@ -260,6 +277,7 @@ class DesignFrameworkSeeder extends Seeder
 
             $item->fill(['title' => $title, 'required' => true]);
 
+            $item->satisfied_by = $fact;
             $item->checklist_id = $checklist->id;
             $item->slug = $itemSlug;
             $item->position = $itemPosition;
@@ -292,7 +310,7 @@ class DesignFrameworkSeeder extends Seeder
                     ['Theme and mechanism have to want the same thing', 'A game about smuggling whose mechanisms reward openness will always feel wrong, and no amount of art fixes it.'],
                 ],
                 'criteria' => [
-                    ['Can you say what the game is in one sentence?', 'Not the theme and not the mechanisms — the experience. If it takes a paragraph, the idea is still several ideas.'],
+                    ['Can you say what the game is in one sentence?', 'Not the theme and not the mechanisms — the experience. If it takes a paragraph, the idea is still several ideas.', 'pitch'],
                     ['Is there a reason this game rather than a similar one?', 'Every idea competes with games that already exist and are already finished.'],
                 ],
                 'practices' => [
@@ -313,8 +331,8 @@ class DesignFrameworkSeeder extends Seeder
                     ['Choose an audience you can actually watch play', 'A design aimed at players you never test with is a design aimed at a guess.'],
                 ],
                 'criteria' => [
-                    ['Are the player count and playing time decided?', 'Ranges are fine; "we will see" is not, because it defers every pacing decision.'],
-                    ['Does the intended weight match the intended audience?', 'Complexity a table will not carry is complexity that never gets played.'],
+                    ['Are the player count and playing time decided?', 'Ranges are fine; "we will see" is not, because it defers every pacing decision.', 'player_count'],
+                    ['Does the intended weight match the intended audience?', 'Complexity a table will not carry is complexity that never gets played.', 'complexity'],
                 ],
                 'practices' => [
                     ['Write the constraints down', 'Player count, playing time, age, weight, and roughly what a box would cost to make. Keep them visible while designing.'],
@@ -328,10 +346,10 @@ class DesignFrameworkSeeder extends Seeder
                         'title' => 'Concept readiness',
                         'description' => 'What has to be settled before designing systems on top of it.',
                         'items' => [
-                            'One-sentence pitch written',
-                            'Player count decided',
-                            'Target playing time decided',
-                            'Intended audience named',
+                            ['One-sentence pitch written', 'pitch'],
+                            ['Player count decided', 'player_count'],
+                            ['Target playing time decided', 'play_time'],
+                            ['Intended audience named', 'audience'],
                         ],
                     ],
                 ],
@@ -364,11 +382,11 @@ class DesignFrameworkSeeder extends Seeder
                         'title' => 'Core loop readiness',
                         'description' => 'The loop is the foundation. These have to be true before building systems on it.',
                         'items' => [
-                            'Core action identified',
-                            'Cost of the core action identified',
-                            'Reward identified',
-                            'Failure condition identified',
-                            'Win condition identified',
+                            ['Core action identified', 'core_action'],
+                            ['Cost of the core action identified', 'core_cost'],
+                            ['Reward identified', 'core_reward'],
+                            ['Failure condition identified', 'failure_condition'],
+                            ['Win condition identified', 'win_condition'],
                         ],
                     ],
                 ],

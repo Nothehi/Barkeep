@@ -29,6 +29,7 @@ class CreateChecklistItemRequest extends FrameworkRequest
         return [
             'title' => $this->contentTitleRules(),
             'description' => $this->contentDescriptionRules(),
+            'satisfied_by' => $this->designFactRules(),
             'required' => $this->requiredFlagRules(),
         ];
     }

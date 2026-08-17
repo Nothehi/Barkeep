@@ -24,10 +24,19 @@ use Modules\DesignFramework\Infrastructure\Persistence\Eloquent\Factories\Design
  * it out explicitly, and the `design_criteria` table has no rating column to
  * make it with.
  *
+ * ## Two kinds of question
+ *
+ * Most criteria are judgements — "is the core decision meaningful?" — and only a
+ * designer can answer one. Some are not: "are the player count and playing time
+ * decided?" asks whether a fact has been written down, and grading yourself on
+ * that was always the wrong shape. A criterion naming a fact in `satisfied_by`
+ * is answered from the game's design record and cannot be graded at all.
+ *
  * @property string|null $description
+ * @property string|null $satisfied_by
  * @property-read Collection<int, CriterionEvaluation> $evaluations
  */
-#[Fillable(['title', 'description'])]
+#[Fillable(['title', 'description', 'satisfied_by'])]
 class DesignCriterion extends PhaseContent
 {
     /** @use HasFactory<DesignCriterionFactory> */
@@ -55,6 +64,19 @@ class DesignCriterion extends PhaseContent
     public function evaluations(): HasMany
     {
         return $this->hasMany(CriterionEvaluation::class, 'criterion_id');
+    }
+
+    /**
+     * Determine whether this question is answered from the game's design record.
+     *
+     * A criterion naming a fact is not graded. There is nothing for a designer to
+     * assess about whether they have written their player count down — either
+     * they have or they have not — and offering four grades for it would be
+     * asking them to have an opinion about a lookup.
+     */
+    public function isAnsweredByTheDesignRecord(): bool
+    {
+        return $this->satisfied_by !== null;
     }
 
     /**

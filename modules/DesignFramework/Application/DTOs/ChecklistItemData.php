@@ -18,6 +18,7 @@ final readonly class ChecklistItemData
         public ?string $title = null,
         public ?string $description = null,
         public bool $required = true,
+        public ?string $satisfiedBy = null,
         public array $provided = [],
     ) {}
 
@@ -35,6 +36,7 @@ final readonly class ChecklistItemData
             title: array_key_exists('title', $input) ? FrameworkInput::requiredText($input, 'title') : null,
             description: FrameworkInput::text($input, 'description'),
             required: FrameworkInput::flag($input, 'required', default: true),
+            satisfiedBy: FrameworkInput::identifier($input, 'satisfied_by'),
             provided: array_keys($input),
         );
     }

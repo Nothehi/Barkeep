@@ -14,8 +14,10 @@ import type {
     CriterionEvaluation,
     CriterionRating,
     DesignCriterion,
+    GameDesignFacts,
     RatingOption,
 } from '../types/framework';
+import AnsweredFromDesign from './answered-from-design';
 
 type CriterionListProps = {
     workspace: string;
@@ -23,6 +25,7 @@ type CriterionListProps = {
     criteria: DesignCriterion[];
     evaluations: CriterionEvaluation[];
     ratings: RatingOption[];
+    design: GameDesignFacts;
     canRecord: boolean;
 };
 
@@ -41,6 +44,11 @@ type CriterionListProps = {
  * There is no "not evaluated" button. It is the state a criterion is in before
  * anybody acts, and offering it would make clearing an assessment look like
  * making one.
+ *
+ * A criterion that names a fact of the game's design gets no buttons at all. It
+ * is answered from the design record, and the row says where — because grading
+ * yourself on whether you have written your player count down was always the
+ * wrong question to be asked.
  */
 export default function CriterionList({
     workspace,
@@ -48,6 +56,7 @@ export default function CriterionList({
     criteria,
     evaluations,
     ratings,
+    design,
     canRecord,
 }: CriterionListProps) {
     const byCriterion = new Map(
@@ -71,6 +80,7 @@ export default function CriterionList({
                         criterion={criterion}
                         evaluation={byCriterion.get(criterion.id) ?? null}
                         ratings={ratings}
+                        design={design}
                         canRecord={canRecord}
                     />
                 ))}
@@ -85,6 +95,7 @@ type CriterionRowProps = {
     criterion: DesignCriterion;
     evaluation: CriterionEvaluation | null;
     ratings: RatingOption[];
+    design: GameDesignFacts;
     canRecord: boolean;
 };
 
@@ -101,6 +112,7 @@ function CriterionRow({
     criterion,
     evaluation,
     ratings,
+    design,
     canRecord,
 }: CriterionRowProps) {
     const [pending, setPending] = useState<CriterionRating | null>(null);
@@ -123,17 +135,45 @@ function CriterionRow({
         );
     };
 
+    const header = (
+        <CardHeader className="gap-1">
+            <span className="font-medium">{criterion.title}</span>
+
+            {criterion.description && (
+                <span className="text-sm text-muted-foreground">
+                    {criterion.description}
+                </span>
+            )}
+        </CardHeader>
+    );
+
+    /*
+     * Answered from the design record, so there is nothing to grade and nothing
+     * to write a note about. The row says where the answer comes from and links
+     * to where it is recorded — the work is "go and decide the player count",
+     * not "have an opinion about whether you did".
+     */
+    if (criterion.is_answered_by_the_design_record) {
+        return (
+            <Card data-test={`criterion-${criterion.id}`}>
+                {header}
+
+                <CardContent>
+                    <AnsweredFromDesign
+                        label={criterion.satisfied_by_label ?? 'this'}
+                        recorded={
+                            design.facts[criterion.satisfied_by ?? ''] ?? false
+                        }
+                        settingsUrl={design.settings_url}
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <Card data-test={`criterion-${criterion.id}`}>
-            <CardHeader className="gap-1">
-                <span className="font-medium">{criterion.title}</span>
-
-                {criterion.description && (
-                    <span className="text-sm text-muted-foreground">
-                        {criterion.description}
-                    </span>
-                )}
-            </CardHeader>
+            {header}
 
             <CardContent className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">

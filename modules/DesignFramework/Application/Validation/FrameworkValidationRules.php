@@ -177,6 +177,20 @@ trait FrameworkValidationRules
     }
 
     /**
+     * Get the rules for the design fact that answers a piece of content.
+     *
+     * Nullable, because almost nothing carries one: a judgement criterion is
+     * graded by the designer and names no fact. Sending null is how an author
+     * detaches one and hands the question back.
+     *
+     * @return array<int, ValidationRule|array<mixed>|string>
+     */
+    protected function designFactRules(): array
+    {
+        return ['sometimes', 'nullable', 'string', app(IsADesignFact::class)];
+    }
+
+    /**
      * Get the rules for a requested position.
      *
      * Only bounded from below here. The upper bound depends on how many siblings the item

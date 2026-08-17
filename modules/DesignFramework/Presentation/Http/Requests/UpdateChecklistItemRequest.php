@@ -32,6 +32,7 @@ class UpdateChecklistItemRequest extends FrameworkRequest
         return [
             'title' => $this->contentTitleRules(required: false),
             'description' => $this->contentDescriptionRules(),
+            'satisfied_by' => $this->designFactRules(),
             'required' => $this->requiredFlagRules(),
         ];
     }

@@ -6,6 +6,7 @@ use Modules\DesignFramework\Application\DTOs\EvaluateCriterionData;
 use Modules\DesignFramework\Application\Services\FrameworkContentLocator;
 use Modules\DesignFramework\Application\Services\GameFrameworkGuard;
 use Modules\DesignFramework\Domain\Events\CriterionEvaluated;
+use Modules\DesignFramework\Domain\Exceptions\AnsweredByTheDesignRecord;
 use Modules\DesignFramework\Domain\Models\CriterionEvaluation;
 use Modules\DesignFramework\Domain\Models\DesignCriterion;
 use Modules\DesignFramework\Domain\Models\GameFramework;
@@ -49,6 +50,17 @@ final class EvaluateCriterion
     ): CriterionEvaluation {
         $this->guard->ensureAdoptionAcceptsProgress($adoption);
         $this->content->ensureAdopted($adoption, $criterion);
+
+        /*
+         * A criterion answered by the game's design record is not graded. The
+         * screens never offer the buttons, so reaching this means arriving from
+         * the API or from a page that loaded before the framework author
+         * attached the fact — and storing a grade would leave a second answer
+         * disagreeing with the record.
+         */
+        if ($criterion->isAnsweredByTheDesignRecord()) {
+            throw AnsweredByTheDesignRecord::forCriterion((string) $criterion->satisfied_by);
+        }
 
         $existing = $this->adoptions->findEvaluation($adoption, $criterion);
         $previous = $existing?->status;

@@ -23,6 +23,7 @@ use Modules\DesignFramework\Application\Queries\GetPromptResponses;
 use Modules\DesignFramework\Domain\Enums\CriterionRating;
 use Modules\DesignFramework\Domain\Models\DesignPhaseDefinition;
 use Modules\DesignFramework\Domain\Models\GameFramework;
+use Modules\DesignFramework\Infrastructure\GameDesign\DesignFacts;
 use Modules\DesignFramework\Presentation\Http\Resources\ChecklistProgressResource;
 use Modules\DesignFramework\Presentation\Http\Resources\CriterionEvaluationResource;
 use Modules\DesignFramework\Presentation\Http\Resources\CriterionResource;
@@ -74,6 +75,7 @@ class GameFrameworkPhaseController extends Controller
         GetPracticeCompletions $getCompletions,
         GetChecklistProgress $getChecklistProgress,
         GetPromptResponses $getResponses,
+        DesignFacts $facts,
     ): Response {
         Gate::authorize('viewForGame', [GameFramework::class, $game]);
 
@@ -120,6 +122,20 @@ class GameFrameworkPhaseController extends Controller
             'completions' => PracticeCompletionResource::collection($getCompletions->handle($adoption)),
             'checklists' => ChecklistProgressResource::collection($getChecklistProgress->handle($adoption, $checklists)),
             'responses' => PromptResponseResource::collection($getResponses->handle($adoption)),
+
+            /*
+             * What this game has written down about its own design, as one map of
+             * fact to whether it is recorded — plus where to go and record it.
+             *
+             * Kept separate from the criteria and the checklist items above, for
+             * the same reason the evaluations are: the content is the
+             * methodology's and identical for every game, and this is one game's
+             * answer. The client joins them by the fact key.
+             */
+            'design' => [
+                'facts' => $facts->recordedMap($facts->recordFor($game)),
+                'settings_url' => route('games.settings.edit', [$workspace, $game]),
+            ],
 
             'options' => [
                 'ratings' => array_map(

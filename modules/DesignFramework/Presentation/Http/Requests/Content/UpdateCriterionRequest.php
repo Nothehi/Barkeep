@@ -43,6 +43,7 @@ class UpdateCriterionRequest extends FrameworkRequest
         return [
             'title' => $this->contentTitleRules(required: false),
             'description' => $this->contentDescriptionRules(),
+            'satisfied_by' => $this->designFactRules(),
             'phase_id' => $this->phaseReferenceRules($this->version()),
             'status' => $this->contentStatusRules(),
         ];

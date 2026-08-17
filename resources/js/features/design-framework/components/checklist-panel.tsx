@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { completeChecklistItem } from '../api';
-import type { ChecklistProgress } from '../types/framework';
+import type { ChecklistProgress, GameDesignFacts } from '../types/framework';
+import AnsweredFromDesign from './answered-from-design';
 
 type ChecklistPanelProps = {
     workspace: string;
     game: string;
     checklists: ChecklistProgress[];
+    design: GameDesignFacts;
     canRecord: boolean;
 };
 
@@ -27,6 +29,7 @@ export default function ChecklistPanel({
     workspace,
     game,
     checklists,
+    design,
     canRecord,
 }: ChecklistPanelProps) {
     const [pending, setPending] = useState<string | null>(null);
@@ -75,56 +78,86 @@ export default function ChecklistPanel({
                             </CardHeader>
 
                             <CardContent className="space-y-2">
-                                {items.map((item) => (
-                                    <label
-                                        key={item.id}
-                                        className="flex items-start gap-3"
-                                    >
-                                        <Checkbox
-                                            checked={
-                                                state.get(item.id) ?? false
-                                            }
-                                            disabled={
-                                                !canRecord ||
-                                                pending === item.id
-                                            }
-                                            onCheckedChange={(checked) => {
-                                                setPending(item.id);
-
-                                                completeChecklistItem(
-                                                    workspace,
-                                                    game,
-                                                    item.id,
-                                                    checked === true,
-                                                    null,
-                                                    {
-                                                        onFinish: () =>
-                                                            setPending(null),
-                                                    },
-                                                );
-                                            }}
+                                {items.map((item) =>
+                                    item.is_answered_by_the_design_record ? (
+                                        <div
+                                            key={item.id}
+                                            className="space-y-0.5"
                                             data-test={`checklist-item-${item.id}`}
-                                        />
-
-                                        <span className="min-w-0 space-y-0.5">
-                                            <span className="block text-sm">
+                                        >
+                                            <p className="text-sm">
                                                 {item.title}
+                                            </p>
 
-                                                {!item.required && (
-                                                    <span className="ml-2 text-xs text-muted-foreground">
-                                                        optional
+                                            <AnsweredFromDesign
+                                                label={
+                                                    item.satisfied_by_label ??
+                                                    'this'
+                                                }
+                                                recorded={
+                                                    design.facts[
+                                                        item.satisfied_by ?? ''
+                                                    ] ?? false
+                                                }
+                                                settingsUrl={
+                                                    design.settings_url
+                                                }
+                                                className="text-xs"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <label
+                                            key={item.id}
+                                            className="flex items-start gap-3"
+                                        >
+                                            <Checkbox
+                                                checked={
+                                                    state.get(item.id) ?? false
+                                                }
+                                                disabled={
+                                                    !canRecord ||
+                                                    pending === item.id
+                                                }
+                                                onCheckedChange={(checked) => {
+                                                    setPending(item.id);
+
+                                                    completeChecklistItem(
+                                                        workspace,
+                                                        game,
+                                                        item.id,
+                                                        checked === true,
+                                                        null,
+                                                        {
+                                                            onFinish: () =>
+                                                                setPending(
+                                                                    null,
+                                                                ),
+                                                        },
+                                                    );
+                                                }}
+                                                data-test={`checklist-item-${item.id}`}
+                                            />
+
+                                            <span className="min-w-0 space-y-0.5">
+                                                <span className="block text-sm">
+                                                    {item.title}
+
+                                                    {!item.required && (
+                                                        <span className="ml-2 text-xs text-muted-foreground">
+                                                            optional
+                                                        </span>
+                                                    )}
+                                                </span>
+
+                                                {item.description && (
+                                                    <span className="block text-xs text-muted-foreground">
+                                                        {item.description}
                                                     </span>
                                                 )}
                                             </span>
-
-                                            {item.description && (
-                                                <span className="block text-xs text-muted-foreground">
-                                                    {item.description}
-                                                </span>
-                                            )}
-                                        </span>
-                                    </label>
-                                ))}
+                                        </label>
+                                    ),
+                                )}
                             </CardContent>
                         </Card>
                     );

@@ -13,6 +13,11 @@ use Modules\DesignFramework\Domain\Enums\FrameworkContentStatus;
  * sends `instructions` to a principle has it validated away by the form request
  * before it reaches here.
  *
+ * `satisfiedBy` names a fact of a game's design record that answers this content,
+ * and only criteria use it. It is what turns "are the player count and playing
+ * time decided?" from a question a designer grades themselves on into one the
+ * platform can answer — see `DesignFacts`.
+ *
  * Two things are deliberately absent:
  *
  * - **position.** Allocated by `ContentSequencer` and changed only through an
@@ -36,6 +41,7 @@ final readonly class ContentData
         public ?string $description = null,
         public ?string $instructions = null,
         public ?string $prompt = null,
+        public ?string $satisfiedBy = null,
         public ?string $phaseId = null,
         public ?FrameworkContentStatus $status = null,
         public array $provided = [],
@@ -55,6 +61,7 @@ final readonly class ContentData
             description: FrameworkInput::text($input, 'description'),
             instructions: FrameworkInput::text($input, 'instructions'),
             prompt: array_key_exists('prompt', $input) ? FrameworkInput::requiredText($input, 'prompt') : null,
+            satisfiedBy: FrameworkInput::identifier($input, 'satisfied_by'),
             phaseId: FrameworkInput::identifier($input, 'phase_id'),
             status: $status === null ? null : FrameworkContentStatus::tryFrom($status),
             provided: array_keys($input),
