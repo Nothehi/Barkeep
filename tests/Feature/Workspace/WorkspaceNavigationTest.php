@@ -7,9 +7,12 @@ use Modules\Workspace\Domain\Models\Workspace;
 use Modules\Workspace\Domain\Models\WorkspaceMember;
 
 /**
- * A user belongs to many workspaces, and the client keeps track of which one
- * is selected. These tests pin down the half of that the server owns: what it
- * shares, and the fact that the selection carries no authority.
+ * A user belongs to many workspaces and works in one at a time. These tests
+ * pin down what the server shares about that, and the fact that the selection
+ * carries no authority — which workspace is chosen decides what the switcher
+ * shows, never what a request is allowed to do.
+ *
+ * The choice itself is covered by tests/Feature/Workspace/ActiveWorkspaceTest.php.
  */
 it('shares the account\'s workspaces with every page', function () {
     $user = User::factory()->create();
@@ -18,8 +21,12 @@ it('shares the account\'s workspaces with every page', function () {
     Workspace::factory()->ownedBy($user)->withSlug('beta')->create();
     Workspace::factory()->withSlug('somewhere-else')->create();
 
+    /*
+     * Asserted on a page that passes no `workspaces` prop of its own: the
+     * workspace list screen sends its own, which shadows the shared one.
+     */
     $this->actingAs($user)
-        ->get(route('dashboard'))
+        ->get(route('workspaces.create'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('workspaces.available', 2)
             ->where('workspaces.current', null));

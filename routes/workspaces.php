@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Workspace\Presentation\Http\Controllers\Web\WorkspaceController;
 use Modules\Workspace\Presentation\Http\Controllers\Web\WorkspaceInvitationController;
 use Modules\Workspace\Presentation\Http\Controllers\Web\WorkspaceMemberController;
+use Modules\Workspace\Presentation\Http\Controllers\Web\WorkspaceSelectionController;
 use Modules\Workspace\Presentation\Http\Controllers\Web\WorkspaceSettingsController;
 
 /*
@@ -27,8 +28,17 @@ Route::middleware(['auth', 'verified'])->prefix('app')->group(function () {
     Route::get('workspaces/create', [WorkspaceController::class, 'create'])->name('workspaces.create');
     Route::post('workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
 
+    /*
+     * The step after signing in. Declared before `workspaces/{workspace}` so
+     * the router reads `select` as the literal it is rather than as somebody's
+     * address, and left outside the `workspace.selected` gate so that the
+     * screen the gate sends people to is always reachable.
+     */
+    Route::get('workspaces/select', [WorkspaceSelectionController::class, 'show'])->name('workspaces.select');
+
     Route::prefix('workspaces/{workspace}')->scopeBindings()->group(function () {
         Route::get('/', [WorkspaceController::class, 'show'])->name('workspaces.show');
+        Route::post('activate', [WorkspaceSelectionController::class, 'store'])->name('workspaces.activate');
         Route::patch('/', [WorkspaceSettingsController::class, 'update'])->name('workspaces.update');
         Route::post('leave', [WorkspaceController::class, 'leave'])->name('workspaces.leave');
 

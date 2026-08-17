@@ -39,12 +39,12 @@ test('a blocked account is told why rather than being shown a credential error',
 test('an existing session is terminated once the account is suspended', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->get(route('dashboard'))->assertOk();
+    $this->actingAs($user)->get(route('profile.edit'))->assertOk();
 
     app(SuspendUser::class)->handle($user);
 
     $this->actingAs($user)
-        ->get(route('dashboard'))
+        ->get(route('profile.edit'))
         ->assertRedirect(route('login'));
 
     $this->assertGuest();

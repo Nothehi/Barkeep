@@ -92,8 +92,9 @@ export type PublicWorkspaceInvitation = {
  * The workspace navigation data shared with every Inertia page.
  *
  * `available` is scoped to membership server side, so the switcher cannot
- * offer somewhere the account does not belong. `current` is read from the URL
- * the server actually resolved, not from client state.
+ * offer somewhere the account does not belong. `current` is the workspace the
+ * URL resolved to, or — where the URL names none — the one the account chose
+ * after signing in. Either way the server decides it, not client state.
  */
 export type WorkspaceNavigation = {
     available: Workspace[];
