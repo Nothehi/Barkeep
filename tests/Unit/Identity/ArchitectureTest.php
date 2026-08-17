@@ -10,7 +10,7 @@ $otherContexts = [
     'Modules\Analytics',
     'Modules\Community',
     'Modules\Content',
-    'Modules\Framework',
+    'Modules\DesignFramework',
     'Modules\GameDesign',
     'Modules\Gamification',
     'Modules\Moderation',

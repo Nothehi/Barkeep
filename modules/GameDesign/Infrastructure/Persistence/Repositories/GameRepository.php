@@ -5,6 +5,7 @@ namespace Modules\GameDesign\Infrastructure\Persistence\Repositories;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Modules\GameDesign\Application\DTOs\GameFilters;
+use Modules\GameDesign\Domain\Models\DesignRecord;
 use Modules\GameDesign\Domain\Models\Game;
 use Modules\GameDesign\Domain\Models\GameVersion;
 use Modules\GameDesign\Domain\ValueObjects\GameSlug;
@@ -88,6 +89,24 @@ final class GameRepository
             ->where('slug', $slug->value)
             ->when($exceptGameId !== null, fn ($query) => $query->whereKeyNot($exceptGameId))
             ->exists();
+    }
+
+    /**
+     * What has been decided about a game's design.
+     *
+     * Read through the game's own relation, so the workspace scoping that
+     * produced the game holds here too. The mechanics come with it because a
+     * design record without them is unreadable — the terms a game claims are
+     * part of the answer, not a detail to fetch later.
+     *
+     * Null when nothing has been decided, which is most games. That absence is
+     * the answer rather than a missing row to paper over.
+     */
+    public function designRecordOf(Game $game): ?DesignRecord
+    {
+        $record = $game->designRecord()->with('mechanics')->first();
+
+        return $record?->setRelation('game', $game);
     }
 
     /**

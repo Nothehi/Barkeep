@@ -29,6 +29,7 @@ final class GamePermissions
     private const ABILITIES = [
         'canView' => 'view',
         'canUpdate' => 'update',
+        'canUpdateDesignRecord' => 'updateDesignRecord',
         'canChangeStatus' => 'changeStatus',
         'canChangeDesignPhase' => 'changeDesignPhase',
         'canArchive' => 'archive',

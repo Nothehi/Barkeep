@@ -1,11 +1,27 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\ChecklistItemCompletionController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\CriterionEvaluationController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\FrameworkArchiveController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\FrameworkContentController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\FrameworkController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\FrameworkPublicationController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\FrameworkVersionController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\FrameworkVersionLifecycleController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\GameFrameworkController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\GameFrameworkLifecycleController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\GameFrameworkProgressController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\PracticeCompletionController;
+use Modules\DesignFramework\Presentation\Http\Controllers\Api\PromptResponseController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\DesignRecordController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameArchiveController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameDesignPhaseController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameStatusController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameVersionController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\MechanicArchiveController;
+use Modules\GameDesign\Presentation\Http\Controllers\Api\MechanicController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\FeedbackController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\ObservationController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\ParticipantController;
@@ -76,9 +92,59 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('design-phase', [GameDesignPhaseController::class, 'store'])->name('api.workspaces.games.design-phase');
             Route::post('archive', [GameArchiveController::class, 'store'])->name('api.workspaces.games.archive');
 
+            /*
+             * The design record: a singleton sub-resource, because a game has one
+             * design. There is no POST — the record is created by the first
+             * PATCH, since the design exists as soon as anything about it is
+             * known and making a caller create a container first would be the
+             * storage shape leaking into the API.
+             */
+            Route::get('design', [DesignRecordController::class, 'show'])->name('api.workspaces.games.design.show');
+            Route::patch('design', [DesignRecordController::class, 'update'])->name('api.workspaces.games.design.update');
+
             Route::get('versions', [GameVersionController::class, 'index'])->name('api.workspaces.games.versions.index');
             Route::post('versions', [GameVersionController::class, 'store'])->name('api.workspaces.games.versions.store');
             Route::get('versions/{version}', [GameVersionController::class, 'show'])->name('api.workspaces.games.versions.show');
+
+            /*
+             * A game's framework is a singleton sub-resource rather than a
+             * collection, because a game follows one methodology at a time —
+             * see section 46. `GET` answers 404 when it follows none, which is
+             * what lets a client tell "not adopted" from "adopted and empty".
+             *
+             * Note what the URLs below do *not* contain: a framework, or a
+             * version. Neither is a choice the request gets to make. The
+             * adoption supplies both, so a criterion id from another edition
+             * fails to resolve rather than being caught by a policy — which is
+             * section 19's historical integrity as a routing property.
+             *
+             * Unticking a practice or a checklist item is the same POST with
+             * `completed=false`, not a DELETE. What gets removed is the
+             * studio's own completion row; expressing that as a DELETE on the
+             * practice would read as removing the methodology's content.
+             */
+            Route::prefix('framework')->group(function () {
+                Route::get('/', [GameFrameworkController::class, 'show'])->name('api.workspaces.games.framework.show');
+                Route::post('/', [GameFrameworkController::class, 'store'])->name('api.workspaces.games.framework.store');
+
+                Route::get('progress', [GameFrameworkProgressController::class, 'show'])->name('api.workspaces.games.framework.progress');
+
+                Route::post('pause', [GameFrameworkLifecycleController::class, 'pause'])->name('api.workspaces.games.framework.pause');
+                Route::post('resume', [GameFrameworkLifecycleController::class, 'resume'])->name('api.workspaces.games.framework.resume');
+                Route::post('complete', [GameFrameworkLifecycleController::class, 'complete'])->name('api.workspaces.games.framework.complete');
+
+                Route::get('evaluations', [CriterionEvaluationController::class, 'index'])->name('api.workspaces.games.framework.evaluations.index');
+                Route::post('criteria/{criterion}/evaluate', [CriterionEvaluationController::class, 'store'])->name('api.workspaces.games.framework.criteria.evaluate');
+
+                Route::get('practice-completions', [PracticeCompletionController::class, 'index'])->name('api.workspaces.games.framework.practice-completions.index');
+                Route::post('practices/{practice}/complete', [PracticeCompletionController::class, 'store'])->name('api.workspaces.games.framework.practices.complete');
+
+                Route::get('checklists', [ChecklistItemCompletionController::class, 'index'])->name('api.workspaces.games.framework.checklists.index');
+                Route::post('checklist-items/{item}/complete', [ChecklistItemCompletionController::class, 'store'])->name('api.workspaces.games.framework.checklist-items.complete');
+
+                Route::get('prompt-responses', [PromptResponseController::class, 'index'])->name('api.workspaces.games.framework.prompt-responses.index');
+                Route::post('prompts/{prompt}/respond', [PromptResponseController::class, 'store'])->name('api.workspaces.games.framework.prompts.respond');
+            });
 
             /*
              * Playtests are nested the whole way down rather than exposed at a
@@ -129,6 +195,76 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     });
                 });
             });
+        });
+    });
+
+    /*
+     * Frameworks are the one first-class collection in the API that is not
+     * nested under a workspace. A methodology is not a studio's document — it
+     * is something Barkeep publishes and studios adopt — so there is no tenant
+     * to scope its address to, and framework slugs are globally unique.
+     *
+     * Authorization here is a different shape from everywhere else in the API.
+     * Every signed in account may read a published framework and its content;
+     * only a framework administrator may write one, or see a draft. Until the
+     * Administration context exists that set is a configuration list, read in
+     * exactly one place — see `FrameworkAdministrators`.
+     *
+     * The content routes are reads only. Authoring happens on the builder
+     * screens, which submit as Inertia visits so the server can redirect and
+     * flash; exposing a second write surface for the same operations would mean
+     * two clients to keep honest about published-version immutability.
+     */
+    Route::prefix('frameworks')->group(function () {
+        Route::get('/', [FrameworkController::class, 'index'])->name('api.frameworks.index');
+        Route::post('/', [FrameworkController::class, 'store'])->name('api.frameworks.store');
+
+        Route::prefix('{framework}')->group(function () {
+            Route::get('/', [FrameworkController::class, 'show'])->name('api.frameworks.show');
+            Route::patch('/', [FrameworkController::class, 'update'])->name('api.frameworks.update');
+
+            Route::post('publish', [FrameworkPublicationController::class, 'store'])->name('api.frameworks.publish');
+            Route::post('archive', [FrameworkArchiveController::class, 'store'])->name('api.frameworks.archive');
+
+            Route::get('versions', [FrameworkVersionController::class, 'index'])->name('api.frameworks.versions.index');
+            Route::post('versions', [FrameworkVersionController::class, 'store'])->name('api.frameworks.versions.store');
+
+            Route::prefix('versions/{version}')->group(function () {
+                Route::get('/', [FrameworkVersionController::class, 'show'])->name('api.frameworks.versions.show');
+                Route::patch('/', [FrameworkVersionController::class, 'update'])->name('api.frameworks.versions.update');
+
+                Route::post('publish', [FrameworkVersionLifecycleController::class, 'publish'])->name('api.frameworks.versions.publish');
+                Route::post('archive', [FrameworkVersionLifecycleController::class, 'archive'])->name('api.frameworks.versions.archive');
+
+                Route::get('phases', [FrameworkContentController::class, 'phases'])->name('api.frameworks.versions.phases.index');
+                Route::get('phases/{phase}', [FrameworkContentController::class, 'phase'])->name('api.frameworks.versions.phases.show');
+
+                Route::get('principles', [FrameworkContentController::class, 'principles'])->name('api.frameworks.versions.principles.index');
+                Route::get('criteria', [FrameworkContentController::class, 'criteria'])->name('api.frameworks.versions.criteria.index');
+                Route::get('practices', [FrameworkContentController::class, 'practices'])->name('api.frameworks.versions.practices.index');
+                Route::get('prompts', [FrameworkContentController::class, 'prompts'])->name('api.frameworks.versions.prompts.index');
+                Route::get('checklists', [FrameworkContentController::class, 'checklists'])->name('api.frameworks.versions.checklists.index');
+            });
+        });
+    });
+
+    /*
+     * The design vocabulary.
+     *
+     * Not nested under a workspace, and the only collection here that is not.
+     * A mechanic belongs to the platform rather than to a studio, so there is
+     * nothing to scope it by — and the vocabulary is only worth having because
+     * every game picks from the same one.
+     */
+    Route::prefix('mechanics')->group(function () {
+        Route::get('/', [MechanicController::class, 'index'])->name('api.mechanics.index');
+        Route::post('/', [MechanicController::class, 'store'])->name('api.mechanics.store');
+
+        Route::prefix('{mechanic}')->group(function () {
+            Route::get('/', [MechanicController::class, 'show'])->name('api.mechanics.show');
+            Route::patch('/', [MechanicController::class, 'update'])->name('api.mechanics.update');
+
+            Route::post('archive', [MechanicArchiveController::class, 'store'])->name('api.mechanics.archive');
         });
     });
 

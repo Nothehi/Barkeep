@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\GameDesign\Presentation\Http\Controllers\Web\DesignRecordController;
 use Modules\GameDesign\Presentation\Http\Controllers\Web\GameController;
 use Modules\GameDesign\Presentation\Http\Controllers\Web\GameLifecycleController;
 use Modules\GameDesign\Presentation\Http\Controllers\Web\GameSettingsController;
@@ -46,6 +47,14 @@ Route::middleware(['auth', 'verified'])->prefix('app')->group(function () {
             Route::get('settings', [GameSettingsController::class, 'edit'])->name('games.settings.edit');
             Route::patch('/', [GameSettingsController::class, 'update'])->name('games.update');
             Route::post('archive', [GameSettingsController::class, 'archive'])->name('games.archive');
+
+            /*
+             * The design record. Its own endpoint rather than a widening of the
+             * game update above, because renaming a project and deciding what it
+             * is for are different acts — and the second is the one a
+             * methodology's factual criteria read.
+             */
+            Route::patch('design', [DesignRecordController::class, 'update'])->name('games.design.update');
 
             Route::post('status', [GameLifecycleController::class, 'changeStatus'])->name('games.status');
             Route::post('design-phase', [GameLifecycleController::class, 'changeDesignPhase'])->name('games.design-phase');

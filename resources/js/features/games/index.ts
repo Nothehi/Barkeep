@@ -8,19 +8,27 @@
 
 export {
     archiveGame,
+    archiveMechanic,
     changeDesignPhase,
     changeGameStatus,
     createGame,
     createGameVersion,
+    createMechanic,
     GameApiError,
     getGame,
     getGames,
     getGameVersions,
+    updateDesignRecord,
     updateGame,
+    updateMechanic,
 } from './api';
-export type { MutationOptions } from './api';
+export type { MechanicInput, MutationOptions } from './api';
 export { default as ChangeStatusDialog } from './components/change-status-dialog';
 export { default as CreateGameDialog } from './components/create-game-dialog';
+export { default as CreateMechanicDialog } from './components/create-mechanic-dialog';
+export { default as DesignRecordForm } from './components/design-record-form';
+export { default as MechanicList } from './components/mechanic-list';
+export { default as MechanicsPicker } from './components/mechanics-picker';
 export { default as CreateVersionDialog } from './components/create-version-dialog';
 export { default as DesignPhaseBadge } from './components/design-phase-badge';
 export { default as DesignPhasePicker } from './components/design-phase-picker';
@@ -39,6 +47,8 @@ export { useGames } from './hooks/use-games';
 export type { UseGamesResult } from './hooks/use-games';
 export { useGameVersions } from './hooks/use-game-versions';
 export type { UseGameVersionsResult } from './hooks/use-game-versions';
+export { useUpdateDesignRecord } from './hooks/use-update-design-record';
+export type { UseUpdateDesignRecordResult } from './hooks/use-update-design-record';
 export { useUpdateGame } from './hooks/use-update-game';
 export type { UseUpdateGameResult } from './hooks/use-update-game';
 export { default as GamePage } from './pages/game-page';
@@ -46,6 +56,8 @@ export { default as GamesPage } from './pages/games-page';
 export { default as GameSettingsPage } from './pages/game-settings-page';
 export { default as GameVersionPage } from './pages/game-version-page';
 export { default as GameVersionsPage } from './pages/game-versions-page';
+export { default as MechanicsPage } from './pages/mechanics-page';
+export * from './schemas/design-record';
 export * from './schemas/game';
 export type {
     DesignPhase,
@@ -59,3 +71,15 @@ export type {
     GameTransition,
     GameVersion,
 } from './types/game';
+export type {
+    Complexity,
+    ComplexityOptions,
+    DesignRecord,
+} from './types/design-record';
+export type {
+    Mechanic,
+    MechanicCategory,
+    MechanicOptions,
+    MechanicPermissions,
+    MechanicStatus,
+} from './types/mechanic';
