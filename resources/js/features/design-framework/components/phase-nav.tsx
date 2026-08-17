@@ -26,6 +26,11 @@ type PhaseNavProps = {
  * Each phase is a bordered row rather than a card, because a card carries
  * `py-6` of its own and an arc of ten of them is a page in its own right. This
  * is a table of contents; it should cost a glance, not a scroll.
+ *
+ * The name stays on one line and the description wraps. A phase name is an
+ * address — the thing being scanned for — and clipping it would make two
+ * stages of an arc look alike; the sentence under it is what says whether this
+ * is the stage you want, and is no use cut off at the first clause.
  */
 export default function PhaseNav({
     workspace,
@@ -66,7 +71,7 @@ export default function PhaseNav({
                             phase: phase.slug,
                         })}
                         className={cn(
-                            'flex items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors hover:border-primary/40 hover:bg-muted/50',
+                            'flex items-start justify-between gap-3 rounded-md border px-3 py-2 transition-colors hover:border-primary/40 hover:bg-muted/50',
                             current && 'border-primary bg-muted/50',
                         )}
                         data-test={`phase-link-${phase.slug}`}
@@ -77,7 +82,7 @@ export default function PhaseNav({
                             </span>
 
                             {phase.description && (
-                                <span className="block truncate text-xs text-muted-foreground">
+                                <span className="mt-0.5 block text-xs text-muted-foreground">
                                     {phase.description}
                                 </span>
                             )}
