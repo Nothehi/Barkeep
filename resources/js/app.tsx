@@ -20,6 +20,13 @@ createInertiaApp({
              */
             case name === 'workspaces/invitation':
                 return null;
+            /**
+             * Choosing a workspace comes before the signed-in shell, which
+             * has a switcher of its own — offering the choice twice on the
+             * same screen would only make it look optional.
+             */
+            case name === 'workspaces/select':
+                return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

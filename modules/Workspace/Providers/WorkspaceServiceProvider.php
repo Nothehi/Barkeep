@@ -3,8 +3,10 @@
 namespace Modules\Workspace\Providers;
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
@@ -14,6 +16,8 @@ use Modules\Workspace\Application\Queries\GetUserWorkspaces;
 use Modules\Workspace\Domain\Exceptions\WorkspaceRuleViolation;
 use Modules\Workspace\Domain\Models\Workspace;
 use Modules\Workspace\Domain\Policies\WorkspacePolicy;
+use Modules\Workspace\Infrastructure\Http\Middleware\EnsureWorkspaceIsSelected;
+use Modules\Workspace\Infrastructure\Session\ActiveWorkspace;
 use Modules\Workspace\Presentation\Http\Resources\WorkspaceResource;
 
 /**
@@ -31,8 +35,23 @@ class WorkspaceServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureAuthorization();
+        $this->configureMiddleware();
         $this->configureExceptionRendering();
         $this->configureSharedData();
+    }
+
+    /**
+     * Publish the module's middleware under a name routes can ask for.
+     *
+     * Registered here rather than in the application's HTTP kernel so that a
+     * route file only has to know the rule it wants — "a workspace has been
+     * chosen" — and nothing about how Workspace remembers the choice.
+     */
+    private function configureMiddleware(): void
+    {
+        $this->callAfterResolving(Router::class, function (Router $router): void {
+            $router->aliasMiddleware('workspace.selected', EnsureWorkspaceIsSelected::class);
+        });
     }
 
     /**
@@ -105,21 +124,37 @@ class WorkspaceServiceProvider extends ServiceProvider
 
             return [
                 'available' => WorkspaceResource::collection($workspaces)->resolve($request),
-                'current' => $this->currentWorkspaceSlug($request),
+                'current' => $this->currentWorkspaceSlug($request, $workspaces),
             ];
         });
     }
 
     /**
-     * The workspace the current URL is about, if any.
+     * The workspace the page is about.
      *
-     * Read from the resolved route binding rather than from client state, so
-     * "the current workspace" always means the one the server is serving.
+     * A URL that names a workspace answers this on its own, and its answer
+     * wins: the screen being served is about that workspace whatever was
+     * chosen earlier. Everywhere else — the dashboard, the platform-wide
+     * catalogues — it is the workspace the account chose after signing in.
+     *
+     * The chosen address is only reported back if it is still in the list the
+     * account may switch between, so a workspace somebody has left stops
+     * being named the moment the membership ends.
+     *
+     * @param  Collection<int, Workspace>  $workspaces
      */
-    private function currentWorkspaceSlug(Request $request): ?string
+    private function currentWorkspaceSlug(Request $request, Collection $workspaces): ?string
     {
         $workspace = $request->route()?->parameter('workspace');
 
-        return $workspace instanceof Workspace ? $workspace->slug : null;
+        if ($workspace instanceof Workspace) {
+            return $workspace->slug;
+        }
+
+        $chosen = $this->app->make(ActiveWorkspace::class)->slug();
+
+        return $workspaces->contains(fn (Workspace $available) => $available->slug === $chosen)
+            ? $chosen
+            : null;
     }
 }

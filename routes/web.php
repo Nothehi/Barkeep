@@ -4,7 +4,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+/*
+ * The app's own home, and so the screen every sign in lands on. It is gated on
+ * a chosen workspace: almost everything past here is about one, so an account
+ * that has not said which is asked before it gets any further.
+ */
+Route::middleware(['auth', 'verified', 'workspace.selected'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
 

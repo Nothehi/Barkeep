@@ -12,6 +12,7 @@ use Modules\Workspace\Application\Commands\CreateWorkspace;
 use Modules\Workspace\Application\Commands\LeaveWorkspace;
 use Modules\Workspace\Application\Queries\GetUserWorkspaces;
 use Modules\Workspace\Domain\Models\Workspace;
+use Modules\Workspace\Infrastructure\Session\ActiveWorkspace;
 use Modules\Workspace\Presentation\Http\Requests\CreateWorkspaceRequest;
 use Modules\Workspace\Presentation\Http\Resources\WorkspaceResource;
 
@@ -48,10 +49,19 @@ class WorkspaceController extends Controller
 
     /**
      * Open a new workspace and go straight into it.
+     *
+     * Creating one is also choosing it. Somebody who had nowhere to go was
+     * sent here by the chooser, and asking them to pick the workspace they
+     * just made would be a step about nothing.
      */
-    public function store(CreateWorkspaceRequest $request, CreateWorkspace $createWorkspace): RedirectResponse
-    {
+    public function store(
+        CreateWorkspaceRequest $request,
+        CreateWorkspace $createWorkspace,
+        ActiveWorkspace $activeWorkspace,
+    ): RedirectResponse {
         $workspace = $createWorkspace->handle($request->user(), $request->toData());
+
+        $activeWorkspace->remember($workspace);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Workspace created.')]);
 
@@ -73,11 +83,17 @@ class WorkspaceController extends Controller
     /**
      * Leave the workspace.
      */
-    public function leave(Request $request, Workspace $workspace, LeaveWorkspace $leaveWorkspace): RedirectResponse
-    {
+    public function leave(
+        Request $request,
+        Workspace $workspace,
+        LeaveWorkspace $leaveWorkspace,
+        ActiveWorkspace $activeWorkspace,
+    ): RedirectResponse {
         Gate::authorize('leave', $workspace);
 
         $leaveWorkspace->handle($request->user(), $workspace);
+
+        $activeWorkspace->forgetIf($workspace);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('You have left the workspace.')]);
 

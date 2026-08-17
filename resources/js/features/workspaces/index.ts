@@ -41,6 +41,7 @@ export { useWorkspacePermissions } from './hooks/use-workspace-permissions';
 export { useWorkspaces } from './hooks/use-workspaces';
 export type { UseWorkspacesResult } from './hooks/use-workspaces';
 export { default as CreateWorkspacePage } from './pages/create-workspace-page';
+export { default as SelectWorkspacePage } from './pages/select-workspace-page';
 export { default as WorkspaceInvitationPage } from './pages/workspace-invitation-page';
 export { default as WorkspaceListPage } from './pages/workspace-list-page';
 export { default as WorkspaceMembersPage } from './pages/workspace-members-page';

@@ -15,7 +15,7 @@ test('the authenticated account is shared with every page', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get(route('dashboard'))
+        ->get(route('profile.edit'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('auth.user.id', $user->id)
             ->where('auth.user.name', $user->name)
@@ -29,7 +29,7 @@ test('no authentication secret is ever shared with the client', function () {
     $user = User::factory()->withTwoFactor()->create();
 
     $this->actingAs($user)
-        ->get(route('dashboard'))
+        ->get(route('profile.edit'))
         ->assertInertia(fn (Assert $page) => $page
             ->missing('auth.user.password')
             ->missing('auth.user.remember_token')
