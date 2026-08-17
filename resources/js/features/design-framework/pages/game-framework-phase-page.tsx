@@ -157,8 +157,14 @@ export default function GameFrameworkPhasePage({
                      *
                      * The 3rem subtracted is the 1.5rem offset above it and the
                      * same again below, so the list never runs to the edge.
+                     *
+                     * Both axes are named. A box cannot scroll on one axis and
+                     * stay visible on the other, so asking for `overflow-y`
+                     * alone silently makes `overflow-x` scrollable too and puts
+                     * a horizontal scrollbar under a list that has nothing to
+                     * scroll sideways to.
                      */}
-                    <aside className="lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-1">
+                    <aside className="lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:self-start lg:overflow-x-hidden lg:overflow-y-auto lg:pr-1">
                         <PhaseNav
                             workspace={workspace.slug}
                             game={game.slug}
