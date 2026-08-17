@@ -146,7 +146,12 @@ export default function GameFrameworkPhasePage({
                     </Alert>
                 )}
 
-                <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
+                {/*
+                 * The nav column is 28rem to line its right edge up with the
+                 * "This phase" bar above it, which is capped at `max-w-md`. The
+                 * two are meant to match: change one and change the other.
+                 */}
+                <div className="grid gap-6 lg:grid-cols-[28rem_1fr]">
                     {/*
                      * The sticky nav is bounded to the viewport and scrolls
                      * inside itself. Without that it is only well behaved for
