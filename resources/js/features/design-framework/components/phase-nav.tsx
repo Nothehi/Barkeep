@@ -31,6 +31,11 @@ type PhaseNavProps = {
  * address — the thing being scanned for — and clipping it would make two
  * stages of an arc look alike; the sentence under it is what says whether this
  * is the stage you want, and is no use cut off at the first clause.
+ *
+ * Every row is the same height. `auto-rows-fr` sizes them all to the tallest
+ * rather than to their own content, so a wrapping description does not make
+ * one stage of the arc look more substantial than the next — the rows are a
+ * list of equals, and ragged ones read as a ranking.
  */
 export default function PhaseNav({
     workspace,
@@ -54,7 +59,7 @@ export default function PhaseNav({
 
     return (
         <nav
-            className="grid gap-1"
+            className="grid auto-rows-fr gap-1"
             aria-label="Framework phases"
             data-test="phase-nav"
         >
