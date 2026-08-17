@@ -153,23 +153,14 @@ export default function GameFrameworkPhasePage({
                  */}
                 <div className="grid gap-6 lg:grid-cols-[28rem_1fr]">
                     {/*
-                     * The sticky nav is bounded to the viewport and scrolls
-                     * inside itself. Without that it is only well behaved for
-                     * short methodologies: a ten phase arc is taller than most
-                     * screens, and a sticky block taller than its scrollport
-                     * pins at the top with its bottom hanging past the fold,
-                     * where it sits over whatever scrolls underneath it.
-                     *
-                     * The 3rem subtracted is the 1.5rem offset above it and the
-                     * same again below, so the list never runs to the edge.
-                     *
-                     * Both axes are named. A box cannot scroll on one axis and
-                     * stay visible on the other, so asking for `overflow-y`
-                     * alone silently makes `overflow-x` scrollable too and puts
-                     * a horizontal scrollbar under a list that has nothing to
-                     * scroll sideways to.
+                     * The nav scrolls with the page rather than pinning to it.
+                     * A ten phase arc with a wrapping description under each
+                     * name is taller than the screen, and a sticky block taller
+                     * than its scrollport has to choose between hanging past
+                     * the fold over the content below and carrying a scrollbar
+                     * of its own. Neither is worth a nav that follows you down.
                      */}
-                    <aside className="lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:self-start lg:overflow-x-hidden lg:overflow-y-auto lg:pr-1">
+                    <aside>
                         <PhaseNav
                             workspace={workspace.slug}
                             game={game.slug}
