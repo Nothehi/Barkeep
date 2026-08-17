@@ -12,7 +12,7 @@ $laterContexts = [
     'Modules\Analytics',
     'Modules\Community',
     'Modules\Content',
-    'Modules\Framework',
+    'Modules\DesignFramework',
     'Modules\Gamification',
     'Modules\Moderation',
     'Modules\Playtesting',

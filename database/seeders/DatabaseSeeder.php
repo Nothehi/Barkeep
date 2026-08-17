@@ -21,5 +21,13 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        /*
+         * The design framework is content rather than test data: a designer cannot
+         * adopt a methodology nobody has written, so a fresh install ships with
+         * Barkeep's own. The seeder is idempotent and keyed by address, so running
+         * it again edits rather than duplicates.
+         */
+        $this->call(DesignFrameworkSeeder::class);
     }
 }
