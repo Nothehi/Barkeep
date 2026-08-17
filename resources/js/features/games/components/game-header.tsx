@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import {
+    Compass,
     FlaskConical,
     GitBranch,
     LayoutDashboard,
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
 import games from '@/routes/games';
+import framework from '@/routes/games/framework';
 import versions from '@/routes/games/versions';
 import playtests from '@/routes/playtests';
 import { useGamePermissions } from '../hooks/use-game-permissions';
@@ -41,6 +43,7 @@ export default function GameHeader({ game, workspace }: GameHeaderProps) {
     const overviewUrl = games.show({ workspace, game: game.slug });
     const versionsUrl = versions.index({ workspace, game: game.slug });
     const playtestsUrl = playtests.index({ workspace, game: game.slug });
+    const frameworkUrl = framework.show({ workspace, game: game.slug });
     const settingsUrl = games.settings.edit({ workspace, game: game.slug });
 
     const tabs = [
@@ -55,6 +58,12 @@ export default function GameHeader({ game, workspace }: GameHeaderProps) {
             url: playtestsUrl,
             label: 'Playtests',
             icon: FlaskConical,
+            shown: true,
+        },
+        {
+            url: frameworkUrl,
+            label: 'Framework',
+            icon: Compass,
             shown: true,
         },
         {

@@ -4,6 +4,7 @@ import {
     FolderGit2,
     Gamepad2,
     LayoutGrid,
+    Library,
     Boxes,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useWorkspaces, WorkspaceSwitcher } from '@/features/workspaces';
 import { dashboard } from '@/routes';
+import frameworks from '@/routes/frameworks';
 import games from '@/routes/games';
 import workspaces from '@/routes/workspaces';
 import type { NavItem } from '@/types';
@@ -38,6 +40,17 @@ const mainNavItems: NavItem[] = [
         title: 'Workspaces',
         href: workspaces.index(),
         icon: Boxes,
+    },
+    /*
+     * Sits beside workspaces rather than inside one, because that is the truth
+     * about the domain: a methodology is the platform's, not a studio's. The
+     * catalogue is readable by everybody; only the accounts configured to
+     * administer frameworks can write one, and the screen says so itself.
+     */
+    {
+        title: 'Frameworks',
+        href: frameworks.index(),
+        icon: Library,
     },
 ];
 
