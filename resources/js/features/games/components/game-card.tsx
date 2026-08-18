@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { GitBranch } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslation } from '@/lib/i18n';
 import games from '@/routes/games';
 import type { GameSummary } from '../types/game';
 import DesignPhaseBadge from './design-phase-badge';
@@ -19,6 +20,8 @@ type GameCardProps = {
  * and how far each one has got.
  */
 export default function GameCard({ game, workspace }: GameCardProps) {
+    const { choice } = useTranslation();
+
     return (
         <Card className="relative transition-colors hover:border-ring">
             <CardHeader>
@@ -26,19 +29,23 @@ export default function GameCard({ game, workspace }: GameCardProps) {
                     <Link
                         href={games.show({ workspace, game: game.slug })}
                         className="block truncate after:absolute after:inset-0"
+                        dir="auto"
                     >
                         {game.name}
                     </Link>
                 </CardTitle>
 
-                <p className="truncate text-sm text-muted-foreground">
+                <p className="truncate text-sm text-muted-foreground" dir="ltr">
                     /{game.slug}
                 </p>
             </CardHeader>
 
             <CardContent className="space-y-3">
                 {game.description && (
-                    <p className="line-clamp-2 text-sm text-muted-foreground">
+                    <p
+                        className="line-clamp-2 text-sm text-muted-foreground"
+                        dir="auto"
+                    >
                         {game.description}
                     </p>
                 )}
@@ -58,10 +65,10 @@ export default function GameCard({ game, workspace }: GameCardProps) {
                     game.versions_count > 0 && (
                         <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                             <GitBranch className="size-4" />
-                            {game.versions_count}
-                            {game.versions_count === 1
-                                ? ' version'
-                                : ' versions'}
+                            {choice(
+                                ':count version|:count versions',
+                                game.versions_count,
+                            )}
                         </p>
                     )}
             </CardContent>

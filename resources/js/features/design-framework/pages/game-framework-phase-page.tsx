@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { Game } from '@/features/games';
 import type { Workspace } from '@/features/workspaces';
+import { useTranslation } from '@/lib/i18n';
 import framework from '@/routes/games/framework';
 import AdoptionStatusBadge from '../components/adoption-status-badge';
 import ChecklistPanel from '../components/checklist-panel';
@@ -87,6 +88,7 @@ export default function GameFrameworkPhasePage({
     design,
     options,
 }: GameFrameworkPhasePageProps) {
+    const { t } = useTranslation();
     const canRecord = adoption.permissions.canRecordProgress;
     const here = progress.phase_progress.find(
         (entry) => entry.phase_id === phase.id,
@@ -94,30 +96,41 @@ export default function GameFrameworkPhasePage({
 
     return (
         <>
-            <Head title={`${phase.name} · ${game.name}`} />
+            <Head
+                title={t(':phase · :game', {
+                    phase: phase.name,
+                    game: game.name,
+                })}
+            />
 
             <div className="space-y-6 px-4 py-6">
-                <Button size="sm" variant="ghost" asChild className="-ml-2">
+                <Button size="sm" variant="ghost" asChild className="-ms-2">
                     <Link
                         href={framework.show.url({
                             workspace: workspace.slug,
                             game: game.slug,
                         })}
                     >
-                        <ChevronLeft className="size-4" />
-                        {game.name}&nbsp;· Framework
+                        <ChevronLeft className="size-4 rtl:rotate-180" />
+                        {t(':game · Framework', { game: game.name })}
                     </Link>
                 </Button>
 
                 <header className="space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 space-y-1">
-                            <h1 className="truncate text-xl font-semibold tracking-tight">
+                            <h1
+                                className="truncate text-xl font-semibold tracking-tight"
+                                dir="auto"
+                            >
                                 {phase.name}
                             </h1>
 
                             {phase.description && (
-                                <p className="max-w-3xl text-sm text-muted-foreground">
+                                <p
+                                    className="max-w-3xl text-sm text-muted-foreground"
+                                    dir="auto"
+                                >
                                     {phase.description}
                                 </p>
                             )}
@@ -131,7 +144,7 @@ export default function GameFrameworkPhasePage({
 
                     {here && !here.is_empty && (
                         <ProgressBar
-                            label="This phase"
+                            label={t('This phase')}
                             ratio={here.overall}
                             className="max-w-md"
                         />
@@ -145,13 +158,19 @@ export default function GameFrameworkPhasePage({
                  */}
                 {!canRecord && (
                     <Alert data-test="progress-closed">
-                        <AlertTitle>This framework is read-only</AlertTitle>
+                        <AlertTitle>
+                            {t('This framework is read-only')}
+                        </AlertTitle>
                         <AlertDescription>
                             {adoption.status === 'paused'
-                                ? 'The framework is paused. Resume it to record more work.'
+                                ? t(
+                                      'The framework is paused. Resume it to record more work.',
+                                  )
                                 : adoption.status === 'completed'
-                                  ? 'This game has finished working through its framework. Everything it recorded is still here.'
-                                  : 'This game is not accepting changes.'}
+                                  ? t(
+                                        'This game has finished working through its framework. Everything it recorded is still here.',
+                                    )
+                                  : t('This game is not accepting changes.')}
                         </AlertDescription>
                     </Alert>
                 )}

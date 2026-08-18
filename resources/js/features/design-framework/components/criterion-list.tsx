@@ -8,6 +8,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { evaluateCriterion } from '../api';
 import type {
@@ -59,6 +60,8 @@ export default function CriterionList({
     design,
     canRecord,
 }: CriterionListProps) {
+    const { t } = useTranslation();
+
     const byCriterion = new Map(
         evaluations.map((evaluation) => [evaluation.criterion_id, evaluation]),
     );
@@ -69,7 +72,7 @@ export default function CriterionList({
 
     return (
         <section className="space-y-3" data-test="criterion-list">
-            <h2 className="text-sm font-medium">Criteria</h2>
+            <h2 className="text-sm font-medium">{t('Criteria')}</h2>
 
             <div className="grid gap-3">
                 {criteria.map((criterion) => (
@@ -115,6 +118,7 @@ function CriterionRow({
     design,
     canRecord,
 }: CriterionRowProps) {
+    const { t } = useTranslation();
     const [pending, setPending] = useState<CriterionRating | null>(null);
     const [notes, setNotes] = useState(evaluation?.notes ?? '');
     const [editingNotes, setEditingNotes] = useState(false);
@@ -137,10 +141,12 @@ function CriterionRow({
 
     const header = (
         <CardHeader className="gap-1">
-            <span className="font-medium">{criterion.title}</span>
+            <span className="font-medium" dir="auto">
+                {criterion.title}
+            </span>
 
             {criterion.description && (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground" dir="auto">
                     {criterion.description}
                 </span>
             )}
@@ -160,7 +166,7 @@ function CriterionRow({
 
                 <CardContent>
                     <AnsweredFromDesign
-                        label={criterion.satisfied_by_label ?? 'this'}
+                        label={criterion.satisfied_by_label ?? t('this')}
                         recorded={
                             design.facts[criterion.satisfied_by ?? ''] ?? false
                         }
@@ -216,7 +222,7 @@ function CriterionRow({
                             value={notes}
                             onChange={(event) => setNotes(event.target.value)}
                             onFocus={() => setEditingNotes(true)}
-                            placeholder="Why this grade?"
+                            placeholder={t('Why this grade?')}
                             rows={2}
                             data-test={`criterion-notes-${criterion.id}`}
                         />
@@ -228,7 +234,7 @@ function CriterionRow({
                                 disabled={pending !== null}
                                 onClick={() => grade(evaluation.status)}
                             >
-                                Save note
+                                {t('Save note')}
                             </Button>
                         )}
                     </div>
@@ -240,14 +246,14 @@ function CriterionRow({
                             onClick={() => setEditingNotes(true)}
                             data-test={`criterion-add-note-${criterion.id}`}
                         >
-                            Add a note
+                            {t('Add a note')}
                         </Button>
                     )
                 )}
 
                 {evaluation === null && (
                     <p className="text-xs text-muted-foreground">
-                        Not assessed yet.
+                        {t('Not assessed yet.')}
                     </p>
                 )}
             </CardContent>

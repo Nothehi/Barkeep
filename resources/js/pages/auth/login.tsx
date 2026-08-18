@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { LoginForm } from '@/features/auth';
+import { useTranslation } from '@/lib/i18n';
 
 type Props = {
     status?: string;
@@ -7,9 +8,11 @@ type Props = {
 };
 
 export default function Login({ status, canResetPassword }: Props) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title="Log in" />
+            <Head title={t('Log in')} />
 
             <LoginForm status={status} canResetPassword={canResetPassword} />
         </>

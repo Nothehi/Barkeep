@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { Layers } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useTranslation } from '@/lib/i18n';
 import frameworks from '@/routes/frameworks';
 import type { Framework } from '../types/framework';
 import FrameworkStatusBadge from './framework-status-badge';
@@ -18,6 +19,7 @@ type FrameworkCardProps = {
  * nothing about whether there is anything here to adopt.
  */
 export default function FrameworkCard({ framework }: FrameworkCardProps) {
+    const { t, choice } = useTranslation();
     const latest = framework.latest_version ?? null;
 
     return (
@@ -30,6 +32,7 @@ export default function FrameworkCard({ framework }: FrameworkCardProps) {
                         })}
                         className="min-w-0 font-medium hover:underline"
                         data-test={`framework-link-${framework.slug}`}
+                        dir="auto"
                     >
                         {framework.name}
                     </Link>
@@ -43,7 +46,10 @@ export default function FrameworkCard({ framework }: FrameworkCardProps) {
 
             <CardContent className="space-y-3">
                 {framework.description && (
-                    <p className="line-clamp-2 text-sm text-muted-foreground">
+                    <p
+                        className="line-clamp-2 text-sm text-muted-foreground"
+                        dir="auto"
+                    >
                         {framework.description}
                     </p>
                 )}
@@ -51,14 +57,17 @@ export default function FrameworkCard({ framework }: FrameworkCardProps) {
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
                         <Layers className="size-3.5" />
-                        {latest ? `Latest ${latest.label}` : 'No editions yet'}
+                        {latest
+                            ? t('Latest :edition', { edition: latest.label })
+                            : t('No editions yet')}
                     </span>
 
                     {framework.versions_count !== undefined && (
                         <span>
-                            {framework.versions_count === 1
-                                ? '1 edition'
-                                : `${framework.versions_count} editions`}
+                            {choice(
+                                ':count edition|:count editions',
+                                framework.versions_count,
+                            )}
                         </span>
                     )}
                 </div>

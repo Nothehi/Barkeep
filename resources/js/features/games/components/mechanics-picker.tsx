@@ -1,5 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useTranslation } from '@/lib/i18n';
 import type { Mechanic } from '../types/mechanic';
 
 type MechanicsPickerProps = {
@@ -36,13 +37,17 @@ export default function MechanicsPicker({
     onChange,
     disabled = false,
 }: MechanicsPickerProps) {
+    const { t } = useTranslation();
+
     if (mechanics.length === 0) {
         return (
             <p
                 className="rounded-md border border-dashed px-3 py-4 text-sm text-muted-foreground"
                 data-test="mechanics-picker-empty"
             >
-                The vocabulary is empty, so there is nothing to claim yet.
+                {t(
+                    'The vocabulary is empty, so there is nothing to claim yet.',
+                )}
             </p>
         );
     }
@@ -91,6 +96,7 @@ export default function MechanicsPicker({
                                 title={mechanic.description ?? undefined}
                                 className="rounded-md border"
                                 data-test={`mechanic-toggle-${mechanic.slug}`}
+                                dir="auto"
                             >
                                 {mechanic.name}
                             </ToggleGroupItem>

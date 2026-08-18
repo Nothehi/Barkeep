@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { GitBranch, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useTranslation } from '@/lib/i18n';
 import versions from '@/routes/frameworks/versions';
 import type { Framework, FrameworkVersion } from '../types/framework';
 import FrameworkStatusBadge from './framework-status-badge';
@@ -22,6 +23,8 @@ export default function VersionList({
     framework,
     versions: editions,
 }: VersionListProps) {
+    const { t, choice } = useTranslation();
+
     if (editions.length === 0) {
         return (
             <div
@@ -30,11 +33,12 @@ export default function VersionList({
             >
                 <GitBranch className="size-6 text-muted-foreground" />
 
-                <p className="text-sm font-medium">No editions yet</p>
+                <p className="text-sm font-medium">{t('No editions yet')}</p>
 
                 <p className="max-w-md text-sm text-muted-foreground">
-                    An edition is where the phases, criteria and practices
-                    actually live. Cut one to start writing.
+                    {t(
+                        'An edition is where the phases, criteria and practices actually live. Cut one to start writing.',
+                    )}
                 </p>
             </div>
         );
@@ -56,7 +60,10 @@ export default function VersionList({
                             >
                                 {edition.label}
                                 {edition.name && (
-                                    <span className="ml-2 font-normal text-muted-foreground">
+                                    <span
+                                        className="ms-2 font-normal text-muted-foreground"
+                                        dir="auto"
+                                    >
                                         {edition.name}
                                     </span>
                                 )}
@@ -71,7 +78,10 @@ export default function VersionList({
 
                     <CardContent className="space-y-3">
                         {edition.description && (
-                            <p className="line-clamp-2 text-sm text-muted-foreground">
+                            <p
+                                className="line-clamp-2 text-sm text-muted-foreground"
+                                dir="auto"
+                            >
                                 {edition.description}
                             </p>
                         )}
@@ -79,23 +89,25 @@ export default function VersionList({
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                             {edition.phases_count !== undefined && (
                                 <span>
-                                    {edition.phases_count === 1
-                                        ? '1 phase'
-                                        : `${edition.phases_count} phases`}
+                                    {choice(
+                                        ':count phase|:count phases',
+                                        edition.phases_count,
+                                    )}
                                 </span>
                             )}
 
                             {edition.adoptions_count !== undefined && (
                                 <span className="inline-flex items-center gap-1.5">
                                     <Users className="size-3.5" />
-                                    {edition.adoptions_count === 1
-                                        ? '1 game following'
-                                        : `${edition.adoptions_count} games following`}
+                                    {choice(
+                                        ':count game following|:count games following',
+                                        edition.adoptions_count,
+                                    )}
                                 </span>
                             )}
 
                             {edition.is_editable && (
-                                <span>Still being written</span>
+                                <span>{t('Still being written')}</span>
                             )}
                         </div>
                     </CardContent>

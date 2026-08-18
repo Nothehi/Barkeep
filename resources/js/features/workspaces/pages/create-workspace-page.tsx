@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { useCreateWorkspace } from '../hooks/use-create-workspace';
 
 /**
@@ -16,6 +17,7 @@ import { useCreateWorkspace } from '../hooks/use-create-workspace';
  * along; if it was typed by hand the server says so instead of renaming it.
  */
 export default function CreateWorkspacePage() {
+    const { t } = useTranslation();
     const {
         input,
         errors,
@@ -29,12 +31,14 @@ export default function CreateWorkspacePage() {
 
     return (
         <>
-            <Head title="Create workspace" />
+            <Head title={t('Create workspace')} />
 
             <div className="mx-auto max-w-xl space-y-6 px-4 py-6">
                 <Heading
-                    title="Create a workspace"
-                    description="A workspace is where you and your collaborators design a game"
+                    title={t('Create a workspace')}
+                    description={t(
+                        'A workspace is where you and your collaborators design a game',
+                    )}
                 />
 
                 <form
@@ -45,14 +49,14 @@ export default function CreateWorkspacePage() {
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">{t('Name')}</Label>
 
                         <Input
                             id="name"
                             name="name"
                             value={input.name}
                             onChange={(event) => setName(event.target.value)}
-                            placeholder="My Board Game Studio"
+                            placeholder={t('My Board Game Studio')}
                             autoFocus
                             required
                         />
@@ -61,7 +65,7 @@ export default function CreateWorkspacePage() {
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="slug">Address</Label>
+                        <Label htmlFor="slug">{t('Address')}</Label>
 
                         <Input
                             id="slug"
@@ -83,9 +87,9 @@ export default function CreateWorkspacePage() {
 
                     <div className="grid gap-2">
                         <Label htmlFor="description">
-                            Description{' '}
+                            {t('Description')}{' '}
                             <span className="text-muted-foreground">
-                                (optional)
+                                {t('(optional)')}
                             </span>
                         </Label>
 
@@ -96,7 +100,7 @@ export default function CreateWorkspacePage() {
                             onChange={(event) =>
                                 setDescription(event.target.value)
                             }
-                            placeholder="What is this workspace for?"
+                            placeholder={t('What is this workspace for?')}
                             rows={3}
                         />
 
@@ -109,7 +113,7 @@ export default function CreateWorkspacePage() {
                         data-test="submit-create-workspace-button"
                     >
                         {processing && <Spinner />}
-                        Create workspace
+                        {t('Create workspace')}
                     </Button>
                 </form>
             </div>

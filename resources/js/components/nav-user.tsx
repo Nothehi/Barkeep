@@ -14,11 +14,13 @@ import {
 import { UserInfo } from '@/components/user-info';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLocale } from '@/lib/i18n';
 
 export function NavUser() {
     const { auth } = usePage().props;
     const { state } = useSidebar();
     const isMobile = useIsMobile();
+    const { direction } = useLocale();
 
     if (!auth.user) {
         return null;
@@ -35,17 +37,24 @@ export function NavUser() {
                             data-test="sidebar-menu-button"
                         >
                             <UserInfo user={auth.user} />
-                            <ChevronsUpDown className="ml-auto size-4" />
+                            <ChevronsUpDown className="ms-auto size-4" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
                         align="end"
+                        /**
+                         * A collapsed sidebar opens its menu away from the
+                         * rail, which is the right-hand side when the rail
+                         * itself has moved to the right.
+                         */
                         side={
                             isMobile
                                 ? 'bottom'
                                 : state === 'collapsed'
-                                  ? 'left'
+                                  ? direction === 'rtl'
+                                      ? 'right'
+                                      : 'left'
                                   : 'bottom'
                         }
                     >

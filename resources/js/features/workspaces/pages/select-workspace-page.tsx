@@ -5,6 +5,7 @@ import AppLogoIcon from '@/components/app-logo-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/lib/i18n';
 import workspaces from '@/routes/workspaces';
 import type { Workspace } from '../types/workspace';
 
@@ -27,6 +28,7 @@ type SelectWorkspacePageProps = {
 export default function SelectWorkspacePage({
     workspaces: { data },
 }: SelectWorkspacePageProps) {
+    const { t, choice } = useTranslation();
     const [selecting, setSelecting] = useState<string | null>(null);
 
     const choose = (workspace: Workspace) => {
@@ -41,7 +43,7 @@ export default function SelectWorkspacePage({
 
     return (
         <>
-            <Head title="Choose a workspace" />
+            <Head title={t('Choose a workspace')} />
 
             <div className="mx-auto flex min-h-svh max-w-md flex-col justify-center gap-8 px-4 py-12">
                 <div className="flex flex-col items-center gap-4">
@@ -49,13 +51,13 @@ export default function SelectWorkspacePage({
 
                     <div className="space-y-2 text-center">
                         <h1 className="text-xl font-medium">
-                            Choose a workspace
+                            {t('Choose a workspace')}
                         </h1>
 
                         <p className="text-sm text-muted-foreground">
-                            Your games, playtests and framework progress all
-                            live in a workspace. Pick the one you want to work
-                            in.
+                            {t(
+                                'Your games, playtests and framework progress all live in a workspace. Pick the one you want to work in.',
+                            )}
                         </p>
                     </div>
                 </div>
@@ -68,11 +70,14 @@ export default function SelectWorkspacePage({
                                 onClick={() => choose(workspace)}
                                 disabled={selecting !== null}
                                 data-test={`select-workspace-${workspace.slug}`}
-                                className="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors hover:border-ring disabled:opacity-60"
+                                className="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-start transition-colors hover:border-ring disabled:opacity-60"
                             >
                                 <span className="min-w-0 flex-1">
                                     <span className="flex items-center gap-2">
-                                        <span className="truncate font-medium">
+                                        <span
+                                            className="truncate font-medium"
+                                            dir="auto"
+                                        >
                                             {workspace.name}
                                         </span>
 
@@ -82,7 +87,7 @@ export default function SelectWorkspacePage({
                                                 className="shrink-0"
                                             >
                                                 <Archive />
-                                                Archived
+                                                {t('Archived')}
                                             </Badge>
                                         )}
                                     </span>
@@ -90,10 +95,10 @@ export default function SelectWorkspacePage({
                                     {workspace.members_count !== undefined && (
                                         <span className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
                                             <Users className="size-4" />
-                                            {workspace.members_count}
-                                            {workspace.members_count === 1
-                                                ? ' member'
-                                                : ' members'}
+                                            {choice(
+                                                ':count member|:count members',
+                                                workspace.members_count,
+                                            )}
                                         </span>
                                     )}
                                 </span>
@@ -107,7 +112,7 @@ export default function SelectWorkspacePage({
                 <Button variant="outline" asChild>
                     <Link href={workspaces.create()}>
                         <Plus className="size-4" />
-                        Create a new workspace
+                        {t('Create a new workspace')}
                     </Link>
                 </Button>
             </div>

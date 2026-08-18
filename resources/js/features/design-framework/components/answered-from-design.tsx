@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { Check, PencilLine } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 type AnsweredFromDesignProps = {
@@ -33,6 +34,8 @@ export default function AnsweredFromDesign({
     settingsUrl,
     className,
 }: AnsweredFromDesignProps) {
+    const { t } = useTranslation();
+
     if (recorded) {
         return (
             <p
@@ -43,7 +46,7 @@ export default function AnsweredFromDesign({
                 data-test="answered-from-design"
             >
                 <Check className="size-4 text-primary" />
-                Answered by {label} in this game&apos;s design.
+                {t("Answered by :label in this game's design.", { label })}
             </p>
         );
     }
@@ -58,7 +61,7 @@ export default function AnsweredFromDesign({
             data-test="unanswered-from-design"
         >
             <PencilLine className="size-4" />
-            Record {label} to answer this.
+            {t('Record :label to answer this.', { label })}
         </Link>
     );
 }

@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { useAuth } from '@/features/auth';
+import { useTranslation } from '@/lib/i18n';
 import InviteMemberDialog from '../components/invite-member-dialog';
 import WorkspaceHeader from '../components/workspace-header';
 import WorkspaceInvitationList from '../components/workspace-invitation-list';
@@ -31,10 +32,13 @@ export default function WorkspaceMembersPage({
 }: WorkspaceMembersPageProps) {
     const { user } = useAuth();
     const permissions = useWorkspacePermissions(workspace);
+    const { t } = useTranslation();
 
     return (
         <>
-            <Head title={`Members · ${workspace.name}`} />
+            <Head
+                title={t('Members · :workspace', { workspace: workspace.name })}
+            />
 
             <div className="space-y-8 px-4 py-6">
                 <WorkspaceHeader workspace={workspace} />
@@ -43,8 +47,10 @@ export default function WorkspaceMembersPage({
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <Heading
                             variant="small"
-                            title="Members"
-                            description="Everyone who can work in this workspace"
+                            title={t('Members')}
+                            description={t(
+                                'Everyone who can work in this workspace',
+                            )}
                         />
 
                         {permissions.canInviteMembers && (
@@ -63,8 +69,10 @@ export default function WorkspaceMembersPage({
                     <section className="space-y-4">
                         <Heading
                             variant="small"
-                            title="Pending invitations"
-                            description="Invitations that have been sent but not accepted yet"
+                            title={t('Pending invitations')}
+                            description={t(
+                                'Invitations that have been sent but not accepted yet',
+                            )}
                         />
 
                         <WorkspaceInvitationList

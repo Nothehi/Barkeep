@@ -1,6 +1,7 @@
 import { Clock, Eye, Layers, MessageSquare, Star, Users } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import type { PlaytestMetrics } from '../types/playtest';
 
 type PlaytestSummaryProps = {
@@ -26,56 +27,69 @@ type Figure = {
  * duration of zero. Nothing here invents a number to fill a space.
  */
 export default function PlaytestSummary({ summary }: PlaytestSummaryProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
+
     const figures: Figure[] = [
         {
-            label: 'Sessions',
-            value: summary.session_count.toString(),
+            label: t('Sessions'),
+            value: formatNumber(summary.session_count),
             hint:
                 summary.session_count === 0
                     ? undefined
-                    : `${summary.completed_session_count} completed`,
+                    : t(':count completed', {
+                          count: formatNumber(summary.completed_session_count),
+                      }),
             icon: Layers,
         },
         {
-            label: 'Participants',
-            value: summary.participant_count.toString(),
+            label: t('Participants'),
+            value: formatNumber(summary.participant_count),
             hint:
                 summary.participant_count === 0
                     ? undefined
-                    : `${summary.player_count} playing`,
+                    : t(':count playing', {
+                          count: formatNumber(summary.player_count),
+                      }),
             icon: Users,
         },
         {
-            label: 'Observations',
-            value: summary.observation_count.toString(),
+            label: t('Observations'),
+            value: formatNumber(summary.observation_count),
             icon: Eye,
         },
         {
-            label: 'Feedback',
-            value: summary.feedback_count.toString(),
+            label: t('Feedback'),
+            value: formatNumber(summary.feedback_count),
             hint:
                 summary.rated_feedback_count === 0
                     ? undefined
-                    : `${summary.rated_feedback_count} rated`,
+                    : t(':count rated', {
+                          count: formatNumber(summary.rated_feedback_count),
+                      }),
             icon: MessageSquare,
         },
         {
-            label: 'Average rating',
+            label: t('Average rating'),
             value:
                 summary.average_feedback_rating === null
                     ? '—'
-                    : summary.average_feedback_rating.toFixed(1),
+                    : formatNumber(
+                          Number(summary.average_feedback_rating.toFixed(1)),
+                      ),
             hint:
                 summary.average_feedback_rating === null
-                    ? 'Nobody scored it'
-                    : 'out of 5',
+                    ? t('Nobody scored it')
+                    : t('out of 5'),
             icon: Star,
         },
         {
-            label: 'Average session',
+            label: t('Average session'),
             value: summary.average_session_duration_label ?? '—',
             hint: summary.total_duration_label
-                ? `${summary.total_duration_label} in total`
+                ? t(':duration in total', {
+                      duration: summary.total_duration_label,
+                  })
                 : undefined,
             icon: Clock,
         },

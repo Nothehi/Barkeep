@@ -21,6 +21,7 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLocale, useTranslation } from '@/lib/i18n';
 import workspaces from '@/routes/workspaces';
 import { useWorkspaces } from '../hooks/use-workspaces';
 
@@ -41,6 +42,8 @@ export default function WorkspaceSwitcher() {
     const { workspaces: available, current, hasWorkspaces } = useWorkspaces();
     const { state } = useSidebar();
     const isMobile = useIsMobile();
+    const { t } = useTranslation();
+    const { direction } = useLocale();
 
     if (!hasWorkspaces) {
         return (
@@ -50,7 +53,7 @@ export default function WorkspaceSwitcher() {
                         <Link href={workspaces.create()}>
                             <Plus className="size-4" />
                             <span className="truncate font-medium">
-                                Create workspace
+                                {t('Create workspace')}
                             </span>
                         </Link>
                     </SidebarMenuButton>
@@ -70,10 +73,10 @@ export default function WorkspaceSwitcher() {
                             data-test="workspace-switcher"
                         >
                             <LayoutGrid className="size-4 shrink-0" />
-                            <span className="truncate font-medium">
-                                {current?.name ?? 'Workspaces'}
+                            <span className="truncate font-medium" dir="auto">
+                                {current?.name ?? t('Workspaces')}
                             </span>
-                            <ChevronsUpDown className="ml-auto size-4" />
+                            <ChevronsUpDown className="ms-auto size-4" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
 
@@ -84,12 +87,14 @@ export default function WorkspaceSwitcher() {
                             isMobile
                                 ? 'bottom'
                                 : state === 'collapsed'
-                                  ? 'right'
+                                  ? direction === 'rtl'
+                                      ? 'left'
+                                      : 'right'
                                   : 'bottom'
                         }
                     >
                         <DropdownMenuLabel className="text-xs text-muted-foreground">
-                            Workspaces
+                            {t('Workspaces')}
                         </DropdownMenuLabel>
 
                         {available.map((workspace) => (
@@ -109,7 +114,7 @@ export default function WorkspaceSwitcher() {
                                             : 'size-4 opacity-0'
                                     }
                                 />
-                                <span className="truncate">
+                                <span className="truncate" dir="auto">
                                     {workspace.name}
                                 </span>
                             </DropdownMenuItem>
@@ -126,7 +131,7 @@ export default function WorkspaceSwitcher() {
                                 data-test="manage-workspace"
                             >
                                 <Settings2 className="size-4" />
-                                Manage workspace
+                                {t('Manage workspace')}
                             </DropdownMenuItem>
                         )}
 
@@ -135,7 +140,7 @@ export default function WorkspaceSwitcher() {
                             className="gap-2"
                         >
                             <Plus className="size-4" />
-                            Create workspace
+                            {t('Create workspace')}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

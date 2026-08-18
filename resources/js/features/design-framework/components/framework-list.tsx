@@ -1,4 +1,5 @@
 import { Library } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 import type { Framework } from '../types/framework';
 import FrameworkCard from './framework-card';
 
@@ -18,6 +19,8 @@ export default function FrameworkList({
     frameworks,
     isFiltered,
 }: FrameworkListProps) {
+    const { t } = useTranslation();
+
     if (frameworks.length === 0) {
         return (
             <div
@@ -28,14 +31,18 @@ export default function FrameworkList({
 
                 <p className="text-sm font-medium">
                     {isFiltered
-                        ? 'No frameworks match those filters'
-                        : 'No design frameworks yet'}
+                        ? t('No frameworks match those filters')
+                        : t('No design frameworks yet')}
                 </p>
 
                 <p className="max-w-md text-sm text-muted-foreground">
                     {isFiltered
-                        ? 'Try a different search, or clear the status filter.'
-                        : 'A framework is a methodology a game can choose to follow — its phases, the questions it asks, and the practices it recommends.'}
+                        ? t(
+                              'Try a different search, or clear the status filter.',
+                          )
+                        : t(
+                              'A framework is a methodology a game can choose to follow — its phases, the questions it asks, and the practices it recommends.',
+                          )}
                 </p>
             </div>
         );

@@ -5,6 +5,7 @@ import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/lib/i18n';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
@@ -15,6 +16,8 @@ type ForgotPasswordFormProps = {
 export default function ForgotPasswordForm({
     status,
 }: ForgotPasswordFormProps) {
+    const { t } = useTranslation();
+
     return (
         <>
             {status && (
@@ -28,7 +31,9 @@ export default function ForgotPasswordForm({
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">
+                                    {t('Email address')}
+                                </Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -50,7 +55,7 @@ export default function ForgotPasswordForm({
                                     {processing && (
                                         <LoaderCircle className="h-4 w-4 animate-spin" />
                                     )}
-                                    Email password reset link
+                                    {t('Email password reset link')}
                                 </Button>
                             </div>
                         </>
@@ -58,8 +63,8 @@ export default function ForgotPasswordForm({
                 </Form>
 
                 <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>Or, return to</span>
-                    <TextLink href={login()}>log in</TextLink>
+                    <span>{t('Or, return to')}</span>
+                    <TextLink href={login()}>{t('log in')}</TextLink>
                 </div>
             </div>
         </>

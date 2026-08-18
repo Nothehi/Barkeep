@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { useObservations } from '../hooks/use-observations';
 import type {
     Observation,
@@ -57,6 +58,7 @@ export default function ObservationList({
     game,
     playtest,
 }: ObservationListProps) {
+    const { t } = useTranslation();
     const form = useObservations(
         workspace,
         game,
@@ -71,9 +73,9 @@ export default function ObservationList({
     return (
         <section className="space-y-3" data-test="observation-list">
             <h2 className="font-semibold">
-                Observations{' '}
+                {t('Observations')}{' '}
                 <span className="text-sm font-normal text-muted-foreground">
-                    what you noticed
+                    {t('what you noticed')}
                 </span>
             </h2>
 
@@ -99,9 +101,11 @@ export default function ObservationList({
                                 form.submit();
                             }
                         }}
-                        placeholder="Player misunderstood the scoring rule."
+                        placeholder={t(
+                            'Player misunderstood the scoring rule.',
+                        )}
                         rows={2}
-                        aria-label="What did you notice?"
+                        aria-label={t('What did you notice?')}
                         data-test="observation-input"
                     />
 
@@ -113,7 +117,7 @@ export default function ObservationList({
                                 htmlFor="observation-category"
                                 className="text-xs"
                             >
-                                Category
+                                {t('Category')}
                             </Label>
 
                             <Select
@@ -152,7 +156,7 @@ export default function ObservationList({
                                     htmlFor="observation-participant"
                                     className="text-xs"
                                 >
-                                    About
+                                    {t('About')}
                                 </Label>
 
                                 <Select
@@ -174,13 +178,14 @@ export default function ObservationList({
 
                                     <SelectContent>
                                         <SelectItem value={NOBODY}>
-                                            The table
+                                            {t('The table')}
                                         </SelectItem>
 
                                         {participants.map((participant) => (
                                             <SelectItem
                                                 key={participant.id}
                                                 value={participant.id}
+                                                dir="auto"
                                             >
                                                 {participant.display_name}
                                             </SelectItem>
@@ -193,7 +198,7 @@ export default function ObservationList({
                         <Button
                             type="submit"
                             disabled={form.processing}
-                            className="ml-auto"
+                            className="ms-auto"
                             data-test="add-observation-button"
                         >
                             {form.processing ? (
@@ -201,7 +206,7 @@ export default function ObservationList({
                             ) : (
                                 <Plus className="size-4" />
                             )}
-                            Record
+                            {t('Record')}
                         </Button>
                     </div>
                 </form>
@@ -213,7 +218,7 @@ export default function ObservationList({
                     data-test="observations-empty"
                 >
                     <Eye className="size-5" />
-                    Nothing noticed yet.
+                    {t('Nothing noticed yet.')}
                 </p>
             ) : (
                 <ul className="space-y-2">
@@ -223,7 +228,9 @@ export default function ObservationList({
                             className="flex items-start justify-between gap-3 rounded-lg border p-3"
                         >
                             <div className="min-w-0 space-y-1">
-                                <p className="text-sm">{observation.content}</p>
+                                <p className="text-sm" dir="auto">
+                                    {observation.content}
+                                </p>
 
                                 <div className="flex flex-wrap items-center gap-2">
                                     <Badge variant="outline">
@@ -232,11 +239,10 @@ export default function ObservationList({
 
                                     {observation.participant && (
                                         <span className="text-xs text-muted-foreground">
-                                            about{' '}
-                                            {
-                                                observation.participant
-                                                    .display_name
-                                            }
+                                            {t('about :name', {
+                                                name: observation.participant
+                                                    .display_name,
+                                            })}
                                         </span>
                                     )}
                                 </div>
@@ -246,7 +252,7 @@ export default function ObservationList({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    aria-label="Remove observation"
+                                    aria-label={t('Remove observation')}
                                     onClick={() => form.remove(observation.id)}
                                     data-test={`remove-observation-${observation.id}`}
                                 >

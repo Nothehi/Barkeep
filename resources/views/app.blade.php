@@ -1,5 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+{{--
+    `dir` is written here rather than by React so a right-to-left page is laid
+    out correctly on first paint. Waiting for the bundle to mount would show
+    every reader of Persian one frame of a left-to-right interface.
+--}}
+<html
+    lang="{{ str_replace('_', '-', $locale ?? app()->getLocale()) }}"
+    dir="{{ $direction ?? 'ltr' }}"
+    @class(['dark' => ($appearance ?? 'system') == 'dark'])
+>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">

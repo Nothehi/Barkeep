@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import { removeMember } from '../api';
 import { useWorkspacePermissions } from '../hooks/use-workspace-permissions';
 import type { Workspace, WorkspaceMember } from '../types/workspace';
@@ -20,16 +21,20 @@ export default function WorkspaceMemberList({
     currentUserId,
 }: WorkspaceMemberListProps) {
     const permissions = useWorkspacePermissions(workspace);
+    const { t } = useTranslation();
     const [memberBeingChanged, setMemberBeingChanged] =
         useState<WorkspaceMember | null>(null);
 
     const handleRemove = useCallback(
         (member: WorkspaceMember) => {
-            const name = member.user?.name ?? 'this member';
+            const name = member.user?.name ?? t('this member');
 
             if (
                 !window.confirm(
-                    `Remove ${name} from ${workspace.name}? They will lose access immediately.`,
+                    t(
+                        'Remove :name from :workspace? They will lose access immediately.',
+                        { name, workspace: workspace.name },
+                    ),
                 )
             ) {
                 return;
@@ -37,13 +42,13 @@ export default function WorkspaceMemberList({
 
             removeMember(workspace.slug, member.id);
         },
-        [workspace.slug, workspace.name],
+        [t, workspace.slug, workspace.name],
     );
 
     if (members.length === 0) {
         return (
             <p className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-                This workspace has no members yet.
+                {t('This workspace has no members yet.')}
             </p>
         );
     }

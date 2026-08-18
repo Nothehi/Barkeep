@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Workspace } from '@/features/workspaces';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import versionRoutes from '@/routes/games/versions';
 import GameHeader from '../components/game-header';
 import type { Game, GameVersion } from '../types/game';
@@ -29,9 +30,17 @@ export default function GameVersionPage({
     version: { data: version },
     is_current: isCurrent,
 }: GameVersionPageProps) {
+    const { t } = useTranslation();
+    const { formatDate } = useFormatters();
+
     return (
         <>
-            <Head title={`${version.label} · ${game.name}`} />
+            <Head
+                title={t(':version · :game', {
+                    version: version.label,
+                    game: game.name,
+                })}
+            />
 
             <div className="space-y-6 px-4 py-6">
                 <GameHeader game={game} workspace={workspace.slug} />
@@ -43,8 +52,8 @@ export default function GameVersionPage({
                             game: game.slug,
                         })}
                     >
-                        <ArrowLeft className="size-4" />
-                        All versions
+                        <ArrowLeft className="size-4 rtl:rotate-180" />
+                        {t('All versions')}
                     </Link>
                 </Button>
 
@@ -54,44 +63,48 @@ export default function GameVersionPage({
                             <CardTitle>{version.label}</CardTitle>
 
                             {version.name && (
-                                <span className="text-sm text-muted-foreground">
+                                <span
+                                    className="text-sm text-muted-foreground"
+                                    dir="auto"
+                                >
                                     {version.name}
                                 </span>
                             )}
 
                             {isCurrent && (
-                                <Badge variant="secondary" className="ml-auto">
-                                    Current
+                                <Badge variant="secondary" className="ms-auto">
+                                    {t('Current')}
                                 </Badge>
                             )}
                         </div>
                     </CardHeader>
 
                     <CardContent className="space-y-4">
-                        <p className="text-sm whitespace-pre-line text-muted-foreground">
+                        <p
+                            className="text-sm whitespace-pre-line text-muted-foreground"
+                            dir="auto"
+                        >
                             {version.description ??
-                                'No notes were left on this version.'}
+                                t('No notes were left on this version.')}
                         </p>
 
                         <dl className="grid gap-3 text-sm sm:grid-cols-2">
                             <div>
                                 <dt className="text-muted-foreground">
-                                    Cut by
+                                    {t('Cut by')}
                                 </dt>
-                                <dd className="font-medium">
-                                    {version.creator?.name ?? 'Someone'}
+                                <dd className="font-medium" dir="auto">
+                                    {version.creator?.name ?? t('Someone')}
                                 </dd>
                             </div>
 
                             <div>
                                 <dt className="text-muted-foreground">
-                                    Cut on
+                                    {t('Cut on')}
                                 </dt>
                                 <dd className="font-medium">
                                     {version.created_at
-                                        ? new Date(
-                                              version.created_at,
-                                          ).toLocaleDateString()
+                                        ? formatDate(version.created_at)
                                         : '—'}
                                 </dd>
                             </div>

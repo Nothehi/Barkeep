@@ -19,6 +19,14 @@ use Modules\Identity\Domain\Models\User;
  * because "may a game claim this?" is the only question a picker asks and
  * deriving it client-side would be the client reimplementing the rule.
  *
+ * The name and the definition go through `__()`. The vocabulary is the
+ * platform's rather than a studio's, and its whole purpose is that two games
+ * working the same way say so with the same word — so the canonical term is
+ * stored in English and stays the stable identity behind the slug, while each
+ * reader is shown it in their own language. A curator's own new term has no
+ * catalogue entry and passes straight through, which is exactly what `__()`
+ * does with a phrase it does not know.
+ *
  * No usage count. How many games claim a term is a genuinely interesting figure
  * and counting it here would make the vocabulary read every studio's data on
  * every request — the mechanic knows nothing about who claimed it, and that is
@@ -37,9 +45,9 @@ class MechanicResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
+            'name' => __($this->name),
             'slug' => $this->slug,
-            'description' => $this->description,
+            'description' => $this->description === null ? null : __($this->description),
             'category' => $this->category->value,
             'category_label' => $this->category->label(),
             'category_position' => $this->category->position(),

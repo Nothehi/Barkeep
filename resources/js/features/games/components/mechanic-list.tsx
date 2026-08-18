@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/lib/i18n';
 import { archiveMechanic } from '../api/mechanics';
 import type { Mechanic, MechanicOptions } from '../types/mechanic';
 
@@ -27,6 +28,7 @@ export default function MechanicList({
     mechanics,
     options,
 }: MechanicListProps) {
+    const { t } = useTranslation();
     const [pending, setPending] = useState<string | null>(null);
 
     if (mechanics.length === 0) {
@@ -35,7 +37,7 @@ export default function MechanicList({
                 className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground"
                 data-test="mechanic-list-empty"
             >
-                The vocabulary is empty. Nothing can describe itself yet.
+                {t('The vocabulary is empty. Nothing can describe itself yet.')}
             </p>
         );
     }
@@ -62,7 +64,10 @@ export default function MechanicList({
                                 {category.label}
                             </h2>
 
-                            <p className="text-sm text-muted-foreground">
+                            <p
+                                className="text-sm text-muted-foreground"
+                                dir="auto"
+                            >
                                 {category.description}
                             </p>
                         </div>
@@ -76,7 +81,9 @@ export default function MechanicList({
                                 >
                                     <div className="min-w-0 space-y-0.5">
                                         <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
-                                            {mechanic.name}
+                                            <span dir="auto">
+                                                {mechanic.name}
+                                            </span>
 
                                             {!mechanic.is_available && (
                                                 <Badge variant="secondary">
@@ -86,7 +93,10 @@ export default function MechanicList({
                                         </p>
 
                                         {mechanic.description && (
-                                            <p className="text-xs text-muted-foreground">
+                                            <p
+                                                className="text-xs text-muted-foreground"
+                                                dir="auto"
+                                            >
                                                 {mechanic.description}
                                             </p>
                                         )}
@@ -119,7 +129,7 @@ export default function MechanicList({
                                             ) : (
                                                 <Archive className="size-4" />
                                             )}
-                                            Retire
+                                            {t('Retire')}
                                         </Button>
                                     )}
                                 </div>

@@ -12,6 +12,7 @@ import {
 import type { Game, GameVersion } from '@/features/games';
 import { GameHeader } from '@/features/games';
 import type { Workspace } from '@/features/workspaces';
+import { useTranslation } from '@/lib/i18n';
 import CreatePlaytestDialog from '../components/create-playtest-dialog';
 import PlaytestList from '../components/playtest-list';
 import { usePlaytests } from '../hooks/use-playtests';
@@ -54,12 +55,13 @@ export default function PlaytestsPage({
     options,
     can,
 }: PlaytestsPageProps) {
+    const { t } = useTranslation();
     const { playtests, filters, isFiltered, setSearch, setStatus } =
         usePlaytests(workspace.slug, game.slug, data, initialFilters);
 
     return (
         <>
-            <Head title={`Playtests · ${game.name}`} />
+            <Head title={t('Playtests · :game', { game: game.name })} />
 
             <div className="space-y-6 px-4 py-6">
                 <GameHeader game={game} workspace={workspace.slug} />
@@ -67,8 +69,10 @@ export default function PlaytestsPage({
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Heading
                         variant="small"
-                        title="Playtests"
-                        description="What this game has been tested for, and what came of it"
+                        title={t('Playtests')}
+                        description={t(
+                            'What this game has been tested for, and what came of it',
+                        )}
                     />
 
                     {can.create && (
@@ -82,14 +86,14 @@ export default function PlaytestsPage({
 
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="relative min-w-56 flex-1">
-                        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
                         <Input
                             value={filters.search ?? ''}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Search playtests"
-                            className="pl-9"
-                            aria-label="Search playtests"
+                            placeholder={t('Search playtests')}
+                            className="ps-9"
+                            aria-label={t('Search playtests')}
                             data-test="playtest-search"
                         />
                     </div>
@@ -106,15 +110,15 @@ export default function PlaytestsPage({
                     >
                         <SelectTrigger
                             className="w-44"
-                            aria-label="Filter by status"
+                            aria-label={t('Filter by status')}
                             data-test="playtest-status-filter"
                         >
-                            <SelectValue placeholder="Any status" />
+                            <SelectValue placeholder={t('Any status')} />
                         </SelectTrigger>
 
                         <SelectContent>
                             <SelectItem value={ANY_STATUS}>
-                                Any status
+                                {t('Any status')}
                             </SelectItem>
 
                             {options.statuses.map((status) => (

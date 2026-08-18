@@ -1,5 +1,6 @@
 import { Eye, MessageSquare, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { useSessionTimeline } from '../hooks/use-session-timeline';
 import type { Feedback, Observation } from '../types/playtest';
 
@@ -27,6 +28,8 @@ export default function SessionTimeline({
     observations,
     feedback,
 }: SessionTimelineProps) {
+    const { t } = useTranslation();
+    const { formatTime } = useFormatters();
     const entries = useSessionTimeline(observations, feedback);
 
     if (entries.length === 0) {
@@ -35,8 +38,9 @@ export default function SessionTimeline({
                 className="rounded-lg border border-dashed py-8 text-center text-sm text-muted-foreground"
                 data-test="timeline-empty"
             >
-                Nothing recorded yet. Observations and feedback appear here in
-                the order they happened.
+                {t(
+                    'Nothing recorded yet. Observations and feedback appear here in the order they happened.',
+                )}
             </p>
         );
     }
@@ -44,12 +48,7 @@ export default function SessionTimeline({
     return (
         <ol className="space-y-3" data-test="session-timeline">
             {entries.map((entry) => {
-                const at = entry.at
-                    ? new Date(entry.at).toLocaleTimeString(undefined, {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                      })
-                    : 'Later';
+                const at = entry.at ? formatTime(entry.at) : t('Later');
 
                 const key =
                     entry.kind === 'observation'
@@ -58,17 +57,17 @@ export default function SessionTimeline({
 
                 return (
                     <li key={key} className="flex gap-3">
-                        <div className="w-14 shrink-0 pt-0.5 text-right text-xs text-muted-foreground tabular-nums">
+                        <div className="w-14 shrink-0 pt-0.5 text-end text-xs text-muted-foreground tabular-nums">
                             {at}
                         </div>
 
-                        <div className="min-w-0 flex-1 space-y-1 border-l pb-1 pl-3">
+                        <div className="min-w-0 flex-1 space-y-1 border-s ps-3 pb-1">
                             {entry.kind === 'observation' ? (
                                 <>
                                     <div className="flex flex-wrap items-center gap-2">
                                         <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
                                             <Eye className="size-3" />
-                                            Observation
+                                            {t('Observation')}
                                         </span>
 
                                         <Badge variant="outline">
@@ -77,17 +76,16 @@ export default function SessionTimeline({
 
                                         {entry.observation.participant && (
                                             <span className="text-xs text-muted-foreground">
-                                                about{' '}
-                                                {
-                                                    entry.observation
+                                                {t('about :name', {
+                                                    name: entry.observation
                                                         .participant
-                                                        .display_name
-                                                }
+                                                        .display_name,
+                                                })}
                                             </span>
                                         )}
                                     </div>
 
-                                    <p className="text-sm">
+                                    <p className="text-sm" dir="auto">
                                         {entry.observation.content}
                                     </p>
                                 </>
@@ -96,12 +94,16 @@ export default function SessionTimeline({
                                     <div className="flex flex-wrap items-center gap-2">
                                         <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
                                             <MessageSquare className="size-3" />
-                                            Feedback
+                                            {t('Feedback')}
                                         </span>
 
-                                        <span className="text-xs text-muted-foreground">
+                                        <span
+                                            className="text-xs text-muted-foreground"
+                                            dir="auto"
+                                        >
                                             {entry.feedback.participant
-                                                ?.display_name ?? 'Anonymous'}
+                                                ?.display_name ??
+                                                t('Anonymous')}
                                         </span>
 
                                         {entry.feedback.rating_label && (
@@ -113,7 +115,9 @@ export default function SessionTimeline({
                                     </div>
 
                                     <p className="text-sm">
-                                        “{entry.feedback.content}”
+                                        <span dir="auto">
+                                            “{entry.feedback.content}”
+                                        </span>
                                     </p>
                                 </>
                             )}

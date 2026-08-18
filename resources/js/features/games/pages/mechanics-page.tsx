@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 import { Info } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useTranslation } from '@/lib/i18n';
 import CreateMechanicDialog from '../components/create-mechanic-dialog';
 import MechanicList from '../components/mechanic-list';
 import type { Mechanic, MechanicOptions } from '../types/mechanic';
@@ -32,16 +33,20 @@ export default function MechanicsPage({
     can,
     curation_configured: curationConfigured,
 }: MechanicsPageProps) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title="Design vocabulary" />
+            <Head title={t('Design vocabulary')} />
 
             <div className="space-y-6 px-4 py-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Heading
                         variant="small"
-                        title="Design vocabulary"
-                        description="The mechanics a game can describe itself with"
+                        title={t('Design vocabulary')}
+                        description={t(
+                            'The mechanics a game can describe itself with',
+                        )}
                     />
 
                     {can.create && <CreateMechanicDialog options={options} />}
@@ -57,15 +62,19 @@ export default function MechanicsPage({
                     <Alert data-test="curation-not-configured">
                         <Info className="size-4" />
                         <AlertTitle>
-                            The vocabulary is read-only here
+                            {t('The vocabulary is read-only here')}
                         </AlertTitle>
                         <AlertDescription>
-                            No accounts are configured to curate design
-                            mechanics, so nobody can add or edit one. Set
-                            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">
+                            {t(
+                                'No accounts are configured to curate design mechanics, so nobody can add or edit one. Set',
+                            )}
+                            <code
+                                className="mx-1 rounded bg-muted px-1 py-0.5 text-xs"
+                                dir="ltr"
+                            >
                                 game-design.curators
                             </code>
-                            to change that.
+                            {t('to change that.')}
                         </AlertDescription>
                     </Alert>
                 )}

@@ -1,6 +1,7 @@
 import { CheckCircle2, PauseCircle, PlayCircle } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/lib/i18n';
 import type { GameFrameworkStatus } from '../types/framework';
 
 type AdoptionStatusBadgeProps = {
@@ -38,12 +39,13 @@ export default function AdoptionStatusBadge({
     status,
     label,
 }: AdoptionStatusBadgeProps) {
+    const { t } = useTranslation();
     const { icon: Icon, variant } = PRESENTATION[status];
 
     return (
         <Badge variant={variant} data-test={`adoption-status-${status}`}>
             <Icon className="size-3" />
-            {label ?? FALLBACK_LABEL[status]}
+            {label ?? t(FALLBACK_LABEL[status])}
         </Badge>
     );
 }

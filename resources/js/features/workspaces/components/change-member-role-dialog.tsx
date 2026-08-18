@@ -17,6 +17,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/lib/i18n';
 import { updateMember } from '../api';
 import type {
     AssignableWorkspaceRole,
@@ -42,6 +43,8 @@ export default function ChangeMemberRoleDialog({
     member,
     onClose,
 }: ChangeMemberRoleDialogProps) {
+    const { t } = useTranslation();
+
     /**
      * The role the dialog is showing.
      *
@@ -84,15 +87,17 @@ export default function ChangeMemberRoleDialog({
         >
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Change role</DialogTitle>
+                    <DialogTitle>{t('Change role')}</DialogTitle>
                     <DialogDescription>
-                        Choose what {member?.user?.name ?? 'this member'} can do
-                        in {workspace.name}.
+                        {t('Choose what :name can do in :workspace.', {
+                            name: member?.user?.name ?? t('this member'),
+                            workspace: workspace.name,
+                        })}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-2">
-                    <Label htmlFor="member-role">Role</Label>
+                    <Label htmlFor="member-role">{t('Role')}</Label>
 
                     <Select
                         value={role}
@@ -110,10 +115,12 @@ export default function ChangeMemberRoleDialog({
 
                         <SelectContent>
                             <SelectItem value="member">
-                                Member — can take part in the workspace
+                                {t('Member — can take part in the workspace')}
                             </SelectItem>
                             <SelectItem value="admin">
-                                Admin — can also manage members and settings
+                                {t(
+                                    'Admin — can also manage members and settings',
+                                )}
                             </SelectItem>
                         </SelectContent>
                     </Select>
@@ -121,7 +128,7 @@ export default function ChangeMemberRoleDialog({
 
                 <DialogFooter>
                     <Button variant="outline" onClick={onClose}>
-                        Cancel
+                        {t('Cancel')}
                     </Button>
 
                     <Button
@@ -130,7 +137,7 @@ export default function ChangeMemberRoleDialog({
                         data-test="save-member-role-button"
                     >
                         {processing && <Spinner />}
-                        Save role
+                        {t('Save role')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

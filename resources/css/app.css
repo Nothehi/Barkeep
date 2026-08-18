@@ -7,9 +7,80 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Vazirmatn, self-hosted, Arabic subset only.
+ *
+ * Self-hosted rather than fetched through the `bunny()` font plugin because
+ * that fetch happens at build time, and a build that needs the network to
+ * produce a readable Persian interface is a build that breaks behind a proxy.
+ * Three weights of the Arabic block come to about 60KB in total.
+ *
+ * The `unicode-range` is what keeps it free for English readers: the browser
+ * only downloads these files once a character in the Arabic block is actually
+ * on the page, so an English session never touches them. It is also what makes
+ * the fallback in `--font-sans` work per character rather than per element —
+ * Latin resolves to Instrument Sans, Persian to Vazirmatn, inside one sentence.
+ *
+ * The Latin subset is deliberately not shipped. Instrument Sans is the Latin
+ * face and comes first in the stack, so a Vazirmatn Latin would never be
+ * reached.
+ */
+@font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/vazirmatn-arabic-400-normal.woff2') format('woff2');
+    unicode-range:
+        U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1,
+        U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF,
+        U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('../fonts/vazirmatn-arabic-500-normal.woff2') format('woff2');
+    unicode-range:
+        U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1,
+        U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF,
+        U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/vazirmatn-arabic-600-normal.woff2') format('woff2');
+    unicode-range:
+        U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1,
+        U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF,
+        U+FE70-FE74, U+FE76-FEFC;
+}
+
 @theme {
+    /**
+     * The Persian faces sit behind Instrument Sans rather than replacing it
+     * under a `[dir="rtl"]` rule. Instrument Sans covers no Arabic script, so
+     * the browser reaches past it for Persian on its own, per character — which
+     * is what a sentence mixing a Persian label with a Latin game title needs.
+     * Swapping the whole family on direction would render the Latin half in the
+     * wrong face.
+     *
+     * Vazirmatn is shipped with the application (see the `@font-face` rules
+     * above), so it is the face Persian actually renders in. The three behind it
+     * are the safety net for the moment before the webfont has loaded, or if it
+     * fails to: Segoe UI and Tahoma are what Windows has, Noto Naskh Arabic
+     * covers Linux and Android. Naming them beats falling through to
+     * `sans-serif`, which on a Linux desktop can land on a face with no Arabic
+     * glyphs at all.
+     */
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+        'Instrument Sans', 'Vazirmatn', 'Segoe UI', 'Tahoma',
+        'Noto Naskh Arabic', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 

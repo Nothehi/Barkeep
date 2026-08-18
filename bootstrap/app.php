@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
@@ -22,7 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+        /**
+         * `locale` joins these for the same reason `appearance` is here: the
+         * root Blade template has to write `lang` and `dir` on `<html>` before
+         * anything is decrypted, and which language somebody reads in is not a
+         * secret worth protecting.
+         */
+        $middleware->encryptCookies(except: ['appearance', 'sidebar_state', 'locale']);
 
         /**
          * The API is first party only: its sole client is this application's
@@ -38,10 +45,18 @@ return Application::configure(basePath: dirname(__DIR__))
             StartSession::class,
             ValidateCsrfToken::class,
             EnsureAccountIsActive::class,
+
+            /**
+             * The API talks to the same browser as the web routes and returns
+             * the same worded domain errors, so it has to answer in the same
+             * language rather than defaulting everybody to English.
+             */
+            SetLocale::class,
         ]);
 
         $middleware->web(append: [
             EnsureAccountIsActive::class,
+            SetLocale::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

@@ -21,6 +21,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useWorkspaces, WorkspaceSwitcher } from '@/features/workspaces';
+import { useLocale, useTranslation } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import frameworks from '@/routes/frameworks';
 import games from '@/routes/games';
@@ -34,9 +35,9 @@ import type { NavItem } from '@/types';
  * alongside the rest of the app, it is which app you are in — chosen after
  * signing in and changed from the switcher above these items.
  */
-const mainNavItems: NavItem[] = [
+const navItemsFor = (t: (phrase: string) => string): NavItem[] => [
     {
-        title: 'Dashboard',
+        title: t('Dashboard'),
         href: dashboard(),
         icon: LayoutGrid,
     },
@@ -47,7 +48,7 @@ const mainNavItems: NavItem[] = [
      * administer frameworks can write one, and the screen says so itself.
      */
     {
-        title: 'Frameworks',
+        title: t('Frameworks'),
         href: frameworks.index(),
         icon: Library,
     },
@@ -58,20 +59,20 @@ const mainNavItems: NavItem[] = [
      * only thing that makes two games comparable.
      */
     {
-        title: 'Mechanics',
+        title: t('Mechanics'),
         href: mechanics.index(),
         icon: Blocks,
     },
 ];
 
-const footerNavItems: NavItem[] = [
+const footerNavItemsFor = (t: (phrase: string) => string): NavItem[] => [
     {
-        title: 'Repository',
+        title: t('Repository'),
         href: 'https://github.com/laravel/react-starter-kit',
         icon: FolderGit2,
     },
     {
-        title: 'Documentation',
+        title: t('Documentation'),
         href: 'https://laravel.com/docs/starter-kits#react',
         icon: BookOpen,
     },
@@ -79,6 +80,11 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     const { current } = useWorkspaces();
+    const { t } = useTranslation();
+    const { direction } = useLocale();
+
+    const mainNavItems = navItemsFor(t);
+    const footerNavItems = footerNavItemsFor(t);
 
     /**
      * Games hang off a workspace, so the entry only exists once the URL says
@@ -90,7 +96,7 @@ export function AppSidebar() {
         ? [
               ...mainNavItems,
               {
-                  title: 'Games',
+                  title: t('Games'),
                   href: games.index(current.slug),
                   icon: Gamepad2,
               },
@@ -98,7 +104,17 @@ export function AppSidebar() {
         : mainNavItems;
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        /**
+         * The rail belongs on the side the reader starts from, so it moves
+         * with the language. Everything inside keys off `data-side`, which
+         * this prop sets, so the border, the collapse rail and the menu
+         * popouts all follow without further work.
+         */
+        <Sidebar
+            collapsible="icon"
+            variant="inset"
+            side={direction === 'rtl' ? 'right' : 'left'}
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>

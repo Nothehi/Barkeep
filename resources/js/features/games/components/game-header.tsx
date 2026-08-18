@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import games from '@/routes/games';
 import framework from '@/routes/games/framework';
@@ -39,6 +40,7 @@ type GameHeaderProps = {
 export default function GameHeader({ game, workspace }: GameHeaderProps) {
     const permissions = useGamePermissions(game);
     const { isCurrentUrl } = useCurrentUrl();
+    const { t } = useTranslation();
 
     const overviewUrl = games.show({ workspace, game: game.slug });
     const versionsUrl = versions.index({ workspace, game: game.slug });
@@ -49,26 +51,31 @@ export default function GameHeader({ game, workspace }: GameHeaderProps) {
     const tabs = [
         {
             url: overviewUrl,
-            label: 'Overview',
+            label: t('Overview'),
             icon: LayoutDashboard,
             shown: true,
         },
-        { url: versionsUrl, label: 'Versions', icon: GitBranch, shown: true },
+        {
+            url: versionsUrl,
+            label: t('Versions'),
+            icon: GitBranch,
+            shown: true,
+        },
         {
             url: playtestsUrl,
-            label: 'Playtests',
+            label: t('Playtests'),
             icon: FlaskConical,
             shown: true,
         },
         {
             url: frameworkUrl,
-            label: 'Framework',
+            label: t('Framework'),
             icon: Compass,
             shown: true,
         },
         {
             url: settingsUrl,
-            label: 'Settings',
+            label: t('Settings'),
             icon: Settings,
             shown: permissions.canUpdate,
         },
@@ -78,7 +85,10 @@ export default function GameHeader({ game, workspace }: GameHeaderProps) {
         <header className="space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 space-y-2">
-                    <h1 className="truncate text-xl font-semibold tracking-tight">
+                    <h1
+                        className="truncate text-xl font-semibold tracking-tight"
+                        dir="auto"
+                    >
                         {game.name}
                     </h1>
 
@@ -99,7 +109,7 @@ export default function GameHeader({ game, workspace }: GameHeaderProps) {
 
             <nav
                 className="flex flex-wrap items-center gap-2 border-b pb-2"
-                aria-label="Game"
+                aria-label={t('Game')}
             >
                 {tabs
                     .filter((tab) => tab.shown)

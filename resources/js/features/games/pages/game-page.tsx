@@ -3,6 +3,7 @@ import { GitBranch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Workspace } from '@/features/workspaces';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import versions from '@/routes/games/versions';
 import DesignPhasePicker from '../components/design-phase-picker';
 import EditGameDialog from '../components/edit-game-dialog';
@@ -33,11 +34,18 @@ export default function GamePage({
     dashboard,
     options,
 }: GamePageProps) {
+    const { t } = useTranslation();
+    const { formatDate, formatNumber } = useFormatters();
     const latest = dashboard.latest_version?.data ?? null;
 
     return (
         <>
-            <Head title={`${game.name} · ${workspace.name}`} />
+            <Head
+                title={t(':game · :workspace', {
+                    game: game.name,
+                    workspace: workspace.name,
+                })}
+            />
 
             <div className="space-y-6 px-4 py-6">
                 <GameHeader game={game} workspace={workspace.slug} />
@@ -46,7 +54,7 @@ export default function GamePage({
                     <Card className="lg:col-span-2">
                         <CardHeader>
                             <div className="flex items-start justify-between gap-3">
-                                <CardTitle>About</CardTitle>
+                                <CardTitle>{t('About')}</CardTitle>
                                 <EditGameDialog
                                     game={game}
                                     workspace={workspace.slug}
@@ -55,52 +63,51 @@ export default function GamePage({
                         </CardHeader>
 
                         <CardContent className="space-y-4">
-                            <p className="text-sm text-muted-foreground">
-                                {game.description ?? 'No description yet.'}
+                            <p
+                                className="text-sm text-muted-foreground"
+                                dir="auto"
+                            >
+                                {game.description ?? t('No description yet.')}
                             </p>
 
                             <dl className="grid gap-3 text-sm sm:grid-cols-2">
                                 <div>
                                     <dt className="text-muted-foreground">
-                                        Address
+                                        {t('Address')}
                                     </dt>
-                                    <dd className="font-medium">
+                                    <dd className="font-medium" dir="ltr">
                                         /{game.slug}
                                     </dd>
                                 </div>
 
                                 <div>
                                     <dt className="text-muted-foreground">
-                                        Started
+                                        {t('Started')}
                                     </dt>
                                     <dd className="font-medium">
                                         {game.created_at
-                                            ? new Date(
-                                                  game.created_at,
-                                              ).toLocaleDateString()
+                                            ? formatDate(game.created_at)
                                             : '—'}
                                     </dd>
                                 </div>
 
                                 <div>
                                     <dt className="text-muted-foreground">
-                                        Last updated
+                                        {t('Last updated')}
                                     </dt>
                                     <dd className="font-medium">
                                         {game.updated_at
-                                            ? new Date(
-                                                  game.updated_at,
-                                              ).toLocaleDateString()
+                                            ? formatDate(game.updated_at)
                                             : '—'}
                                     </dd>
                                 </div>
 
                                 <div>
                                     <dt className="text-muted-foreground">
-                                        Versions
+                                        {t('Versions')}
                                     </dt>
                                     <dd className="font-medium">
-                                        {dashboard.versions_count}
+                                        {formatNumber(dashboard.versions_count)}
                                     </dd>
                                 </div>
                             </dl>
@@ -110,7 +117,7 @@ export default function GamePage({
                     <div className="space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Design phase</CardTitle>
+                                <CardTitle>{t('Design phase')}</CardTitle>
                             </CardHeader>
 
                             <CardContent className="space-y-4">
@@ -130,7 +137,7 @@ export default function GamePage({
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>Current version</CardTitle>
+                                <CardTitle>{t('Current version')}</CardTitle>
                             </CardHeader>
 
                             <CardContent className="space-y-4">
@@ -142,14 +149,17 @@ export default function GamePage({
                                         </p>
 
                                         {latest.description && (
-                                            <p className="line-clamp-3 text-sm text-muted-foreground">
+                                            <p
+                                                className="line-clamp-3 text-sm text-muted-foreground"
+                                                dir="auto"
+                                            >
                                                 {latest.description}
                                             </p>
                                         )}
                                     </div>
                                 ) : (
                                     <p className="text-sm text-muted-foreground">
-                                        No versions cut yet.
+                                        {t('No versions cut yet.')}
                                     </p>
                                 )}
 
@@ -161,7 +171,7 @@ export default function GamePage({
                                         })}
                                     >
                                         <GitBranch className="size-4" />
-                                        All versions
+                                        {t('All versions')}
                                     </Link>
                                 </Button>
                             </CardContent>

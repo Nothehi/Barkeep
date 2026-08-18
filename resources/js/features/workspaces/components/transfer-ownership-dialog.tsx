@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/lib/i18n';
 import { transferOwnership } from '../api';
 import type {
     AssignableWorkspaceRole,
@@ -42,6 +43,7 @@ export default function TransferOwnershipDialog({
     workspace,
     members,
 }: TransferOwnershipDialogProps) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [memberId, setMemberId] = useState('');
     const [role, setRole] = useState<AssignableWorkspaceRole>('admin');
@@ -78,27 +80,30 @@ export default function TransferOwnershipDialog({
                     disabled={candidates.length === 0}
                     data-test="transfer-ownership-button"
                 >
-                    Transfer ownership
+                    {t('Transfer ownership')}
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Transfer ownership</DialogTitle>
+                    <DialogTitle>{t('Transfer ownership')}</DialogTitle>
                     <DialogDescription>
-                        The new owner takes full control of {workspace.name},
-                        including the ability to archive it. You cannot undo
-                        this yourself.
+                        {t(
+                            'The new owner takes full control of :workspace, including the ability to archive it. You cannot undo this yourself.',
+                            { workspace: workspace.name },
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="new-owner">New owner</Label>
+                        <Label htmlFor="new-owner">{t('New owner')}</Label>
 
                         <Select value={memberId} onValueChange={setMemberId}>
                             <SelectTrigger id="new-owner" className="w-full">
-                                <SelectValue placeholder="Choose a member" />
+                                <SelectValue
+                                    placeholder={t('Choose a member')}
+                                />
                             </SelectTrigger>
 
                             <SelectContent>
@@ -106,6 +111,7 @@ export default function TransferOwnershipDialog({
                                     <SelectItem
                                         key={member.id}
                                         value={member.id}
+                                        dir="auto"
                                     >
                                         {member.user?.name ?? member.user_id}
                                     </SelectItem>
@@ -117,7 +123,9 @@ export default function TransferOwnershipDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="outgoing-role">Your new role</Label>
+                        <Label htmlFor="outgoing-role">
+                            {t('Your new role')}
+                        </Label>
 
                         <Select
                             value={role}
@@ -133,8 +141,12 @@ export default function TransferOwnershipDialog({
                             </SelectTrigger>
 
                             <SelectContent>
-                                <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="member">Member</SelectItem>
+                                <SelectItem value="admin">
+                                    {t('Admin')}
+                                </SelectItem>
+                                <SelectItem value="member">
+                                    {t('Member')}
+                                </SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -144,7 +156,7 @@ export default function TransferOwnershipDialog({
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setOpen(false)}>
-                        Cancel
+                        {t('Cancel')}
                     </Button>
 
                     <Button
@@ -154,7 +166,7 @@ export default function TransferOwnershipDialog({
                         data-test="confirm-transfer-ownership-button"
                     >
                         {processing && <Spinner />}
-                        Transfer ownership
+                        {t('Transfer ownership')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

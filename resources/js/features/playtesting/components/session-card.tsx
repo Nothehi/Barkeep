@@ -8,6 +8,7 @@ import {
     Users,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import sessions from '@/routes/playtests/sessions';
 import type { PlaytestSession } from '../types/playtest';
 import SessionStatusBadge from './session-status-badge';
@@ -37,16 +38,11 @@ export default function SessionCard({
     playtest,
     index,
 }: SessionCardProps) {
-    const when = session.started_at ?? session.planned_at;
+    const { t } = useTranslation();
+    const { formatDateTime, formatNumber } = useFormatters();
 
-    const whenLabel = when
-        ? new Date(when).toLocaleString(undefined, {
-              day: 'numeric',
-              month: 'short',
-              hour: '2-digit',
-              minute: '2-digit',
-          })
-        : null;
+    const when = session.started_at ?? session.planned_at;
+    const whenLabel = when ? formatDateTime(when) : null;
 
     return (
         <Card
@@ -68,7 +64,9 @@ export default function SessionCard({
                         className="font-medium hover:underline"
                         data-test={`session-link-${session.id}`}
                     >
-                        Session {index + 1}
+                        {t('Session :number', {
+                            number: formatNumber(index + 1),
+                        })}
                     </Link>
 
                     <SessionStatusBadge
@@ -105,22 +103,25 @@ export default function SessionCard({
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                         <Users className="size-3" />
-                        {session.participants_count ?? 0}
+                        {formatNumber(session.participants_count ?? 0)}
                     </span>
 
                     <span className="inline-flex items-center gap-1">
                         <Eye className="size-3" />
-                        {session.observations_count ?? 0}
+                        {formatNumber(session.observations_count ?? 0)}
                     </span>
 
                     <span className="inline-flex items-center gap-1">
                         <MessageSquare className="size-3" />
-                        {session.feedback_count ?? 0}
+                        {formatNumber(session.feedback_count ?? 0)}
                     </span>
                 </div>
 
                 {session.outcome && (
-                    <p className="line-clamp-2 text-sm text-muted-foreground">
+                    <p
+                        className="line-clamp-2 text-sm text-muted-foreground"
+                        dir="auto"
+                    >
                         {session.outcome}
                     </p>
                 )}

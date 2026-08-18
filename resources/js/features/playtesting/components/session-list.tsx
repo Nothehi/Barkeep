@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { usePlaytestSessions } from '../hooks/use-playtest-sessions';
 import type { Playtest, PlaytestSession } from '../types/playtest';
 import SessionCard from './session-card';
@@ -27,18 +28,25 @@ export default function SessionList({
     workspace,
     game,
 }: SessionListProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
     const form = usePlaytestSessions(workspace, game, playtest.id, sessions);
 
     return (
         <section className="space-y-4" data-test="session-list">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h2 className="font-semibold">Sessions</h2>
+                    <h2 className="font-semibold">{t('Sessions')}</h2>
 
                     <p className="text-sm text-muted-foreground">
                         {sessions.length === 0
-                            ? 'Each session is one group playing this version.'
-                            : `${form.completedCount} of ${sessions.length} completed`}
+                            ? t(
+                                  'Each session is one group playing this version.',
+                              )
+                            : t(':completed of :total completed', {
+                                  completed: formatNumber(form.completedCount),
+                                  total: formatNumber(sessions.length),
+                              })}
                     </p>
                 </div>
 
@@ -54,7 +62,7 @@ export default function SessionList({
                         ) : (
                             <Plus className="size-4" />
                         )}
-                        New session
+                        {t('New session')}
                     </Button>
                 )}
             </div>
@@ -64,7 +72,9 @@ export default function SessionList({
                     className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground"
                     data-test="sessions-empty"
                 >
-                    No sessions yet. Start one when you have people at a table.
+                    {t(
+                        'No sessions yet. Start one when you have people at a table.',
+                    )}
                 </p>
             ) : (
                 <div className="grid gap-3 sm:grid-cols-2">

@@ -1,8 +1,10 @@
 import { Mail, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { revokeInvitation } from '../api';
 import type { Workspace, WorkspaceInvitation } from '../types/workspace';
+import { WORKSPACE_ROLE_LABEL } from '../types/workspace';
 
 type WorkspaceInvitationListProps = {
     workspace: Workspace;
@@ -20,10 +22,13 @@ export default function WorkspaceInvitationList({
     workspace,
     invitations,
 }: WorkspaceInvitationListProps) {
+    const { t } = useTranslation();
+    const { formatDate } = useFormatters();
+
     if (invitations.length === 0) {
         return (
             <p className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-                No invitations are waiting to be accepted.
+                {t('No invitations are waiting to be accepted.')}
             </p>
         );
     }
@@ -38,23 +43,26 @@ export default function WorkspaceInvitationList({
                     <Mail className="size-5 shrink-0 text-muted-foreground" />
 
                     <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
+                        <p className="truncate text-sm font-medium" dir="auto">
                             {invitation.email}
                         </p>
                         <p className="truncate text-sm text-muted-foreground">
-                            Expires{' '}
-                            {new Date(
-                                invitation.expires_at,
-                            ).toLocaleDateString()}
+                            {t('Expires :date', {
+                                date: formatDate(invitation.expires_at),
+                            })}
                         </p>
                     </div>
 
-                    <Badge variant="secondary">{invitation.role}</Badge>
+                    <Badge variant="secondary">
+                        {t(WORKSPACE_ROLE_LABEL[invitation.role])}
+                    </Badge>
 
                     <Button
                         variant="ghost"
                         size="icon"
-                        aria-label={`Revoke the invitation for ${invitation.email}`}
+                        aria-label={t('Revoke the invitation for :email', {
+                            email: invitation.email,
+                        })}
                         onClick={() =>
                             revokeInvitation(workspace.slug, invitation.id)
                         }

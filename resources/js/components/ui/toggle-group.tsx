@@ -3,6 +3,7 @@ import { type VariantProps } from "class-variance-authority"
 import * as React from "react"
 
 import { toggleVariants } from "@/components/ui/toggle"
+import { useLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 const ToggleGroupContext = React.createContext<
@@ -17,12 +18,16 @@ function ToggleGroup({
   variant,
   size,
   children,
+  dir,
   ...props
 }: React.ComponentProps<typeof ToggleGroupPrimitive.Root> &
   VariantProps<typeof toggleVariants>) {
+  const { direction } = useLocale()
+
   return (
     <ToggleGroupPrimitive.Root
       data-slot="toggle-group"
+      dir={dir ?? direction}
       data-variant={variant}
       data-size={size}
       className={cn(
@@ -58,7 +63,7 @@ function ToggleGroupItem({
           variant: context.variant || variant,
           size: context.size || size,
         }),
-        "min-w-0 shrink-0 rounded-none shadow-none first:rounded-l-md last:rounded-r-md focus:z-10 focus-visible:z-10 data-[variant=outline]:border-l-0 data-[variant=outline]:first:border-l",
+        "min-w-0 shrink-0 rounded-none shadow-none first:rounded-s-md last:rounded-e-md focus:z-10 focus-visible:z-10 data-[variant=outline]:border-s-0 data-[variant=outline]:first:border-s",
         className
       )}
       {...props}

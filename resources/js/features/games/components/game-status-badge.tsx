@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/lib/i18n';
 import type { GameStatus } from '../types/game';
 
 type GameStatusBadgeProps = {
@@ -34,6 +35,10 @@ const PRESENTATION: Record<
     archived: { icon: Archive, variant: 'secondary' },
 };
 
+/**
+ * English wording for when the server has not sent a label with the game.
+ * Passed through `t()` at render, so it translates like anything else.
+ */
 const FALLBACK_LABEL: Record<GameStatus, string> = {
     draft: 'Draft',
     active: 'Active',
@@ -53,12 +58,13 @@ export default function GameStatusBadge({
     status,
     label,
 }: GameStatusBadgeProps) {
+    const { t } = useTranslation();
     const { icon: Icon, variant } = PRESENTATION[status];
 
     return (
         <Badge variant={variant} data-test={`game-status-${status}`}>
             <Icon className="size-3" />
-            {label ?? FALLBACK_LABEL[status]}
+            {label ?? t(FALLBACK_LABEL[status])}
         </Badge>
     );
 }

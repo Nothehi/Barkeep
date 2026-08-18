@@ -4,6 +4,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/lib/i18n';
 import { adoptFramework } from '../api';
 import type { Framework } from '../types/framework';
 
@@ -38,6 +39,7 @@ export default function AdoptFrameworkPanel({
     frameworks,
     canAssign,
 }: AdoptFrameworkPanelProps) {
+    const { t } = useTranslation();
     const [pending, setPending] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -54,12 +56,13 @@ export default function AdoptFrameworkPanel({
                 <Compass className="size-6 text-muted-foreground" />
 
                 <p className="text-sm font-medium">
-                    No frameworks are available yet
+                    {t('No frameworks are available yet')}
                 </p>
 
                 <p className="max-w-md text-sm text-muted-foreground">
-                    A methodology has to have a published edition before a game
-                    can follow it.
+                    {t(
+                        'A methodology has to have a published edition before a game can follow it.',
+                    )}
                 </p>
             </div>
         );
@@ -68,12 +71,14 @@ export default function AdoptFrameworkPanel({
     return (
         <div className="space-y-4" data-test="adopt-framework-panel">
             <div className="space-y-1">
-                <h2 className="text-sm font-medium">Choose a framework</h2>
+                <h2 className="text-sm font-medium">
+                    {t('Choose a framework')}
+                </h2>
 
                 <p className="text-sm text-muted-foreground">
-                    This game will follow the edition you pick for as long as it
-                    exists — later editions will not move it, so its answers
-                    stay attached to the questions that were actually asked.
+                    {t(
+                        'This game will follow the edition you pick for as long as it exists — later editions will not move it, so its answers stay attached to the questions that were actually asked.',
+                    )}
                 </p>
             </div>
 
@@ -86,7 +91,7 @@ export default function AdoptFrameworkPanel({
                     return (
                         <Card key={framework.id}>
                             <CardHeader className="gap-1">
-                                <span className="font-medium">
+                                <span className="font-medium" dir="auto">
                                     {framework.name}
                                 </span>
 
@@ -98,7 +103,10 @@ export default function AdoptFrameworkPanel({
 
                             <CardContent className="space-y-3">
                                 {framework.description && (
-                                    <p className="line-clamp-3 text-sm text-muted-foreground">
+                                    <p
+                                        className="line-clamp-3 text-sm text-muted-foreground"
+                                        dir="auto"
+                                    >
                                         {framework.description}
                                     </p>
                                 )}
@@ -125,7 +133,9 @@ export default function AdoptFrameworkPanel({
                                         data-test={`adopt-${framework.slug}`}
                                     >
                                         {pending === edition.id && <Spinner />}
-                                        Follow {edition.label}
+                                        {t('Follow :edition', {
+                                            edition: edition.label,
+                                        })}
                                     </Button>
                                 )}
                             </CardContent>

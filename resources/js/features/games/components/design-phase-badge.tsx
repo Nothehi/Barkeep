@@ -1,5 +1,6 @@
 import { Compass } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/lib/i18n';
 import type { DesignPhase } from '../types/game';
 
 type DesignPhaseBadgeProps = {
@@ -29,10 +30,12 @@ export default function DesignPhaseBadge({
     phase,
     label,
 }: DesignPhaseBadgeProps) {
+    const { t } = useTranslation();
+
     return (
         <Badge variant="outline" data-test={`design-phase-${phase}`}>
             <Compass className="size-3" />
-            {label ?? FALLBACK_LABEL[phase]}
+            {label ?? t(FALLBACK_LABEL[phase])}
         </Badge>
     );
 }
