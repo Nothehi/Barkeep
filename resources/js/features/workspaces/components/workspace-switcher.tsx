@@ -81,7 +81,7 @@ export default function WorkspaceSwitcher() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="group-data-[collapsible=icon]:p-2! data-[state=open]:bg-sidebar-accent"
+                            className="data-[state=open]:bg-sidebar-accent group-data-[collapsible=icon]:p-2!"
                             data-test="workspace-switcher"
                         >
                             <LayoutGrid className="size-4 shrink-0" />
