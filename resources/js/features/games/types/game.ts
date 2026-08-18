@@ -7,6 +7,7 @@
  */
 
 import type { User } from '@/features/auth';
+import type { DesignRecord } from './design-record';
 
 /**
  * Where a game project is in its own life.
@@ -125,12 +126,20 @@ export type GameVersion = {
 /**
  * What a game's overview screen is made of.
  *
- * Deliberately thin. Playtest counts, feedback summaries and progress metrics
- * belong to contexts that do not exist yet.
+ * Playtest counts, feedback summaries and progress metrics are still absent,
+ * because the contexts that would answer them do not exist yet.
  */
 export type GameDashboard = {
     versions_count: number;
     latest_version: { data: GameVersion } | null;
+
+    /**
+     * What has been decided about the design, or null when nothing has been.
+     * The overview draws an invitation from the null rather than a record full
+     * of nulls, so "not decided" stays distinguishable from "decided to leave
+     * blank".
+     */
+    design_record: { data: DesignRecord } | null;
 };
 
 /**
