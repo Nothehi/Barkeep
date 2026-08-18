@@ -12,6 +12,21 @@ export type WorkspaceStatus = 'active' | 'archived' | 'suspended';
 
 export type WorkspaceRole = 'owner' | 'admin' | 'member';
 
+/**
+ * The English wording of each role, to be passed through `t()` where it is
+ * rendered.
+ *
+ * The resources send `role` as the bare enum value rather than a worded
+ * label, so unlike a game's status the client has to supply the noun. Kept
+ * beside the type it describes so a new role cannot be added to one without
+ * the other failing to compile.
+ */
+export const WORKSPACE_ROLE_LABEL: Record<WorkspaceRole, string> = {
+    owner: 'Owner',
+    admin: 'Admin',
+    member: 'Member',
+};
+
 export type InvitationStatus = 'pending' | 'accepted' | 'revoked' | 'expired';
 
 /**

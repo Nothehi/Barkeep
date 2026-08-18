@@ -21,6 +21,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/lib/i18n';
 import { inviteMember } from '../api';
 import type { AssignableWorkspaceRole, Workspace } from '../types/workspace';
 
@@ -38,6 +39,7 @@ type InviteMemberDialogProps = {
 export default function InviteMemberDialog({
     workspace,
 }: InviteMemberDialogProps) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<AssignableWorkspaceRole>('member');
@@ -70,29 +72,36 @@ export default function InviteMemberDialog({
             <DialogTrigger asChild>
                 <Button data-test="invite-member-button">
                     <UserPlus className="size-4" />
-                    Invite member
+                    {t('Invite member')}
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Invite to {workspace.name}</DialogTitle>
+                    <DialogTitle>
+                        {t('Invite to :workspace', {
+                            workspace: workspace.name,
+                        })}
+                    </DialogTitle>
                     <DialogDescription>
-                        We will email an invitation link. It expires in two
-                        weeks and can only be used by the address you enter.
+                        {t(
+                            'We will email an invitation link. It expires in two weeks and can only be used by the address you enter.',
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="invite-email">Email address</Label>
+                        <Label htmlFor="invite-email">
+                            {t('Email address')}
+                        </Label>
 
                         <Input
                             id="invite-email"
                             type="email"
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
-                            placeholder="designer@example.com"
+                            placeholder={t('designer@example.com')}
                             autoComplete="off"
                             required
                         />
@@ -101,7 +110,7 @@ export default function InviteMemberDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="invite-role">Role</Label>
+                        <Label htmlFor="invite-role">{t('Role')}</Label>
 
                         <Select
                             value={role}
@@ -114,8 +123,12 @@ export default function InviteMemberDialog({
                             </SelectTrigger>
 
                             <SelectContent>
-                                <SelectItem value="member">Member</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="member">
+                                    {t('Member')}
+                                </SelectItem>
+                                <SelectItem value="admin">
+                                    {t('Admin')}
+                                </SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -125,7 +138,7 @@ export default function InviteMemberDialog({
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setOpen(false)}>
-                        Cancel
+                        {t('Cancel')}
                     </Button>
 
                     <Button
@@ -134,7 +147,7 @@ export default function InviteMemberDialog({
                         data-test="send-invitation-button"
                     >
                         {processing && <Spinner />}
-                        Send invitation
+                        {t('Send invitation')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

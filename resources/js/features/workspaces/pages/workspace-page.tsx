@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { Gamepad2, Settings, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslation } from '@/lib/i18n';
 import games from '@/routes/games';
 import members from '@/routes/workspaces/members';
 import settings from '@/routes/workspaces/settings';
@@ -29,6 +30,7 @@ export default function WorkspacePage({
     workspace: { data: workspace },
 }: WorkspacePageProps) {
     const permissions = useWorkspacePermissions(workspace);
+    const { t, choice } = useTranslation();
 
     return (
         <>
@@ -40,18 +42,18 @@ export default function WorkspacePage({
                 <div className="grid gap-4 sm:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Games</CardTitle>
+                            <CardTitle>{t('Games')}</CardTitle>
                         </CardHeader>
 
                         <CardContent className="space-y-4">
                             <p className="text-sm text-muted-foreground">
-                                The board games being designed here.
+                                {t('The board games being designed here.')}
                             </p>
 
                             <Button variant="outline" asChild>
                                 <Link href={games.index(workspace.slug)}>
                                     <Gamepad2 className="size-4" />
-                                    View games
+                                    {t('View games')}
                                 </Link>
                             </Button>
                         </CardContent>
@@ -59,19 +61,21 @@ export default function WorkspacePage({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Members</CardTitle>
+                            <CardTitle>{t('Members')}</CardTitle>
                         </CardHeader>
 
                         <CardContent className="space-y-4">
                             <p className="text-sm text-muted-foreground">
-                                {workspace.members_count ?? 0} in this
-                                workspace.
+                                {choice(
+                                    ':count person in this workspace.|:count people in this workspace.',
+                                    workspace.members_count ?? 0,
+                                )}
                             </p>
 
                             <Button variant="outline" asChild>
                                 <Link href={members.index(workspace.slug)}>
                                     <Users className="size-4" />
-                                    View members
+                                    {t('View members')}
                                 </Link>
                             </Button>
                         </CardContent>
@@ -80,19 +84,20 @@ export default function WorkspacePage({
                     {permissions.canUpdate && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Settings</CardTitle>
+                                <CardTitle>{t('Settings')}</CardTitle>
                             </CardHeader>
 
                             <CardContent className="space-y-4">
                                 <p className="text-sm text-muted-foreground">
-                                    Rename the workspace, change its address or
-                                    retire it.
+                                    {t(
+                                        'Rename the workspace, change its address or retire it.',
+                                    )}
                                 </p>
 
                                 <Button variant="outline" asChild>
                                     <Link href={settings.edit(workspace.slug)}>
                                         <Settings className="size-4" />
-                                        Open settings
+                                        {t('Open settings')}
                                     </Link>
                                 </Button>
                             </CardContent>

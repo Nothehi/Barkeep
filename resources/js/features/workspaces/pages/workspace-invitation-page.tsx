@@ -4,9 +4,11 @@ import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/features/auth';
+import { useTranslation } from '@/lib/i18n';
 import { login, register } from '@/routes';
 import workspaceInvitations from '@/routes/workspace-invitations';
 import type { PublicWorkspaceInvitation } from '../types/workspace';
+import { WORKSPACE_ROLE_LABEL } from '../types/workspace';
 
 type WorkspaceInvitationPageProps = {
     invitation: { data: PublicWorkspaceInvitation };
@@ -31,10 +33,22 @@ export default function WorkspaceInvitationPage({
     matchesAccount,
 }: WorkspaceInvitationPageProps) {
     const { isAuthenticated } = useAuth();
+    const { t } = useTranslation();
     const [processing, setProcessing] = useState(false);
 
-    const workspaceName = invitation.workspace.name ?? 'a workspace';
+    const workspaceName = invitation.workspace.name ?? t('a workspace');
     const isPending = invitation.status === 'pending';
+
+    /**
+     * The status is only ever read inside the "no longer valid" sentence, so
+     * it is worded as a past participle that fits it rather than as a badge.
+     */
+    const statusWording: Record<string, string> = {
+        accepted: t('accepted'),
+        revoked: t('revoked'),
+        expired: t('expired'),
+        pending: t('pending'),
+    };
 
     const accept = () => {
         setProcessing(true);
@@ -48,43 +62,57 @@ export default function WorkspaceInvitationPage({
 
     return (
         <>
-            <Head title={`Join ${workspaceName}`} />
+            <Head title={t('Join :workspace', { workspace: workspaceName })} />
 
             <div className="mx-auto flex min-h-svh max-w-md flex-col justify-center gap-6 px-4 py-12">
                 <div className="space-y-2 text-center">
                     <h1 className="text-xl font-semibold tracking-tight">
-                        Join {workspaceName}
+                        {t('Join :workspace', { workspace: workspaceName })}
                     </h1>
 
                     <p className="text-sm text-muted-foreground">
-                        You have been invited to {workspaceName} as{' '}
-                        {invitation.role}.
+                        {t('You have been invited to :workspace as :role.', {
+                            workspace: workspaceName,
+                            role: t(WORKSPACE_ROLE_LABEL[invitation.role]),
+                        })}
                     </p>
                 </div>
 
                 {!isPending && (
                     <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
-                        This invitation is no longer valid — it has been{' '}
-                        {invitation.status}. Ask an administrator of{' '}
-                        {workspaceName} to send a new one.
+                        {t(
+                            'This invitation is no longer valid — it has been :status. Ask an administrator of :workspace to send a new one.',
+                            {
+                                status:
+                                    statusWording[invitation.status] ??
+                                    invitation.status,
+                                workspace: workspaceName,
+                            },
+                        )}
                     </p>
                 )}
 
                 {isPending && !isAuthenticated && (
                     <div className="space-y-4 text-center">
                         <p className="text-sm text-muted-foreground">
-                            Sign in as {invitation.email} to accept, or create
-                            an account with that address.
+                            {t(
+                                'Sign in as :email to accept, or create an account with that address.',
+                                { email: invitation.email },
+                            )}
                         </p>
 
                         <div className="flex flex-col gap-2">
                             <Button asChild>
-                                <a href={register.url()}>Create an account</a>
+                                <a href={register.url()}>
+                                    {t('Create an account')}
+                                </a>
                             </Button>
 
                             <p className="text-sm text-muted-foreground">
-                                Already have one?{' '}
-                                <TextLink href={login()}>Sign in</TextLink>
+                                {t('Already have one?')}{' '}
+                                <TextLink href={login()}>
+                                    {t('Sign in')}
+                                </TextLink>
                             </p>
                         </div>
                     </div>
@@ -92,8 +120,10 @@ export default function WorkspaceInvitationPage({
 
                 {isPending && isAuthenticated && !matchesAccount && (
                     <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
-                        This invitation was sent to {invitation.email}. Sign in
-                        with that address to accept it.
+                        {t(
+                            'This invitation was sent to :email. Sign in with that address to accept it.',
+                            { email: invitation.email },
+                        )}
                     </p>
                 )}
 
@@ -104,7 +134,7 @@ export default function WorkspaceInvitationPage({
                         data-test="accept-invitation-button"
                     >
                         {processing && <Spinner />}
-                        Accept invitation
+                        {t('Accept invitation')}
                     </Button>
                 )}
             </div>

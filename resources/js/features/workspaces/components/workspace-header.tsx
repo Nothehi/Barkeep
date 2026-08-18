@@ -3,6 +3,7 @@ import { Archive, Settings, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import members from '@/routes/workspaces/members';
 import settings from '@/routes/workspaces/settings';
@@ -23,6 +24,7 @@ type WorkspaceHeaderProps = {
 export default function WorkspaceHeader({ workspace }: WorkspaceHeaderProps) {
     const permissions = useWorkspacePermissions(workspace);
     const { isCurrentUrl } = useCurrentUrl();
+    const { t } = useTranslation();
 
     const membersUrl = members.index(workspace.slug);
     const settingsUrl = settings.edit(workspace.slug);
@@ -32,24 +34,33 @@ export default function WorkspaceHeader({ workspace }: WorkspaceHeaderProps) {
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 space-y-1">
                     <div className="flex items-center gap-2">
-                        <h1 className="truncate text-xl font-semibold tracking-tight">
+                        <h1
+                            className="truncate text-xl font-semibold tracking-tight"
+                            dir="auto"
+                        >
                             {workspace.name}
                         </h1>
 
                         {workspace.status === 'archived' && (
                             <Badge variant="secondary">
                                 <Archive />
-                                Archived
+                                {t('Archived')}
                             </Badge>
                         )}
                     </div>
 
-                    <p className="truncate text-sm text-muted-foreground">
+                    <p
+                        className="truncate text-sm text-muted-foreground"
+                        dir="ltr"
+                    >
                         /{workspace.slug}
                     </p>
                 </div>
 
-                <nav className="flex items-center gap-2" aria-label="Workspace">
+                <nav
+                    className="flex items-center gap-2"
+                    aria-label={t('Workspace')}
+                >
                     <Button
                         size="sm"
                         variant="ghost"
@@ -58,7 +69,7 @@ export default function WorkspaceHeader({ workspace }: WorkspaceHeaderProps) {
                     >
                         <Link href={membersUrl}>
                             <Users className="size-4" />
-                            Members
+                            {t('Members')}
                         </Link>
                     </Button>
 
@@ -73,7 +84,7 @@ export default function WorkspaceHeader({ workspace }: WorkspaceHeaderProps) {
                         >
                             <Link href={settingsUrl}>
                                 <Settings className="size-4" />
-                                Settings
+                                {t('Settings')}
                             </Link>
                         </Button>
                     )}
@@ -81,7 +92,10 @@ export default function WorkspaceHeader({ workspace }: WorkspaceHeaderProps) {
             </div>
 
             {workspace.description && (
-                <p className="max-w-2xl text-sm text-muted-foreground">
+                <p
+                    className="max-w-2xl text-sm text-muted-foreground"
+                    dir="auto"
+                >
                     {workspace.description}
                 </p>
             )}

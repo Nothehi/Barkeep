@@ -9,7 +9,9 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useInitials } from '@/hooks/use-initials';
+import { useTranslation } from '@/lib/i18n';
 import type { WorkspaceMember, WorkspacePermissions } from '../types/workspace';
+import { WORKSPACE_ROLE_LABEL } from '../types/workspace';
 
 type WorkspaceMemberRowProps = {
     member: WorkspaceMember;
@@ -35,6 +37,7 @@ export default function WorkspaceMemberRow({
     onRemove,
 }: WorkspaceMemberRowProps) {
     const getInitials = useInitials();
+    const { t } = useTranslation();
     const isOwner = member.role === 'owner';
 
     const canChangeRole = permissions.canChangeRoles && !isOwner;
@@ -51,21 +54,26 @@ export default function WorkspaceMemberRow({
 
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">
-                    {member.user?.name ?? 'Unknown member'}
+                    <span dir="auto">
+                        {member.user?.name ?? t('Unknown member')}
+                    </span>
                     {isSelf && (
-                        <span className="ml-1.5 text-muted-foreground">
-                            (you)
+                        <span className="ms-1.5 text-muted-foreground">
+                            {t('(you)')}
                         </span>
                     )}
                 </p>
-                <p className="truncate text-sm text-muted-foreground">
+                <p
+                    className="truncate text-sm text-muted-foreground"
+                    dir="auto"
+                >
                     {member.user?.email}
                 </p>
             </div>
 
             <Badge variant={isOwner ? 'default' : 'secondary'}>
                 {isOwner && <ShieldCheck />}
-                {member.role}
+                {t(WORKSPACE_ROLE_LABEL[member.role])}
             </Badge>
 
             {hasActions && (
@@ -74,7 +82,9 @@ export default function WorkspaceMemberRow({
                         <Button
                             variant="ghost"
                             size="icon"
-                            aria-label={`Manage ${member.user?.name ?? 'member'}`}
+                            aria-label={t('Manage :name', {
+                                name: member.user?.name ?? t('member'),
+                            })}
                         >
                             <MoreHorizontal className="size-4" />
                         </Button>
@@ -86,7 +96,7 @@ export default function WorkspaceMemberRow({
                                 onSelect={() => onChangeRole(member)}
                             >
                                 <ShieldCheck className="size-4" />
-                                Change role
+                                {t('Change role')}
                             </DropdownMenuItem>
                         )}
 
@@ -96,7 +106,7 @@ export default function WorkspaceMemberRow({
                                 onSelect={() => onRemove(member)}
                             >
                                 <UserMinus className="size-4" />
-                                Remove from workspace
+                                {t('Remove from workspace')}
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>
