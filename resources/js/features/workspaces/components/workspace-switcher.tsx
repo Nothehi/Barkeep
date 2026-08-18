@@ -49,7 +49,19 @@ export default function WorkspaceSwitcher() {
         return (
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild size="lg">
+                    <SidebarMenuButton
+                        asChild
+                        size="lg"
+                        /**
+                         * `size="lg"` drops the button's padding when the rail
+                         * collapses, which is right for the logo and the
+                         * avatar — both fill the icon box themselves. This
+                         * button leads with a bare icon, so the padding has to
+                         * come back or the icon sits against the start edge
+                         * instead of in the middle of its box.
+                         */
+                        className="group-data-[collapsible=icon]:p-2!"
+                    >
                         <Link href={workspaces.create()}>
                             <Plus className="size-4" />
                             <span className="truncate font-medium">
@@ -69,7 +81,7 @@ export default function WorkspaceSwitcher() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="data-[state=open]:bg-sidebar-accent"
+                            className="data-[state=open]:bg-sidebar-accent group-data-[collapsible=icon]:p-2!"
                             data-test="workspace-switcher"
                         >
                             <LayoutGrid className="size-4 shrink-0" />
