@@ -166,6 +166,8 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.87 0 0);
+    --scrollbar-thumb: oklch(0.87 0 0);
+    --scrollbar-thumb-hover: oklch(0.72 0 0);
 }
 
 .dark {
@@ -201,6 +203,8 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(0.269 0 0);
     --sidebar-ring: oklch(0.439 0 0);
+    --scrollbar-thumb: oklch(0.35 0 0);
+    --scrollbar-thumb-hover: oklch(0.46 0 0);
 }
 
 @layer base {
@@ -210,5 +214,53 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+
+    /*
+     * The scrollbar is chrome, not content: a thin neutral thumb over no track
+     * at all. It is themed rather than left to the operating system because the
+     * shell owns its own scroll region (see `components/app-shell.tsx`), and a
+     * platform-grey bar running down the inside of a rounded card reads as a
+     * mistake. Both thumb colours are defined per theme, so dark mode follows
+     * without a rule of its own.
+     *
+     * The same scrollbar is spelled twice. Firefox has only the standard
+     * properties, which inherit, so `:root` is enough to reach every scroller
+     * on the page. WebKit and Chromium have the pseudo-elements, which is the
+     * only way to express a rounded thumb inset from the edge. Chromium honours
+     * `scrollbar-color` ahead of its own pseudo-elements when both are set, so
+     * the standard block sits behind a query that only Firefox fails —
+     * otherwise it would win everywhere and the rounding would never show.
+     */
+    @supports not selector(::-webkit-scrollbar) {
+        :root {
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) transparent;
+        }
+    }
+
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
+    /*
+     * A scrollbar part takes no padding, so the inset that keeps the thumb off
+     * the edge is a transparent border with the background clipped inside it.
+     */
+    ::-webkit-scrollbar-thumb {
+        background-color: var(--scrollbar-thumb);
+        background-clip: content-box;
+        border: 2px solid transparent;
+        border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: var(--scrollbar-thumb-hover);
     }
 }
