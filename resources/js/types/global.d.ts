@@ -1,4 +1,5 @@
 import type { WorkspaceNavigation } from '@/features/workspaces/types/workspace';
+import type { LocaleState, TranslationCatalogue } from '@/lib/i18n';
 import type { Auth } from '@/types/auth';
 
 declare module 'react' {
@@ -21,6 +22,18 @@ declare module '@inertiajs/core' {
             workspaces: WorkspaceNavigation | null;
 
             sidebarOpen: boolean;
+
+            /**
+             * The active language, its direction, and the ones on offer.
+             */
+            locale: LocaleState;
+
+            /**
+             * Sent as a once prop, so it arrives on the first visit of a
+             * locale and is replayed by the client from then on.
+             */
+            translations: TranslationCatalogue;
+
             [key: string]: unknown;
         };
     }
