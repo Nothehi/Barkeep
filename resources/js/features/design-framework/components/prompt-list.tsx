@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { respondToPrompt } from '../api';
 import type { DesignPrompt, PromptResponse } from '../types/framework';
 
@@ -33,6 +34,8 @@ export default function PromptList({
     responses,
     canRecord,
 }: PromptListProps) {
+    const { t } = useTranslation();
+
     const byPrompt = new Map(
         responses.map((response) => [response.prompt_id, response]),
     );
@@ -43,7 +46,7 @@ export default function PromptList({
 
     return (
         <section className="space-y-3" data-test="prompt-list">
-            <h2 className="text-sm font-medium">Questions to answer</h2>
+            <h2 className="text-sm font-medium">{t('Questions to answer')}</h2>
 
             <div className="grid gap-3">
                 {prompts.map((prompt) => (
@@ -76,6 +79,7 @@ function PromptRow({
     response,
     canRecord,
 }: PromptRowProps) {
+    const { t } = useTranslation();
     const [draft, setDraft] = useState(response?.response ?? '');
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -85,9 +89,11 @@ function PromptRow({
     return (
         <Card data-test={`prompt-${prompt.id}`}>
             <CardHeader className="gap-1">
-                <span className="font-medium">{prompt.title}</span>
+                <span className="font-medium" dir="auto">
+                    {prompt.title}
+                </span>
 
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground" dir="auto">
                     {prompt.prompt}
                 </span>
             </CardHeader>
@@ -99,12 +105,17 @@ function PromptRow({
                             value={draft}
                             onChange={(event) => setDraft(event.target.value)}
                             rows={5}
-                            placeholder="Write what is true of this game today."
+                            placeholder={t(
+                                'Write what is true of this game today.',
+                            )}
                             data-test={`prompt-input-${prompt.id}`}
                         />
 
                         {errors.response && (
-                            <p className="text-sm text-red-600 dark:text-red-400">
+                            <p
+                                className="text-sm text-red-600 dark:text-red-400"
+                                dir="auto"
+                            >
                                 {errors.response}
                             </p>
                         )}
@@ -137,27 +148,25 @@ function PromptRow({
                             >
                                 {processing && <Spinner />}
                                 {response === null
-                                    ? 'Answer'
-                                    : 'Replace answer'}
+                                    ? t('Answer')
+                                    : t('Replace answer')}
                             </Button>
 
                             {response !== null && !unsaved && (
                                 <span className="text-xs text-muted-foreground">
-                                    Answered
                                     {response.was_revised
-                                        ? ', and revised since'
-                                        : ''}
-                                    .
+                                        ? t('Answered, and revised since.')
+                                        : t('Answered.')}
                                 </span>
                             )}
                         </div>
                     </>
                 ) : response === null ? (
                     <p className="text-sm text-muted-foreground">
-                        Not answered yet.
+                        {t('Not answered yet.')}
                     </p>
                 ) : (
-                    <p className="text-sm whitespace-pre-line">
+                    <p className="text-sm whitespace-pre-line" dir="auto">
                         {response.response}
                     </p>
                 )}

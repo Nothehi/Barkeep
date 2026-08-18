@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTranslation } from '@/lib/i18n';
 import { completePractice } from '../api';
 import type { DesignPractice, PracticeCompletion } from '../types/framework';
 
@@ -30,6 +31,7 @@ export default function PracticeList({
     completions,
     canRecord,
 }: PracticeListProps) {
+    const { t } = useTranslation();
     const [pending, setPending] = useState<string | null>(null);
 
     const done = new Set(
@@ -42,7 +44,7 @@ export default function PracticeList({
 
     return (
         <section className="space-y-3" data-test="practice-list">
-            <h2 className="text-sm font-medium">Practices</h2>
+            <h2 className="text-sm font-medium">{t('Practices')}</h2>
 
             <div className="grid gap-3">
                 {practices.map((practice) => {
@@ -80,12 +82,18 @@ export default function PracticeList({
                                     />
 
                                     <span className="min-w-0 space-y-1">
-                                        <span className="block font-medium">
+                                        <span
+                                            className="block font-medium"
+                                            dir="auto"
+                                        >
                                             {practice.title}
                                         </span>
 
                                         {practice.description && (
-                                            <span className="block text-sm text-muted-foreground">
+                                            <span
+                                                className="block text-sm text-muted-foreground"
+                                                dir="auto"
+                                            >
                                                 {practice.description}
                                             </span>
                                         )}
@@ -95,7 +103,10 @@ export default function PracticeList({
 
                             {practice.instructions && (
                                 <CardContent>
-                                    <p className="text-sm whitespace-pre-line text-muted-foreground">
+                                    <p
+                                        className="text-sm whitespace-pre-line text-muted-foreground"
+                                        dir="auto"
+                                    >
                                         {practice.instructions}
                                     </p>
                                 </CardContent>

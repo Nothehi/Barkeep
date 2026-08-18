@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { createVersion } from '../api';
 import type { Framework, FrameworkVersion } from '../types/framework';
 
@@ -39,6 +40,7 @@ export default function CreateVersionDialog({
     framework,
     versions,
 }: CreateVersionDialogProps) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -70,17 +72,20 @@ export default function CreateVersionDialog({
             <DialogTrigger asChild>
                 <Button data-test="create-version-button">
                     <Plus className="size-4" />
-                    New edition
+                    {t('New edition')}
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Cut v{nextNumber}</DialogTitle>
+                    <DialogTitle>
+                        {t('Cut v:number', { number: nextNumber })}
+                    </DialogTitle>
                     <DialogDescription>
-                        Edition numbers are assigned in order, so this will be v
-                        {nextNumber}. It starts empty — nothing is carried over
-                        from the previous edition.
+                        {t(
+                            'Edition numbers are assigned in order, so this will be v:number. It starts empty — nothing is carried over from the previous edition.',
+                            { number: nextNumber },
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -106,13 +111,17 @@ export default function CreateVersionDialog({
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="version-name">Name (optional)</Label>
+                        <Label htmlFor="version-name">
+                            {t('Name (optional)')}
+                        </Label>
 
                         <Input
                             id="version-name"
                             value={name}
                             onChange={(event) => setName(event.target.value)}
-                            placeholder="The one with the playtesting phase"
+                            placeholder={t(
+                                'The one with the playtesting phase',
+                            )}
                             autoFocus
                             data-test="version-name-input"
                         />
@@ -122,7 +131,7 @@ export default function CreateVersionDialog({
 
                     <div className="grid gap-2">
                         <Label htmlFor="version-description">
-                            What changed
+                            {t('What changed')}
                         </Label>
 
                         <Textarea
@@ -144,7 +153,7 @@ export default function CreateVersionDialog({
                             variant="outline"
                             onClick={() => close(false)}
                         >
-                            Cancel
+                            {t('Cancel')}
                         </Button>
 
                         <Button
@@ -153,7 +162,7 @@ export default function CreateVersionDialog({
                             data-test="version-submit"
                         >
                             {processing && <Spinner />}
-                            Cut v{nextNumber}
+                            {t('Cut v:number', { number: nextNumber })}
                         </Button>
                     </DialogFooter>
                 </form>

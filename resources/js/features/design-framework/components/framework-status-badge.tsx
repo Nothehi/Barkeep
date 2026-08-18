@@ -1,6 +1,7 @@
 import { Archive, CircleCheck, PencilLine } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/lib/i18n';
 import type { FrameworkStatus } from '../types/framework';
 
 type FrameworkStatusBadgeProps = {
@@ -44,12 +45,13 @@ export default function FrameworkStatusBadge({
     status,
     label,
 }: FrameworkStatusBadgeProps) {
+    const { t } = useTranslation();
     const { icon: Icon, variant } = PRESENTATION[status];
 
     return (
         <Badge variant={variant} data-test={`framework-status-${status}`}>
             <Icon className="size-3" />
-            {label ?? FALLBACK_LABEL[status]}
+            {label ?? t(FALLBACK_LABEL[status])}
         </Badge>
     );
 }

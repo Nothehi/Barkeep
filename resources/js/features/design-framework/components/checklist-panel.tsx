@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { completeChecklistItem } from '../api';
 import type { ChecklistProgress, GameDesignFacts } from '../types/framework';
 import AnsweredFromDesign from './answered-from-design';
@@ -32,6 +33,8 @@ export default function ChecklistPanel({
     design,
     canRecord,
 }: ChecklistPanelProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
     const [pending, setPending] = useState<string | null>(null);
 
     if (checklists.length === 0) {
@@ -40,7 +43,7 @@ export default function ChecklistPanel({
 
     return (
         <section className="space-y-3" data-test="checklist-panel">
-            <h2 className="text-sm font-medium">Checklists</h2>
+            <h2 className="text-sm font-medium">{t('Checklists')}</h2>
 
             <div className="grid gap-3">
                 {checklists.map((entry) => {
@@ -60,18 +63,27 @@ export default function ChecklistPanel({
                         >
                             <CardHeader className="gap-1">
                                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                                    <span className="font-medium">
+                                    <span className="font-medium" dir="auto">
                                         {checklist.title}
                                     </span>
 
                                     <span className="text-xs text-muted-foreground">
-                                        {entry.required.completed} of{' '}
-                                        {entry.required.total} required
+                                        {t(':completed of :total required', {
+                                            completed: formatNumber(
+                                                entry.required.completed,
+                                            ),
+                                            total: formatNumber(
+                                                entry.required.total,
+                                            ),
+                                        })}
                                     </span>
                                 </div>
 
                                 {checklist.description && (
-                                    <span className="text-sm text-muted-foreground">
+                                    <span
+                                        className="text-sm text-muted-foreground"
+                                        dir="auto"
+                                    >
                                         {checklist.description}
                                     </span>
                                 )}
@@ -85,14 +97,14 @@ export default function ChecklistPanel({
                                             className="space-y-0.5"
                                             data-test={`checklist-item-${item.id}`}
                                         >
-                                            <p className="text-sm">
+                                            <p className="text-sm" dir="auto">
                                                 {item.title}
                                             </p>
 
                                             <AnsweredFromDesign
                                                 label={
                                                     item.satisfied_by_label ??
-                                                    'this'
+                                                    t('this')
                                                 }
                                                 recorded={
                                                     design.facts[
@@ -140,17 +152,22 @@ export default function ChecklistPanel({
 
                                             <span className="min-w-0 space-y-0.5">
                                                 <span className="block text-sm">
-                                                    {item.title}
+                                                    <span dir="auto">
+                                                        {item.title}
+                                                    </span>
 
                                                     {!item.required && (
-                                                        <span className="ml-2 text-xs text-muted-foreground">
-                                                            optional
+                                                        <span className="ms-2 text-xs text-muted-foreground">
+                                                            {t('optional')}
                                                         </span>
                                                     )}
                                                 </span>
 
                                                 {item.description && (
-                                                    <span className="block text-xs text-muted-foreground">
+                                                    <span
+                                                        className="block text-xs text-muted-foreground"
+                                                        dir="auto"
+                                                    >
                                                         {item.description}
                                                     </span>
                                                 )}

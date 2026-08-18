@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { ChevronLeft, Lock, Users } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import frameworks from '@/routes/frameworks';
 import { moveVersion } from '../api';
 import type { BuilderRow } from '../components/builder-section';
@@ -53,21 +54,28 @@ export default function BuilderPage({
     prompts: { data: prompts },
     checklists: { data: checklists },
 }: BuilderPageProps) {
+    const { t, choice } = useTranslation();
+    const { formatNumber } = useFormatters();
     const editable = version.is_editable && version.permissions.canUpdate;
 
     return (
         <>
-            <Head title={`${version.label} · ${framework.name}`} />
+            <Head
+                title={t(':edition · :framework', {
+                    edition: version.label,
+                    framework: framework.name,
+                })}
+            />
 
             <div className="space-y-6 px-4 py-6">
-                <Button size="sm" variant="ghost" asChild className="-ml-2">
+                <Button size="sm" variant="ghost" asChild className="-ms-2">
                     <Link
                         href={frameworks.show.url({
                             framework: framework.slug,
                         })}
                     >
-                        <ChevronLeft className="size-4" />
-                        {framework.name}
+                        <ChevronLeft className="size-4 rtl:rotate-180" />
+                        <span dir="auto">{framework.name}</span>
                     </Link>
                 </Button>
 
@@ -77,7 +85,10 @@ export default function BuilderPage({
                             <h1 className="truncate text-xl font-semibold tracking-tight">
                                 {version.label}
                                 {version.name && (
-                                    <span className="ml-2 font-normal text-muted-foreground">
+                                    <span
+                                        className="ms-2 font-normal text-muted-foreground"
+                                        dir="auto"
+                                    >
                                         {version.name}
                                     </span>
                                 )}
@@ -93,9 +104,10 @@ export default function BuilderPage({
                                     version.adoptions_count > 0 && (
                                         <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                                             <Users className="size-3.5" />
-                                            {version.adoptions_count === 1
-                                                ? '1 game following'
-                                                : `${version.adoptions_count} games following`}
+                                            {choice(
+                                                ':count game following|:count games following',
+                                                version.adoptions_count,
+                                            )}
                                         </span>
                                     )}
                             </div>
@@ -116,7 +128,10 @@ export default function BuilderPage({
                     </div>
 
                     {version.description && (
-                        <p className="max-w-3xl text-sm text-muted-foreground">
+                        <p
+                            className="max-w-3xl text-sm text-muted-foreground"
+                            dir="auto"
+                        >
                             {version.description}
                         </p>
                     )}
@@ -125,12 +140,11 @@ export default function BuilderPage({
                 {!version.is_editable && (
                     <Alert data-test="version-frozen">
                         <Lock className="size-4" />
-                        <AlertTitle>This edition is frozen</AlertTitle>
+                        <AlertTitle>{t('This edition is frozen')}</AlertTitle>
                         <AlertDescription>
-                            Publishing an edition fixes its content, so the
-                            games following it keep answering the questions they
-                            were actually asked. Cut a new edition to change
-                            anything.
+                            {t(
+                                'Publishing an edition fixes its content, so the games following it keep answering the questions they were actually asked. Cut a new edition to change anything.',
+                            )}
                         </AlertDescription>
                     </Alert>
                 )}
@@ -139,8 +153,10 @@ export default function BuilderPage({
                     framework={framework.slug}
                     version={version.version_number}
                     type="phases"
-                    heading="Phases"
-                    description="The arc of the methodology, in the order it is worked through."
+                    heading={t('Phases')}
+                    description={t(
+                        'The arc of the methodology, in the order it is worked through.',
+                    )}
                     rows={phases.map(toPhaseRow)}
                     phases={phases}
                     editable={editable}
@@ -155,8 +171,10 @@ export default function BuilderPage({
                     framework={framework.slug}
                     version={version.version_number}
                     type="principles"
-                    heading="Principles"
-                    description="Design rules to hold in mind. Nothing to tick, and nothing that counts towards progress."
+                    heading={t('Principles')}
+                    description={t(
+                        'Design rules to hold in mind. Nothing to tick, and nothing that counts towards progress.',
+                    )}
                     rows={principles.map((row) => toRow(row, row.description))}
                     phases={phases}
                     editable={editable}
@@ -167,8 +185,10 @@ export default function BuilderPage({
                     framework={framework.slug}
                     version={version.version_number}
                     type="criteria"
-                    heading="Criteria"
-                    description="The questions the methodology asks of a design. A game grades itself against each one."
+                    heading={t('Criteria')}
+                    description={t(
+                        'The questions the methodology asks of a design. A game grades itself against each one.',
+                    )}
                     rows={criteria.map((row) => toRow(row, row.description))}
                     phases={phases}
                     editable={editable}
@@ -179,8 +199,10 @@ export default function BuilderPage({
                     framework={framework.slug}
                     version={version.version_number}
                     type="practices"
-                    heading="Practices"
-                    description="Activities a studio carries out and ticks off."
+                    heading={t('Practices')}
+                    description={t(
+                        'Activities a studio carries out and ticks off.',
+                    )}
                     rows={practices.map((row) =>
                         toRow(row, row.instructions ?? row.description),
                     )}
@@ -189,7 +211,7 @@ export default function BuilderPage({
                     fields={{
                         primary: 'title',
                         secondary: 'instructions',
-                        secondaryLabel: 'Instructions',
+                        secondaryLabel: t('Instructions'),
                     }}
                 />
 
@@ -197,15 +219,17 @@ export default function BuilderPage({
                     framework={framework.slug}
                     version={version.version_number}
                     type="prompts"
-                    heading="Questions to answer"
-                    description="Open questions a studio answers in prose. Reported beside progress, never counted into it."
+                    heading={t('Questions to answer')}
+                    description={t(
+                        'Open questions a studio answers in prose. Reported beside progress, never counted into it.',
+                    )}
                     rows={prompts.map((row) => toRow(row, row.prompt))}
                     phases={phases}
                     editable={editable}
                     fields={{
                         primary: 'title',
                         secondary: 'prompt',
-                        secondaryLabel: 'The question',
+                        secondaryLabel: t('The question'),
                     }}
                 />
 
@@ -213,14 +237,18 @@ export default function BuilderPage({
                     framework={framework.slug}
                     version={version.version_number}
                     type="checklists"
-                    heading="Checklists"
-                    description="Lists of requirements. Required items count towards progress; optional ones do not."
+                    heading={t('Checklists')}
+                    description={t(
+                        'Lists of requirements. Required items count towards progress; optional ones do not.',
+                    )}
                     rows={checklists.map((row) =>
                         toRow(
                             row,
                             row.items_count === undefined
                                 ? row.description
-                                : `${row.items_count} items`,
+                                : t(':count items', {
+                                      count: formatNumber(row.items_count),
+                                  }),
                         ),
                     )}
                     phases={phases}

@@ -1,3 +1,4 @@
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { ProgressRatio } from '../types/framework';
 
@@ -33,6 +34,8 @@ export default function ProgressBar({
     uncounted = false,
     className,
 }: ProgressBarProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
     const empty = ratio.total === 0;
 
     return (
@@ -41,16 +44,19 @@ export default function ProgressBar({
                 <span className="text-sm font-medium">
                     {label}
                     {uncounted && (
-                        <span className="ml-1.5 text-xs font-normal text-muted-foreground">
-                            not counted
+                        <span className="ms-1.5 text-xs font-normal text-muted-foreground">
+                            {t('not counted')}
                         </span>
                     )}
                 </span>
 
                 <span className="text-xs text-muted-foreground">
                     {empty
-                        ? 'Nothing to do'
-                        : `${ratio.completed} of ${ratio.total}`}
+                        ? t('Nothing to do')
+                        : t(':completed of :total', {
+                              completed: formatNumber(ratio.completed),
+                              total: formatNumber(ratio.total),
+                          })}
                 </span>
             </div>
 
@@ -60,7 +66,11 @@ export default function ProgressBar({
                 aria-valuenow={ratio.percentage}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-label={`${label}: ${ratio.completed} of ${ratio.total}`}
+                aria-label={t(':label: :completed of :total', {
+                    label,
+                    completed: formatNumber(ratio.completed),
+                    total: formatNumber(ratio.total),
+                })}
             >
                 <div
                     className={cn(

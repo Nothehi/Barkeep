@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import type { ContentInput, ContentType } from '../api';
 import { createContent, reorderContent } from '../api';
 import type { DesignPhase } from '../types/framework';
@@ -93,6 +94,7 @@ export default function BuilderSection({
     fields,
     filed = true,
 }: BuilderSectionProps) {
+    const { t } = useTranslation();
     const [adding, setAdding] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -146,7 +148,7 @@ export default function BuilderSection({
      * themselves.
      */
     const groups = filed
-        ? groupByPhase(rows, phases)
+        ? groupByPhase(rows, phases, t)
         : [{ key: 'all', label: null, rows }];
 
     return (
@@ -168,7 +170,7 @@ export default function BuilderSection({
                         data-test={`add-${type}`}
                     >
                         <Plus className="size-4" />
-                        Add
+                        {t('Add')}
                     </Button>
                 )}
             </div>
@@ -178,7 +180,9 @@ export default function BuilderSection({
                     <CardContent className="grid gap-3 py-4">
                         <div className="grid gap-2">
                             <Label htmlFor={`${type}-primary`}>
-                                {fields.primary === 'name' ? 'Name' : 'Title'}
+                                {fields.primary === 'name'
+                                    ? t('Name')
+                                    : t('Title')}
                             </Label>
 
                             <Input
@@ -197,7 +201,7 @@ export default function BuilderSection({
                         {fields.secondary && (
                             <div className="grid gap-2">
                                 <Label htmlFor={`${type}-secondary`}>
-                                    {fields.secondaryLabel ?? 'Description'}
+                                    {fields.secondaryLabel ?? t('Description')}
                                 </Label>
 
                                 <Textarea
@@ -218,7 +222,7 @@ export default function BuilderSection({
 
                         {filed && phases.length > 0 && (
                             <div className="grid gap-2">
-                                <Label>Phase</Label>
+                                <Label>{t('Phase')}</Label>
 
                                 <Select
                                     value={phaseId}
@@ -232,13 +236,14 @@ export default function BuilderSection({
 
                                     <SelectContent>
                                         <SelectItem value={UNFILED}>
-                                            No phase — applies throughout
+                                            {t('No phase — applies throughout')}
                                         </SelectItem>
 
                                         {phases.map((phase) => (
                                             <SelectItem
                                                 key={phase.id}
                                                 value={phase.id}
+                                                dir="auto"
                                             >
                                                 {phase.name}
                                             </SelectItem>
@@ -258,7 +263,7 @@ export default function BuilderSection({
                                 data-test={`${type}-submit`}
                             >
                                 {processing && <Spinner />}
-                                Add
+                                {t('Add')}
                             </Button>
 
                             <Button
@@ -269,7 +274,7 @@ export default function BuilderSection({
                                     setErrors({});
                                 }}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                         </div>
                     </CardContent>
@@ -278,7 +283,7 @@ export default function BuilderSection({
 
             {rows.length === 0 ? (
                 <p className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
-                    Nothing here yet.
+                    {t('Nothing here yet.')}
                 </p>
             ) : (
                 <div className="grid gap-4">
@@ -322,7 +327,12 @@ export default function BuilderSection({
                                                             onClick={() =>
                                                                 move(row, -1)
                                                             }
-                                                            aria-label={`Move ${row.label} up`}
+                                                            aria-label={t(
+                                                                'Move :label up',
+                                                                {
+                                                                    label: row.label,
+                                                                },
+                                                            )}
                                                             data-test={`${type}-up-${row.id}`}
                                                         >
                                                             <ChevronUp className="size-4" />
@@ -342,7 +352,12 @@ export default function BuilderSection({
                                                             onClick={() =>
                                                                 move(row, 1)
                                                             }
-                                                            aria-label={`Move ${row.label} down`}
+                                                            aria-label={t(
+                                                                'Move :label down',
+                                                                {
+                                                                    label: row.label,
+                                                                },
+                                                            )}
                                                             data-test={`${type}-down-${row.id}`}
                                                         >
                                                             <ChevronDown className="size-4" />
@@ -388,7 +403,11 @@ type Group = {
 /**
  * Split a flat, already-ordered list into its phase groups.
  */
-function groupByPhase(rows: BuilderRow[], phases: DesignPhase[]): Group[] {
+function groupByPhase(
+    rows: BuilderRow[],
+    phases: DesignPhase[],
+    t: (phrase: string) => string,
+): Group[] {
     const names = new Map(phases.map((phase) => [phase.id, phase.name]));
     const groups: Group[] = [];
 
@@ -405,8 +424,8 @@ function groupByPhase(rows: BuilderRow[], phases: DesignPhase[]): Group[] {
             key,
             label:
                 row.phase_id === null
-                    ? 'Applies throughout'
-                    : (names.get(row.phase_id) ?? 'Unknown phase'),
+                    ? t('Applies throughout')
+                    : (names.get(row.phase_id) ?? t('Unknown phase')),
             rows: [row],
         });
     }

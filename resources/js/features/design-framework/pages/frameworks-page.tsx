@@ -10,6 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useTranslation } from '@/lib/i18n';
 import CreateFrameworkDialog from '../components/create-framework-dialog';
 import FrameworkList from '../components/framework-list';
 import { useFrameworks } from '../hooks/use-frameworks';
@@ -47,19 +48,22 @@ export default function FrameworksPage({
     can,
     administration_configured: administrationConfigured,
 }: FrameworksPageProps) {
+    const { t } = useTranslation();
     const { frameworks, filters, isFiltered, setSearch, setStatus } =
         useFrameworks(data, initialFilters);
 
     return (
         <>
-            <Head title="Design frameworks" />
+            <Head title={t('Design frameworks')} />
 
             <div className="space-y-6 px-4 py-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Heading
                         variant="small"
-                        title="Design frameworks"
-                        description="The methodologies a game can choose to follow"
+                        title={t('Design frameworks')}
+                        description={t(
+                            'The methodologies a game can choose to follow',
+                        )}
                     />
 
                     {can.create && <CreateFrameworkDialog />}
@@ -74,28 +78,34 @@ export default function FrameworksPage({
                 {!administrationConfigured && (
                     <Alert data-test="administration-not-configured">
                         <Info className="size-4" />
-                        <AlertTitle>Frameworks are read-only here</AlertTitle>
+                        <AlertTitle>
+                            {t('Frameworks are read-only here')}
+                        </AlertTitle>
                         <AlertDescription>
-                            No accounts are configured to administer design
-                            frameworks, so nobody can write one yet. Set
-                            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">
+                            {t(
+                                'No accounts are configured to administer design frameworks, so nobody can write one yet. Set',
+                            )}
+                            <code
+                                className="mx-1 rounded bg-muted px-1 py-0.5 text-xs"
+                                dir="ltr"
+                            >
                                 design-framework.administrators
                             </code>
-                            to change that.
+                            {t('to change that.')}
                         </AlertDescription>
                     </Alert>
                 )}
 
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="relative min-w-56 flex-1">
-                        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
                         <Input
                             value={filters.search ?? ''}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Search frameworks"
-                            className="pl-9"
-                            aria-label="Search frameworks"
+                            placeholder={t('Search frameworks')}
+                            className="ps-9"
+                            aria-label={t('Search frameworks')}
                             data-test="framework-search"
                         />
                     </div>
@@ -112,15 +122,15 @@ export default function FrameworksPage({
                     >
                         <SelectTrigger
                             className="w-44"
-                            aria-label="Filter by status"
+                            aria-label={t('Filter by status')}
                             data-test="framework-status-filter"
                         >
-                            <SelectValue placeholder="Any status" />
+                            <SelectValue placeholder={t('Any status')} />
                         </SelectTrigger>
 
                         <SelectContent>
                             <SelectItem value={ANY_STATUS}>
-                                Any status
+                                {t('Any status')}
                             </SelectItem>
 
                             {options.statuses.map((status) => (

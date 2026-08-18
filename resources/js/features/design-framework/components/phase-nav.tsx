@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { Check } from 'lucide-react';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import phases from '@/routes/games/framework/phases';
 import type { DesignPhase, PhaseProgress } from '../types/framework';
@@ -44,6 +45,8 @@ export default function PhaseNav({
     progress,
     currentSlug,
 }: PhaseNavProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
     const byPhase = new Map(progress.map((entry) => [entry.phase_id, entry]));
 
     if (arc.length === 0) {
@@ -52,7 +55,7 @@ export default function PhaseNav({
                 className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground"
                 data-test="phase-nav-empty"
             >
-                This edition has no phases yet.
+                {t('This edition has no phases yet.')}
             </p>
         );
     }
@@ -60,7 +63,7 @@ export default function PhaseNav({
     return (
         <nav
             className="grid auto-rows-fr gap-1"
-            aria-label="Framework phases"
+            aria-label={t('Framework phases')}
             data-test="phase-nav"
         >
             {arc.map((phase) => {
@@ -83,11 +86,15 @@ export default function PhaseNav({
                     >
                         <span className="min-w-0">
                             <span className="block truncate text-sm font-medium">
-                                {phase.position}. {phase.name}
+                                {formatNumber(phase.position)}.{' '}
+                                <span dir="auto">{phase.name}</span>
                             </span>
 
                             {phase.description && (
-                                <span className="mt-0.5 block text-xs text-muted-foreground">
+                                <span
+                                    className="mt-0.5 block text-xs text-muted-foreground"
+                                    dir="auto"
+                                >
                                     {phase.description}
                                 </span>
                             )}
@@ -98,7 +105,9 @@ export default function PhaseNav({
                                 {stats.is_complete && (
                                     <Check className="size-3.5 text-primary" />
                                 )}
-                                {stats.percentage}%
+                                {t(':percent%', {
+                                    percent: formatNumber(stats.percentage),
+                                })}
                             </span>
                         )}
                     </Link>

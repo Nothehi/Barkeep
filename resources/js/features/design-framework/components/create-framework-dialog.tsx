@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { createFramework } from '../api';
 
 /**
@@ -30,6 +31,7 @@ import { createFramework } from '../api';
  * dialog promises a place to write rather than a methodology.
  */
 export default function CreateFrameworkDialog() {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -51,16 +53,17 @@ export default function CreateFrameworkDialog() {
             <DialogTrigger asChild>
                 <Button data-test="create-framework-button">
                     <Plus className="size-4" />
-                    New framework
+                    {t('New framework')}
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Write a framework</DialogTitle>
+                    <DialogTitle>{t('Write a framework')}</DialogTitle>
                     <DialogDescription>
-                        A methodology starts as a draft with no editions.
-                        Nothing can follow it until you publish one.
+                        {t(
+                            'A methodology starts as a draft with no editions. Nothing can follow it until you publish one.',
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -85,13 +88,13 @@ export default function CreateFrameworkDialog() {
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="framework-name">Name</Label>
+                        <Label htmlFor="framework-name">{t('Name')}</Label>
 
                         <Input
                             id="framework-name"
                             value={name}
                             onChange={(event) => setName(event.target.value)}
-                            placeholder="Board Game Design Framework"
+                            placeholder={t('Board Game Design Framework')}
                             autoFocus
                             data-test="framework-name-input"
                         />
@@ -101,7 +104,7 @@ export default function CreateFrameworkDialog() {
 
                     <div className="grid gap-2">
                         <Label htmlFor="framework-description">
-                            Description
+                            {t('Description')}
                         </Label>
 
                         <Textarea
@@ -110,7 +113,9 @@ export default function CreateFrameworkDialog() {
                             onChange={(event) =>
                                 setDescription(event.target.value)
                             }
-                            placeholder="What this methodology is for, and who it is aimed at."
+                            placeholder={t(
+                                'What this methodology is for, and who it is aimed at.',
+                            )}
                             rows={4}
                             data-test="framework-description-input"
                         />
@@ -124,7 +129,7 @@ export default function CreateFrameworkDialog() {
                             variant="outline"
                             onClick={() => close(false)}
                         >
-                            Cancel
+                            {t('Cancel')}
                         </Button>
 
                         <Button
@@ -133,7 +138,7 @@ export default function CreateFrameworkDialog() {
                             data-test="framework-submit"
                         >
                             {processing && <Spinner />}
-                            Create framework
+                            {t('Create framework')}
                         </Button>
                     </DialogFooter>
                 </form>

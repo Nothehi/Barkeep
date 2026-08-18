@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import type { Game } from '@/features/games';
 import { GameHeader } from '@/features/games';
 import type { Workspace } from '@/features/workspaces';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { moveAdoption } from '../api';
 import AdoptFrameworkPanel from '../components/adopt-framework-panel';
 import AdoptionStatusBadge from '../components/adoption-status-badge';
@@ -50,12 +51,14 @@ export default function GameFrameworkPage({
     available: { data: available },
     can,
 }: GameFrameworkPageProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
     const following = adoption?.data ?? null;
     const stats = progress?.data ?? null;
 
     return (
         <>
-            <Head title={`Framework · ${game.name}`} />
+            <Head title={t('Framework · :game', { game: game.name })} />
 
             <div className="space-y-6 px-4 py-6">
                 <GameHeader game={game} workspace={workspace.slug} />
@@ -64,8 +67,10 @@ export default function GameFrameworkPage({
                     <>
                         <Heading
                             variant="small"
-                            title="Design framework"
-                            description="A methodology this game can follow, phase by phase"
+                            title={t('Design framework')}
+                            description={t(
+                                'A methodology this game can follow, phase by phase',
+                            )}
                         />
 
                         <AdoptFrameworkPanel
@@ -83,11 +88,14 @@ export default function GameFrameworkPage({
                                     variant="small"
                                     title={
                                         following.framework?.name ??
-                                        'Design framework'
+                                        t('Design framework')
                                     }
                                     description={
                                         following.version
-                                            ? `Following ${following.version.label}`
+                                            ? t('Following :edition', {
+                                                  edition:
+                                                      following.version.label,
+                                              })
                                             : undefined
                                     }
                                 />
@@ -117,11 +125,15 @@ export default function GameFrameworkPage({
                                 <CardHeader className="gap-1">
                                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                                         <span className="font-medium">
-                                            Progress
+                                            {t('Progress')}
                                         </span>
 
                                         <span className="text-2xl font-semibold tabular-nums">
-                                            {stats.percentage}%
+                                            {t(':percent%', {
+                                                percent: formatNumber(
+                                                    stats.percentage,
+                                                ),
+                                            })}
                                         </span>
                                     </div>
 
@@ -133,28 +145,27 @@ export default function GameFrameworkPage({
                                      * the intent.
                                      */}
                                     <span className="text-sm text-muted-foreground">
-                                        Counted from assessed criteria,
-                                        completed practices and required
-                                        checklist items. Written answers are
-                                        reported but not counted.
+                                        {t(
+                                            'Counted from assessed criteria, completed practices and required checklist items. Written answers are reported but not counted.',
+                                        )}
                                     </span>
                                 </CardHeader>
 
                                 <CardContent className="grid gap-4 sm:grid-cols-2">
                                     <ProgressBar
-                                        label="Criteria assessed"
+                                        label={t('Criteria assessed')}
                                         ratio={stats.criteria}
                                     />
                                     <ProgressBar
-                                        label="Practices completed"
+                                        label={t('Practices completed')}
                                         ratio={stats.practices}
                                     />
                                     <ProgressBar
-                                        label="Checklist items"
+                                        label={t('Checklist items')}
                                         ratio={stats.checklist_items}
                                     />
                                     <ProgressBar
-                                        label="Questions answered"
+                                        label={t('Questions answered')}
                                         ratio={stats.prompts}
                                         uncounted
                                     />
@@ -163,7 +174,9 @@ export default function GameFrameworkPage({
                         )}
 
                         <div className="space-y-3">
-                            <h2 className="text-sm font-medium">Phases</h2>
+                            <h2 className="text-sm font-medium">
+                                {t('Phases')}
+                            </h2>
 
                             <PhaseNav
                                 workspace={workspace.slug}
