@@ -1,14 +1,17 @@
 import { Head } from '@inertiajs/react';
 import { RegisterForm } from '@/features/auth';
+import { useTranslation } from '@/lib/i18n';
 
 type Props = {
     passwordRules: string;
 };
 
 export default function Register({ passwordRules }: Props) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title="Register" />
+            <Head title={t('Register')} />
 
             <RegisterForm passwordRules={passwordRules} />
         </>
