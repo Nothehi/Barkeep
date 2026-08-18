@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import type { Workspace } from '@/features/workspaces';
+import { useTranslation } from '@/lib/i18n';
 import CreateVersionDialog from '../components/create-version-dialog';
 import GameHeader from '../components/game-header';
 import GameVersionList from '../components/game-version-list';
@@ -25,9 +26,11 @@ export default function GameVersionsPage({
     game: { data: game },
     versions: { data: versions },
 }: GameVersionsPageProps) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title={`Versions · ${game.name}`} />
+            <Head title={t('Versions · :game', { game: game.name })} />
 
             <div className="space-y-6 px-4 py-6">
                 <GameHeader game={game} workspace={workspace.slug} />
@@ -35,8 +38,10 @@ export default function GameVersionsPage({
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Heading
                         variant="small"
-                        title="Versions"
-                        description="Every iteration this game has been through"
+                        title={t('Versions')}
+                        description={t(
+                            'Every iteration this game has been through',
+                        )}
                     />
 
                     <CreateVersionDialog

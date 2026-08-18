@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import type { Workspace } from '@/features/workspaces';
+import { useTranslation } from '@/lib/i18n';
 import { archiveGame } from '../api';
 import DesignPhasePicker from '../components/design-phase-picker';
 import DesignRecordForm from '../components/design-record-form';
@@ -52,12 +53,16 @@ export default function GameSettingsPage({
     options,
 }: GameSettingsPageProps) {
     const permissions = useGamePermissions(game);
+    const { t } = useTranslation();
     const form = useUpdateGame(workspace.slug, game);
 
     const archive = () => {
         if (
             !window.confirm(
-                `Archive ${game.name}? It becomes read-only for everyone in ${workspace.name}, and cannot be reopened. Nothing is deleted.`,
+                t(
+                    'Archive :game? It becomes read-only for everyone in :workspace, and cannot be reopened. Nothing is deleted.',
+                    { game: game.name, workspace: workspace.name },
+                ),
             )
         ) {
             return;
@@ -68,7 +73,7 @@ export default function GameSettingsPage({
 
     return (
         <>
-            <Head title={`Settings · ${game.name}`} />
+            <Head title={t('Settings · :game', { game: game.name })} />
 
             <div className="space-y-8 px-4 py-6">
                 <GameHeader game={game} workspace={workspace.slug} />
@@ -76,8 +81,10 @@ export default function GameSettingsPage({
                 <section className="max-w-xl space-y-6">
                     <Heading
                         variant="small"
-                        title="General"
-                        description="The game's name, address and description"
+                        title={t('General')}
+                        description={t(
+                            "The game's name, address and description",
+                        )}
                     />
 
                     <form
@@ -88,7 +95,7 @@ export default function GameSettingsPage({
                         }}
                     >
                         <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
+                            <Label htmlFor="name">{t('Name')}</Label>
 
                             <Input
                                 id="name"
@@ -105,7 +112,7 @@ export default function GameSettingsPage({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="slug">Address</Label>
+                            <Label htmlFor="slug">{t('Address')}</Label>
 
                             <Input
                                 id="slug"
@@ -121,15 +128,18 @@ export default function GameSettingsPage({
                             />
 
                             <p className="text-sm text-muted-foreground">
-                                Changing this changes every link to the game. It
-                                only has to be unique inside this workspace.
+                                {t(
+                                    'Changing this changes every link to the game. It only has to be unique inside this workspace.',
+                                )}
                             </p>
 
                             <InputError message={form.errors.slug} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="description">
+                                {t('Description')}
+                            </Label>
 
                             <Textarea
                                 id="description"
@@ -152,7 +162,7 @@ export default function GameSettingsPage({
                                 data-test="save-game-button"
                             >
                                 {form.processing && <Spinner />}
-                                Save
+                                {t('Save')}
                             </Button>
                         )}
                     </form>
@@ -163,8 +173,10 @@ export default function GameSettingsPage({
                 <section className="max-w-xl space-y-4">
                     <Heading
                         variant="small"
-                        title="Design phase"
-                        description="Where the design currently is, which is a separate question from whether anybody is working on it"
+                        title={t('Design phase')}
+                        description={t(
+                            'Where the design currently is, which is a separate question from whether anybody is working on it',
+                        )}
                     />
 
                     <DesignPhasePicker
@@ -184,8 +196,10 @@ export default function GameSettingsPage({
                 <section className="max-w-3xl space-y-6">
                     <Heading
                         variant="small"
-                        title="Design"
-                        description="What has been decided about the game itself. A framework reads these to answer its own factual questions, so an empty field means 'not yet' rather than 'no'."
+                        title={t('Design')}
+                        description={t(
+                            "What has been decided about the game itself. A framework reads these to answer its own factual questions, so an empty field means 'not yet' rather than 'no'.",
+                        )}
                     />
 
                     <DesignRecordForm
@@ -205,19 +219,22 @@ export default function GameSettingsPage({
                         <section className="max-w-xl space-y-4">
                             <Heading
                                 variant="small"
-                                title="Danger zone"
-                                description="Changes here affect everyone in the workspace"
+                                title={t('Danger zone')}
+                                description={t(
+                                    'Changes here affect everyone in the workspace',
+                                )}
                             />
 
                             <div className="space-y-4 rounded-lg border border-destructive/40 p-4">
                                 <div className="flex flex-wrap items-center justify-between gap-4">
                                     <div>
                                         <p className="text-sm font-medium">
-                                            Archive game
+                                            {t('Archive game')}
                                         </p>
                                         <p className="text-sm text-muted-foreground">
-                                            Make it read-only. Nothing is
-                                            deleted, but it cannot be reopened.
+                                            {t(
+                                                'Make it read-only. Nothing is deleted, but it cannot be reopened.',
+                                            )}
                                         </p>
                                     </div>
 
@@ -226,7 +243,7 @@ export default function GameSettingsPage({
                                         onClick={archive}
                                         data-test="archive-game-button"
                                     >
-                                        Archive game
+                                        {t('Archive game')}
                                     </Button>
                                 </div>
                             </div>

@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { useGamePermissions } from '../hooks/use-game-permissions';
 import { useUpdateGame } from '../hooks/use-update-game';
 import type { Game } from '../types/game';
@@ -36,6 +37,7 @@ export default function EditGameDialog({
     workspace,
 }: EditGameDialogProps) {
     const permissions = useGamePermissions(game);
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const form = useUpdateGame(workspace, game);
 
@@ -52,15 +54,19 @@ export default function EditGameDialog({
                     data-test="edit-game-button"
                 >
                     <Pencil className="size-4" />
-                    Edit
+                    {t('Edit')}
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Edit {game.name}</DialogTitle>
+                    <DialogTitle>
+                        {t('Edit :game', { game: game.name })}
+                    </DialogTitle>
                     <DialogDescription>
-                        Changing the address changes every link to this game.
+                        {t(
+                            'Changing the address changes every link to this game.',
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -72,7 +78,7 @@ export default function EditGameDialog({
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="edit-game-name">Name</Label>
+                        <Label htmlFor="edit-game-name">{t('Name')}</Label>
 
                         <Input
                             id="edit-game-name"
@@ -87,7 +93,7 @@ export default function EditGameDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="edit-game-slug">Address</Label>
+                        <Label htmlFor="edit-game-slug">{t('Address')}</Label>
 
                         <Input
                             id="edit-game-slug"
@@ -105,7 +111,7 @@ export default function EditGameDialog({
 
                     <div className="grid gap-2">
                         <Label htmlFor="edit-game-description">
-                            Description
+                            {t('Description')}
                         </Label>
 
                         <Textarea
@@ -126,7 +132,7 @@ export default function EditGameDialog({
                             variant="outline"
                             onClick={() => setOpen(false)}
                         >
-                            Cancel
+                            {t('Cancel')}
                         </Button>
 
                         <Button
@@ -139,7 +145,7 @@ export default function EditGameDialog({
                             data-test="submit-edit-game-button"
                         >
                             {form.processing && <Spinner />}
-                            Save changes
+                            {t('Save changes')}
                         </Button>
                     </DialogFooter>
                 </form>

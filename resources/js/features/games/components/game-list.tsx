@@ -1,5 +1,6 @@
 import { Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/lib/i18n';
 import type { GameSummary } from '../types/game';
 import GameCard from './game-card';
 
@@ -25,12 +26,18 @@ export default function GameList({
     isFiltered,
     onClearFilters,
 }: GameListProps) {
+    const { t } = useTranslation();
+
     if (games.length === 0 && isFiltered) {
         return (
             <div className="rounded-lg border border-dashed px-6 py-16 text-center">
-                <p className="font-medium">No games match those filters</p>
+                <p className="font-medium">
+                    {t('No games match those filters')}
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                    Try a different search, or widen the status and phase.
+                    {t(
+                        'Try a different search, or widen the status and phase.',
+                    )}
                 </p>
 
                 <Button
@@ -39,7 +46,7 @@ export default function GameList({
                     onClick={onClearFilters}
                     data-test="clear-game-filters-button"
                 >
-                    Clear filters
+                    {t('Clear filters')}
                 </Button>
             </div>
         );
@@ -49,10 +56,11 @@ export default function GameList({
         return (
             <div className="rounded-lg border border-dashed px-6 py-16 text-center">
                 <Gamepad2 className="mx-auto size-8 text-muted-foreground" />
-                <p className="mt-3 font-medium">No games yet</p>
+                <p className="mt-3 font-medium">{t('No games yet')}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                    Start one to give an idea somewhere to live. It begins as a
-                    draft, and nobody sees it outside this workspace.
+                    {t(
+                        'Start one to give an idea somewhere to live. It begins as a draft, and nobody sees it outside this workspace.',
+                    )}
                 </p>
             </div>
         );

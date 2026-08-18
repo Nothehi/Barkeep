@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { useGamePermissions } from '../hooks/use-game-permissions';
 import { useGameVersions } from '../hooks/use-game-versions';
 import type { Game, GameVersion } from '../types/game';
@@ -39,6 +40,7 @@ export default function CreateVersionDialog({
     versions,
 }: CreateVersionDialogProps) {
     const permissions = useGamePermissions(game);
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const form = useGameVersions(workspace, game.slug, versions);
 
@@ -61,16 +63,20 @@ export default function CreateVersionDialog({
             <DialogTrigger asChild>
                 <Button data-test="create-version-button">
                     <Plus className="size-4" />
-                    New version
+                    {t('New version')}
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Cut v{nextNumber}</DialogTitle>
+                    <DialogTitle>
+                        {t('Cut v:number', { number: nextNumber })}
+                    </DialogTitle>
                     <DialogDescription>
-                        Version numbers are assigned in order, so this will be v
-                        {nextNumber}. Say what changed while you still remember.
+                        {t(
+                            'Version numbers are assigned in order, so this will be v:number. Say what changed while you still remember.',
+                            { number: nextNumber },
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -82,7 +88,9 @@ export default function CreateVersionDialog({
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="version-name">Name (optional)</Label>
+                        <Label htmlFor="version-name">
+                            {t('Name (optional)')}
+                        </Label>
 
                         <Input
                             id="version-name"
@@ -90,7 +98,7 @@ export default function CreateVersionDialog({
                             onChange={(event) =>
                                 form.setName(event.target.value)
                             }
-                            placeholder="Convention build"
+                            placeholder={t('Convention build')}
                             autoComplete="off"
                         />
 
@@ -99,7 +107,7 @@ export default function CreateVersionDialog({
 
                     <div className="grid gap-2">
                         <Label htmlFor="version-description">
-                            What changed
+                            {t('What changed')}
                         </Label>
 
                         <Textarea
@@ -108,7 +116,9 @@ export default function CreateVersionDialog({
                             onChange={(event) =>
                                 form.setDescription(event.target.value)
                             }
-                            placeholder="Trimmed the endgame, dropped the third resource."
+                            placeholder={t(
+                                'Trimmed the endgame, dropped the third resource.',
+                            )}
                             rows={4}
                         />
 
@@ -121,7 +131,7 @@ export default function CreateVersionDialog({
                             variant="outline"
                             onClick={() => close(false)}
                         >
-                            Cancel
+                            {t('Cancel')}
                         </Button>
 
                         <Button
@@ -130,7 +140,7 @@ export default function CreateVersionDialog({
                             data-test="submit-create-version-button"
                         >
                             {form.processing && <Spinner />}
-                            Create v{nextNumber}
+                            {t('Create v:number', { number: nextNumber })}
                         </Button>
                     </DialogFooter>
                 </form>

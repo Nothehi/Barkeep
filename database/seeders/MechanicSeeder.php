@@ -34,7 +34,7 @@ class MechanicSeeder extends Seeder
      */
     public function run(): void
     {
-        foreach ($this->mechanics() as [$category, $name, $description]) {
+        foreach (self::mechanics() as [$category, $name, $description]) {
             $slug = Str::slug($name);
 
             $mechanic = Mechanic::query()->firstOrNew(['slug' => $slug]);
@@ -55,11 +55,17 @@ class MechanicSeeder extends Seeder
             $mechanic->save();
         }
 
-        $this->command->info(sprintf('Seeded %d design mechanics.', count($this->mechanics())));
+        $this->command->info(sprintf('Seeded %d design mechanics.', count(self::mechanics())));
     }
 
     /**
      * The vocabulary, as [category, name, definition].
+     *
+     * Public and static because it is read from two places: the seeder writes
+     * it, and the catalogue guard in tests/Unit/TranslationCatalogueTest.php
+     * counts these phrases as used. `MechanicResource` translates the stored
+     * name and definition through `__()`, so they are entries in `lang/fa.json`
+     * without ever appearing inside a literal `__()` call the guard could see.
      *
      * Definitions are written to settle arguments rather than to be complete.
      * A designer picking between "worker placement" and "action drafting"
@@ -68,7 +74,7 @@ class MechanicSeeder extends Seeder
      *
      * @return list<array{0: MechanicCategory, 1: string, 2: string}>
      */
-    private function mechanics(): array
+    public static function mechanics(): array
     {
         return [
             [MechanicCategory::TurnStructure, 'Worker placement', 'Players take turns claiming action spaces, and a space taken is a space nobody else can use this round.'],

@@ -1,3 +1,5 @@
+import { useFormatters, useTranslation } from '@/lib/i18n';
+
 type GameProgressProps = {
     position: number;
     total: number;
@@ -20,6 +22,8 @@ export default function GameProgress({
     total,
     label,
 }: GameProgressProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
     const percent = total > 0 ? Math.round((position / total) * 100) : 0;
 
     return (
@@ -27,7 +31,10 @@ export default function GameProgress({
             <div className="flex items-baseline justify-between gap-2">
                 <span className="text-sm font-medium">{label}</span>
                 <span className="text-xs text-muted-foreground">
-                    Phase {position} of {total}
+                    {t('Phase :position of :total', {
+                        position: formatNumber(position),
+                        total: formatNumber(total),
+                    })}
                 </span>
             </div>
 
@@ -37,7 +44,7 @@ export default function GameProgress({
                 aria-valuenow={position}
                 aria-valuemin={1}
                 aria-valuemax={total}
-                aria-label={`Design phase: ${label}`}
+                aria-label={t('Design phase: :phase', { phase: label })}
             >
                 <div
                     className="h-full rounded-full bg-primary transition-all"

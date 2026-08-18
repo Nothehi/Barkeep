@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { useUpdateDesignRecord } from '../hooks/use-update-design-record';
 import type {
     Complexity,
@@ -58,6 +59,7 @@ export default function DesignRecordForm({
     options,
     canEdit,
 }: DesignRecordFormProps) {
+    const { t } = useTranslation();
     const form = useUpdateDesignRecord(workspace, game.slug, record);
 
     /**
@@ -81,7 +83,7 @@ export default function DesignRecordForm({
         >
             <div className="space-y-6">
                 <div className="grid gap-2">
-                    <Label htmlFor="pitch">One-sentence pitch</Label>
+                    <Label htmlFor="pitch">{t('One-sentence pitch')}</Label>
 
                     <Textarea
                         id="pitch"
@@ -91,21 +93,23 @@ export default function DesignRecordForm({
                         }
                         disabled={!canEdit}
                         rows={2}
-                        placeholder="A game about ___ where players ___ in order to ___."
+                        placeholder={t(
+                            'A game about ___ where players ___ in order to ___.',
+                        )}
                         data-test="pitch-input"
                     />
 
                     <p className="text-sm text-muted-foreground">
-                        Not the theme and not the mechanisms — the experience.
-                        If it takes a paragraph, the idea is still several
-                        ideas.
+                        {t(
+                            'Not the theme and not the mechanisms — the experience. If it takes a paragraph, the idea is still several ideas.',
+                        )}
                     </p>
 
                     <InputError message={form.errors.pitch} />
                 </div>
 
                 <div className="grid gap-2">
-                    <Label htmlFor="audience">Intended audience</Label>
+                    <Label htmlFor="audience">{t('Intended audience')}</Label>
 
                     <Input
                         id="audience"
@@ -114,7 +118,9 @@ export default function DesignRecordForm({
                             form.setField('audience', event.target.value)
                         }
                         disabled={!canEdit}
-                        placeholder="Families who already play a few games a year"
+                        placeholder={t(
+                            'Families who already play a few games a year',
+                        )}
                         data-test="audience-input"
                     />
 
@@ -125,13 +131,17 @@ export default function DesignRecordForm({
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Constraints"
-                    description="These decide which mechanisms are even available, so they are design rather than paperwork"
+                    title={t('Constraints')}
+                    description={t(
+                        'These decide which mechanisms are even available, so they are design rather than paperwork',
+                    )}
                 />
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
-                        <Label htmlFor="player_count_min">Players, from</Label>
+                        <Label htmlFor="player_count_min">
+                            {t('Players, from')}
+                        </Label>
 
                         <Input
                             id="player_count_min"
@@ -152,7 +162,7 @@ export default function DesignRecordForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="player_count_max">to</Label>
+                        <Label htmlFor="player_count_max">{t('to')}</Label>
 
                         <Input
                             id="player_count_max"
@@ -166,7 +176,7 @@ export default function DesignRecordForm({
                                 )
                             }
                             disabled={!canEdit}
-                            placeholder="Leave blank for a fixed count"
+                            placeholder={t('Leave blank for a fixed count')}
                             data-test="player-count-max-input"
                         />
 
@@ -174,7 +184,9 @@ export default function DesignRecordForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="play_time_min">Minutes, from</Label>
+                        <Label htmlFor="play_time_min">
+                            {t('Minutes, from')}
+                        </Label>
 
                         <Input
                             id="play_time_min"
@@ -195,7 +207,7 @@ export default function DesignRecordForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="play_time_max">to</Label>
+                        <Label htmlFor="play_time_max">{t('to')}</Label>
 
                         <Input
                             id="play_time_max"
@@ -216,7 +228,9 @@ export default function DesignRecordForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="target_age_min">Youngest player</Label>
+                        <Label htmlFor="target_age_min">
+                            {t('Youngest player')}
+                        </Label>
 
                         <Input
                             id="target_age_min"
@@ -237,7 +251,7 @@ export default function DesignRecordForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="complexity">Weight</Label>
+                        <Label htmlFor="complexity">{t('Weight')}</Label>
 
                         <Select
                             value={form.input.complexity || UNDECIDED}
@@ -260,7 +274,7 @@ export default function DesignRecordForm({
 
                             <SelectContent>
                                 <SelectItem value={UNDECIDED}>
-                                    Not decided
+                                    {t('Not decided')}
                                 </SelectItem>
 
                                 {complexities.map((option) => (
@@ -288,6 +302,7 @@ export default function DesignRecordForm({
                     <p
                         className="text-sm text-muted-foreground"
                         data-test="complexity-description"
+                        dir="auto"
                     >
                         {
                             complexities.find(
@@ -302,8 +317,10 @@ export default function DesignRecordForm({
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Mechanics"
-                    description="Claimed from the platform's shared vocabulary, so two games that work the same way say so the same way"
+                    title={t('Mechanics')}
+                    description={t(
+                        "Claimed from the platform's shared vocabulary, so two games that work the same way say so the same way",
+                    )}
                 />
 
                 <MechanicsPicker
@@ -319,36 +336,42 @@ export default function DesignRecordForm({
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="The core loop"
-                    description="The repeating action, consequence and reward the whole game is made of"
+                    title={t('The core loop')}
+                    description={t(
+                        'The repeating action, consequence and reward the whole game is made of',
+                    )}
                 />
 
                 {(
                     [
                         [
                             'core_action',
-                            'What the player does',
-                            'Place a worker on an action space.',
+                            t('What the player does'),
+                            t('Place a worker on an action space.'),
                         ],
                         [
                             'core_cost',
-                            'What it costs',
-                            'The worker is unavailable until the round ends.',
+                            t('What it costs'),
+                            t(
+                                'The worker is unavailable until the round ends.',
+                            ),
                         ],
                         [
                             'core_reward',
-                            'What it gives back',
-                            'The space pays out its resource.',
+                            t('What it gives back'),
+                            t('The space pays out its resource.'),
                         ],
                         [
                             'win_condition',
-                            'How the game is won',
-                            'Most points when the last space is claimed.',
+                            t('How the game is won'),
+                            t('Most points when the last space is claimed.'),
                         ],
                         [
                             'failure_condition',
-                            'How a player loses ground',
-                            'A player who cannot place a worker sits the round out.',
+                            t('How a player loses ground'),
+                            t(
+                                'A player who cannot place a worker sits the round out.',
+                            ),
                         ],
                     ] as const
                 ).map(([field, label, placeholder]) => (
@@ -379,7 +402,7 @@ export default function DesignRecordForm({
                     data-test="save-design-button"
                 >
                     {form.processing && <Spinner />}
-                    Save design
+                    {t('Save design')}
                 </Button>
             )}
         </form>

@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import versions from '@/routes/games/versions';
 import type { GameVersion } from '../types/game';
 
@@ -25,13 +26,17 @@ export default function GameVersionList({
     workspace,
     game,
 }: GameVersionListProps) {
+    const { t } = useTranslation();
+    const { formatDate } = useFormatters();
+
     if (list.length === 0) {
         return (
             <div className="rounded-lg border border-dashed px-6 py-16 text-center">
-                <p className="font-medium">No versions yet</p>
+                <p className="font-medium">{t('No versions yet')}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                    Cut one when a build is worth remembering — before a
-                    playtest, say, or after a change you might want to undo.
+                    {t(
+                        'Cut one when a build is worth remembering — before a playtest, say, or after a change you might want to undo.',
+                    )}
                 </p>
             </div>
         );
@@ -54,28 +59,36 @@ export default function GameVersionList({
                         </Link>
 
                         {version.name && (
-                            <span className="text-sm text-muted-foreground">
+                            <span
+                                className="text-sm text-muted-foreground"
+                                dir="auto"
+                            >
                                 {version.name}
                             </span>
                         )}
 
                         {index === 0 && (
-                            <Badge variant="secondary" className="ml-auto">
-                                Current
+                            <Badge variant="secondary" className="ms-auto">
+                                {t('Current')}
                             </Badge>
                         )}
                     </div>
 
                     {version.description && (
-                        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                        <p
+                            className="mt-2 line-clamp-2 text-sm text-muted-foreground"
+                            dir="auto"
+                        >
                             {version.description}
                         </p>
                     )}
 
                     <p className="mt-2 text-xs text-muted-foreground">
-                        {version.creator?.name ?? 'Someone'}
+                        <span dir="auto">
+                            {version.creator?.name ?? t('Someone')}
+                        </span>
                         {version.created_at &&
-                            ` · ${new Date(version.created_at).toLocaleDateString()}`}
+                            ` · ${formatDate(version.created_at)}`}
                     </p>
                 </li>
             ))}

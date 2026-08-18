@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { useCreateGame } from '../hooks/use-create-game';
 import type { DesignPhase, GameOptions } from '../types/game';
 
@@ -45,6 +46,7 @@ export default function CreateGameDialog({
     workspace,
     options,
 }: CreateGameDialogProps) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const form = useCreateGame(workspace);
 
@@ -61,16 +63,17 @@ export default function CreateGameDialog({
             <DialogTrigger asChild>
                 <Button data-test="create-game-button">
                     <Plus className="size-4" />
-                    New game
+                    {t('New game')}
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Start a game</DialogTitle>
+                    <DialogTitle>{t('Start a game')}</DialogTitle>
                     <DialogDescription>
-                        It begins as a draft, visible only to this workspace.
-                        Everything here can be changed later.
+                        {t(
+                            'It begins as a draft, visible only to this workspace. Everything here can be changed later.',
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -82,7 +85,7 @@ export default function CreateGameDialog({
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="game-name">Name</Label>
+                        <Label htmlFor="game-name">{t('Name')}</Label>
 
                         <Input
                             id="game-name"
@@ -90,7 +93,7 @@ export default function CreateGameDialog({
                             onChange={(event) =>
                                 form.setName(event.target.value)
                             }
-                            placeholder="Bears &amp; Bridges"
+                            placeholder={t('Bears & Bridges')}
                             autoComplete="off"
                             required
                         />
@@ -99,7 +102,7 @@ export default function CreateGameDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="game-slug">Address</Label>
+                        <Label htmlFor="game-slug">{t('Address')}</Label>
 
                         <Input
                             id="game-slug"
@@ -107,20 +110,24 @@ export default function CreateGameDialog({
                             onChange={(event) =>
                                 form.setSlug(event.target.value)
                             }
-                            placeholder="bears-and-bridges"
+                            placeholder={t('bears-and-bridges')}
                             autoComplete="off"
                             spellCheck={false}
                         />
 
                         <p className="text-sm text-muted-foreground">
-                            Leave this blank and we will pick one from the name.
+                            {t(
+                                'Leave this blank and we will pick one from the name.',
+                            )}
                         </p>
 
                         <InputError message={form.errors.slug} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="game-design-phase">Design phase</Label>
+                        <Label htmlFor="game-design-phase">
+                            {t('Design phase')}
+                        </Label>
 
                         <Select
                             value={form.input.design_phase}
@@ -151,7 +158,9 @@ export default function CreateGameDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="game-description">Description</Label>
+                        <Label htmlFor="game-description">
+                            {t('Description')}
+                        </Label>
 
                         <Textarea
                             id="game-description"
@@ -159,7 +168,7 @@ export default function CreateGameDialog({
                             onChange={(event) =>
                                 form.setDescription(event.target.value)
                             }
-                            placeholder="What is it, in a sentence?"
+                            placeholder={t('What is it, in a sentence?')}
                             rows={3}
                         />
 
@@ -172,7 +181,7 @@ export default function CreateGameDialog({
                             variant="outline"
                             onClick={() => close(false)}
                         >
-                            Cancel
+                            {t('Cancel')}
                         </Button>
 
                         <Button
@@ -181,7 +190,7 @@ export default function CreateGameDialog({
                             data-test="submit-create-game-button"
                         >
                             {form.processing && <Spinner />}
-                            Create game
+                            {t('Create game')}
                         </Button>
                     </DialogFooter>
                 </form>

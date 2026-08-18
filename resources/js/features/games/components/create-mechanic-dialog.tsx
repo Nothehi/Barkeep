@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import { createMechanic } from '../api/mechanics';
 import type { MechanicCategory, MechanicOptions } from '../types/mechanic';
 
@@ -43,6 +44,7 @@ type CreateMechanicDialogProps = {
 export default function CreateMechanicDialog({
     options,
 }: CreateMechanicDialogProps) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -67,17 +69,17 @@ export default function CreateMechanicDialog({
             <DialogTrigger asChild>
                 <Button data-test="create-mechanic-button">
                     <Plus className="size-4" />
-                    Add mechanic
+                    {t('Add mechanic')}
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add a mechanic</DialogTitle>
+                    <DialogTitle>{t('Add a mechanic')}</DialogTitle>
                     <DialogDescription>
-                        This word becomes available to every game on the
-                        platform. Define it well enough that two designers would
-                        agree on what it means.
+                        {t(
+                            'This word becomes available to every game on the platform. Define it well enough that two designers would agree on what it means.',
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -103,13 +105,13 @@ export default function CreateMechanicDialog({
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="mechanic-name">Name</Label>
+                        <Label htmlFor="mechanic-name">{t('Name')}</Label>
 
                         <Input
                             id="mechanic-name"
                             value={name}
                             onChange={(event) => setName(event.target.value)}
-                            placeholder="Worker placement"
+                            placeholder={t('Worker placement')}
                             autoFocus
                             data-test="mechanic-name-input"
                         />
@@ -118,7 +120,9 @@ export default function CreateMechanicDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="mechanic-category">Category</Label>
+                        <Label htmlFor="mechanic-category">
+                            {t('Category')}
+                        </Label>
 
                         <Select
                             value={category}
@@ -149,7 +153,9 @@ export default function CreateMechanicDialog({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="mechanic-description">Definition</Label>
+                        <Label htmlFor="mechanic-description">
+                            {t('Definition')}
+                        </Label>
 
                         <Textarea
                             id="mechanic-description"
@@ -157,7 +163,9 @@ export default function CreateMechanicDialog({
                             onChange={(event) =>
                                 setDescription(event.target.value)
                             }
-                            placeholder="What a designer is claiming when they pick this."
+                            placeholder={t(
+                                'What a designer is claiming when they pick this.',
+                            )}
                             rows={4}
                             data-test="mechanic-description-input"
                         />
@@ -171,7 +179,7 @@ export default function CreateMechanicDialog({
                             variant="outline"
                             onClick={() => close(false)}
                         >
-                            Cancel
+                            {t('Cancel')}
                         </Button>
 
                         <Button
@@ -180,7 +188,7 @@ export default function CreateMechanicDialog({
                             data-test="mechanic-submit"
                         >
                             {processing && <Spinner />}
-                            Add mechanic
+                            {t('Add mechanic')}
                         </Button>
                     </DialogFooter>
                 </form>

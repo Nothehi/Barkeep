@@ -10,6 +10,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import type { Workspace } from '@/features/workspaces';
+import { useTranslation } from '@/lib/i18n';
 import CreateGameDialog from '../components/create-game-dialog';
 import GameList from '../components/game-list';
 import { useGames } from '../hooks/use-games';
@@ -46,6 +47,7 @@ export default function GamesPage({
     options,
     can,
 }: GamesPageProps) {
+    const { t } = useTranslation();
     const {
         games,
         filters,
@@ -58,13 +60,18 @@ export default function GamesPage({
 
     return (
         <>
-            <Head title={`Games · ${workspace.name}`} />
+            <Head
+                title={t('Games · :workspace', { workspace: workspace.name })}
+            />
 
             <div className="space-y-6 px-4 py-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <Heading
-                        title="Games"
-                        description={`The board games being designed in ${workspace.name}`}
+                        title={t('Games')}
+                        description={t(
+                            'The board games being designed in :workspace',
+                            { workspace: workspace.name },
+                        )}
                     />
 
                     {can.create && (
@@ -77,14 +84,14 @@ export default function GamesPage({
 
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="relative min-w-56 flex-1">
-                        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 
                         <Input
                             value={filters.search ?? ''}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Search games"
-                            className="pl-9"
-                            aria-label="Search games"
+                            placeholder={t('Search games')}
+                            className="ps-9"
+                            aria-label={t('Search games')}
                             data-test="game-search"
                         />
                     </div>
@@ -101,15 +108,15 @@ export default function GamesPage({
                     >
                         <SelectTrigger
                             className="w-44"
-                            aria-label="Filter by status"
+                            aria-label={t('Filter by status')}
                             data-test="game-status-filter"
                         >
-                            <SelectValue placeholder="Any status" />
+                            <SelectValue placeholder={t('Any status')} />
                         </SelectTrigger>
 
                         <SelectContent>
                             <SelectItem value={ANY_STATUS}>
-                                Any status
+                                {t('Any status')}
                             </SelectItem>
 
                             {options.statuses.map((status) => (
@@ -135,14 +142,16 @@ export default function GamesPage({
                     >
                         <SelectTrigger
                             className="w-48"
-                            aria-label="Filter by design phase"
+                            aria-label={t('Filter by design phase')}
                             data-test="game-phase-filter"
                         >
-                            <SelectValue placeholder="Any phase" />
+                            <SelectValue placeholder={t('Any phase')} />
                         </SelectTrigger>
 
                         <SelectContent>
-                            <SelectItem value={ANY_PHASE}>Any phase</SelectItem>
+                            <SelectItem value={ANY_PHASE}>
+                                {t('Any phase')}
+                            </SelectItem>
 
                             {options.design_phases.map((phase) => (
                                 <SelectItem
