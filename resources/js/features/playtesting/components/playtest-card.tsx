@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { CalendarDays, GitBranch, Layers } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import playtests from '@/routes/playtests';
 import type { PlaytestSummary } from '../types/playtest';
 import PlaytestStatusBadge from './playtest-status-badge';
@@ -25,12 +26,11 @@ export default function PlaytestCard({
     workspace,
     game,
 }: PlaytestCardProps) {
+    const { t, choice } = useTranslation();
+    const { formatDate } = useFormatters();
+
     const plannedAt = playtest.planned_at
-        ? new Date(playtest.planned_at).toLocaleDateString(undefined, {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric',
-          })
+        ? formatDate(playtest.planned_at)
         : null;
 
     return (
@@ -45,6 +45,7 @@ export default function PlaytestCard({
                         })}
                         className="min-w-0 font-medium hover:underline"
                         data-test={`playtest-link-${playtest.id}`}
+                        dir="auto"
                     >
                         {playtest.title}
                     </Link>
@@ -60,7 +61,7 @@ export default function PlaytestCard({
                 {playtest.hypothesis && (
                     <p className="line-clamp-2 text-sm text-muted-foreground">
                         <span className="font-medium text-foreground">
-                            Hypothesis:{' '}
+                            {t('Hypothesis:')}{' '}
                         </span>
                         {playtest.hypothesis}
                     </p>
@@ -76,8 +77,10 @@ export default function PlaytestCard({
 
                     <span className="inline-flex items-center gap-1">
                         <Layers className="size-3" />
-                        {playtest.sessions_count ?? 0}{' '}
-                        {playtest.sessions_count === 1 ? 'session' : 'sessions'}
+                        {choice(
+                            ':count session|:count sessions',
+                            playtest.sessions_count ?? 0,
+                        )}
                     </span>
 
                     {plannedAt && (

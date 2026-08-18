@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import type { Game } from '@/features/games';
 import type { Workspace } from '@/features/workspaces';
+import { useTranslation } from '@/lib/i18n';
 import PlaytestHeader from '../components/playtest-header';
 import PlaytestSummary from '../components/playtest-summary';
 import SessionList from '../components/session-list';
@@ -37,9 +38,16 @@ export default function PlaytestPage({
     sessions: { data: sessions },
     summary: { data: summary },
 }: PlaytestPageProps) {
+    const { t } = useTranslation();
+
     return (
         <>
-            <Head title={`${playtest.title} · ${game.name}`} />
+            <Head
+                title={t(':playtest · :game', {
+                    playtest: playtest.title,
+                    game: game.name,
+                })}
+            />
 
             <div className="space-y-8 px-4 py-6">
                 <PlaytestHeader
@@ -51,22 +59,25 @@ export default function PlaytestPage({
                 <section className="grid gap-4 lg:grid-cols-2">
                     <div className="space-y-1.5">
                         <h2 className="text-sm font-semibold text-muted-foreground">
-                            Objective
+                            {t('Objective')}
                         </h2>
 
-                        <p className="text-sm whitespace-pre-line">
+                        <p className="text-sm whitespace-pre-line" dir="auto">
                             {playtest.objective}
                         </p>
                     </div>
 
                     <div className="space-y-1.5">
                         <h2 className="text-sm font-semibold text-muted-foreground">
-                            Hypothesis
+                            {t('Hypothesis')}
                         </h2>
 
-                        <p className="text-sm whitespace-pre-line text-muted-foreground">
+                        <p
+                            className="text-sm whitespace-pre-line text-muted-foreground"
+                            dir="auto"
+                        >
                             {playtest.hypothesis ??
-                                'None stated — exploratory.'}
+                                t('None stated — exploratory.')}
                         </p>
                     </div>
                 </section>
@@ -85,9 +96,11 @@ export default function PlaytestPage({
                         className="space-y-1.5 rounded-lg border bg-muted/40 p-4"
                         data-test="playtest-conclusion"
                     >
-                        <h2 className="text-sm font-semibold">Conclusion</h2>
+                        <h2 className="text-sm font-semibold">
+                            {t('Conclusion')}
+                        </h2>
 
-                        <p className="text-sm whitespace-pre-line">
+                        <p className="text-sm whitespace-pre-line" dir="auto">
                             {playtest.conclusion}
                         </p>
                     </section>

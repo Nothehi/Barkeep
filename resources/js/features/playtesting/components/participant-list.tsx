@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import type { User } from '@/features/auth';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { useParticipants } from '../hooks/use-participants';
 import type {
     Participant,
@@ -54,6 +55,8 @@ export default function ParticipantList({
     game,
     playtest,
 }: ParticipantListProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
     const form = useParticipants(
         workspace,
         game,
@@ -84,10 +87,12 @@ export default function ParticipantList({
         <section className="space-y-3" data-test="participant-list">
             <div className="flex items-center justify-between gap-3">
                 <h2 className="font-semibold">
-                    Participants{' '}
+                    {t('Participants')}{' '}
                     <span className="text-sm font-normal text-muted-foreground">
-                        {participants.length} at the table ·{' '}
-                        {form.players.length} playing
+                        {t(':total at the table · :players playing', {
+                            total: formatNumber(participants.length),
+                            players: formatNumber(form.players.length),
+                        })}
                     </span>
                 </h2>
             </div>
@@ -102,7 +107,7 @@ export default function ParticipantList({
                 >
                     <div className="grid gap-1.5">
                         <Label htmlFor="participant-name" className="text-xs">
-                            Name
+                            {t('Name')}
                         </Label>
 
                         <Input
@@ -114,7 +119,7 @@ export default function ParticipantList({
                                     event.target.value,
                                 )
                             }
-                            placeholder="Sam"
+                            placeholder={t('Sam')}
                             autoComplete="off"
                             data-test="participant-name-input"
                         />
@@ -122,7 +127,7 @@ export default function ParticipantList({
 
                     <div className="grid gap-1.5">
                         <Label htmlFor="participant-role" className="text-xs">
-                            Role
+                            {t('Role')}
                         </Label>
 
                         <Select
@@ -161,7 +166,7 @@ export default function ParticipantList({
                                 htmlFor="participant-account"
                                 className="text-xs"
                             >
-                                Account
+                                {t('Account')}
                             </Label>
 
                             <Select
@@ -177,12 +182,15 @@ export default function ParticipantList({
                                 </SelectTrigger>
 
                                 <SelectContent>
-                                    <SelectItem value={GUEST}>Guest</SelectItem>
+                                    <SelectItem value={GUEST}>
+                                        {t('Guest')}
+                                    </SelectItem>
 
                                     {teammates.map((teammate) => (
                                         <SelectItem
                                             key={teammate.id}
                                             value={teammate.id}
+                                            dir="auto"
                                         >
                                             {teammate.name}
                                         </SelectItem>
@@ -202,7 +210,7 @@ export default function ParticipantList({
                         ) : (
                             <UserPlus className="size-4" />
                         )}
-                        Add
+                        {t('Add')}
                     </Button>
 
                     <div className="sm:col-span-full">
@@ -217,7 +225,7 @@ export default function ParticipantList({
                     className="rounded-lg border border-dashed py-8 text-center text-sm text-muted-foreground"
                     data-test="participants-empty"
                 >
-                    Nobody added yet.
+                    {t('Nobody added yet.')}
                 </p>
             ) : (
                 <ul className="divide-y rounded-lg border">
@@ -227,7 +235,10 @@ export default function ParticipantList({
                             className="flex items-center justify-between gap-3 px-3 py-2"
                         >
                             <div className="flex min-w-0 items-center gap-2">
-                                <span className="truncate font-medium">
+                                <span
+                                    className="truncate font-medium"
+                                    dir="auto"
+                                >
                                     {participant.display_name}
                                 </span>
 
@@ -236,7 +247,9 @@ export default function ParticipantList({
                                 </Badge>
 
                                 {participant.is_registered && (
-                                    <Badge variant="secondary">Member</Badge>
+                                    <Badge variant="secondary">
+                                        {t('Member')}
+                                    </Badge>
                                 )}
                             </div>
 
@@ -244,7 +257,9 @@ export default function ParticipantList({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    aria-label={`Remove ${participant.display_name}`}
+                                    aria-label={t('Remove :name', {
+                                        name: participant.display_name,
+                                    })}
                                     onClick={() => form.remove(participant.id)}
                                     data-test={`remove-participant-${participant.id}`}
                                 >

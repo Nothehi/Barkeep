@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from '@/lib/i18n';
 import playtests from '@/routes/playtests';
 import { usePlaytest } from '../hooks/use-playtest';
 import type { Playtest } from '../types/playtest';
@@ -41,6 +42,7 @@ export default function PlaytestHeader({
     workspace,
     game,
 }: PlaytestHeaderProps) {
+    const { t } = useTranslation();
     const { complete, cancel, processing } = usePlaytest(
         workspace,
         game,
@@ -61,16 +63,19 @@ export default function PlaytestHeader({
 
     return (
         <header className="space-y-4">
-            <Button variant="ghost" size="sm" asChild className="-ml-2">
+            <Button variant="ghost" size="sm" asChild className="-ms-2">
                 <Link href={playtests.index.url({ workspace, game })}>
-                    <ArrowLeft className="size-4" />
-                    All playtests
+                    <ArrowLeft className="size-4 rtl:rotate-180" />
+                    {t('All playtests')}
                 </Link>
             </Button>
 
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 space-y-2">
-                    <h1 className="truncate text-xl font-semibold tracking-tight">
+                    <h1
+                        className="truncate text-xl font-semibold tracking-tight"
+                        dir="auto"
+                    >
                         {playtest.title}
                     </h1>
 
@@ -83,7 +88,9 @@ export default function PlaytestHeader({
                         {playtest.version && (
                             <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                                 <GitBranch className="size-3.5" />
-                                Testing {playtest.version.label}
+                                {t('Testing :version', {
+                                    version: playtest.version.label,
+                                })}
                                 {playtest.version.name
                                     ? ` · ${playtest.version.name}`
                                     : ''}
@@ -115,18 +122,20 @@ export default function PlaytestHeader({
             <Dialog open={completing} onOpenChange={setCompleting}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Complete this playtest</DialogTitle>
+                        <DialogTitle>{t('Complete this playtest')}</DialogTitle>
                         <DialogDescription>
-                            Say what you concluded, if you know yet. The plan
-                            becomes read-only, but you can still write this up
-                            later.
+                            {t(
+                                'Say what you concluded, if you know yet. The plan becomes read-only, but you can still write this up later.',
+                            )}
                         </DialogDescription>
                     </DialogHeader>
 
                     <Textarea
                         value={conclusion}
                         onChange={(event) => setConclusion(event.target.value)}
-                        placeholder="The hypothesis was partially supported. The first-player advantage exists but is smaller than expected."
+                        placeholder={t(
+                            'The hypothesis was partially supported. The first-player advantage exists but is smaller than expected.',
+                        )}
                         rows={4}
                         data-test="playtest-conclusion-input"
                     />
@@ -137,7 +146,7 @@ export default function PlaytestHeader({
                             variant="outline"
                             onClick={() => setCompleting(false)}
                         >
-                            Cancel
+                            {t('Cancel')}
                         </Button>
 
                         <Button
@@ -150,7 +159,7 @@ export default function PlaytestHeader({
                             data-test="confirm-complete-playtest-button"
                         >
                             {processing && <Spinner />}
-                            Complete playtest
+                            {t('Complete playtest')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

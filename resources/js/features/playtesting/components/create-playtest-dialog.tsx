@@ -23,6 +23,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import type { GameVersion } from '@/features/games';
+import { useTranslation } from '@/lib/i18n';
 import { useCreatePlaytest } from '../hooks/use-create-playtest';
 
 type CreatePlaytestDialogProps = {
@@ -48,6 +49,7 @@ export default function CreatePlaytestDialog({
     game,
     versions,
 }: CreatePlaytestDialogProps) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const latest = versions[0] ?? null;
     const form = useCreatePlaytest(workspace, game, latest?.id ?? null);
@@ -65,17 +67,17 @@ export default function CreatePlaytestDialog({
             <DialogTrigger asChild>
                 <Button data-test="create-playtest-button">
                     <Plus className="size-4" />
-                    New playtest
+                    {t('New playtest')}
                 </Button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
-                    <DialogTitle>Plan a playtest</DialogTitle>
+                    <DialogTitle>{t('Plan a playtest')}</DialogTitle>
                     <DialogDescription>
-                        Say what you want to find out and which version you are
-                        finding it out about. You can add sessions once it
-                        exists.
+                        {t(
+                            'Say what you want to find out and which version you are finding it out about. You can add sessions once it exists.',
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -84,9 +86,9 @@ export default function CreatePlaytestDialog({
                         className="rounded-md border border-dashed p-4 text-sm text-muted-foreground"
                         data-test="playtest-needs-version"
                     >
-                        This game has no versions yet. Cut one first — a
-                        playtest records what was on the table, so it has to
-                        point at a specific iteration.
+                        {t(
+                            'This game has no versions yet. Cut one first — a playtest records what was on the table, so it has to point at a specific iteration.',
+                        )}
                     </p>
                 ) : (
                     <form
@@ -98,7 +100,7 @@ export default function CreatePlaytestDialog({
                     >
                         <div className="grid gap-2">
                             <Label htmlFor="playtest-version">
-                                Version under test
+                                {t('Version under test')}
                             </Label>
 
                             <Select
@@ -111,7 +113,9 @@ export default function CreatePlaytestDialog({
                                     id="playtest-version"
                                     data-test="playtest-version-picker"
                                 >
-                                    <SelectValue placeholder="Choose a version" />
+                                    <SelectValue
+                                        placeholder={t('Choose a version')}
+                                    />
                                 </SelectTrigger>
 
                                 <SelectContent>
@@ -133,7 +137,7 @@ export default function CreatePlaytestDialog({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="playtest-title">Title</Label>
+                            <Label htmlFor="playtest-title">{t('Title')}</Label>
 
                             <Input
                                 id="playtest-title"
@@ -141,7 +145,7 @@ export default function CreatePlaytestDialog({
                                 onChange={(event) =>
                                     form.setField('title', event.target.value)
                                 }
-                                placeholder="First-player advantage"
+                                placeholder={t('First-player advantage')}
                                 autoComplete="off"
                                 data-test="playtest-title-input"
                             />
@@ -151,7 +155,7 @@ export default function CreatePlaytestDialog({
 
                         <div className="grid gap-2">
                             <Label htmlFor="playtest-objective">
-                                What do you want to find out?
+                                {t('What do you want to find out?')}
                             </Label>
 
                             <Textarea
@@ -163,7 +167,9 @@ export default function CreatePlaytestDialog({
                                         event.target.value,
                                     )
                                 }
-                                placeholder="Determine whether the first-player advantage is too strong at four players."
+                                placeholder={t(
+                                    'Determine whether the first-player advantage is too strong at four players.',
+                                )}
                                 rows={3}
                                 data-test="playtest-objective-input"
                             />
@@ -173,9 +179,9 @@ export default function CreatePlaytestDialog({
 
                         <div className="grid gap-2">
                             <Label htmlFor="playtest-hypothesis">
-                                What do you expect to happen?{' '}
+                                {t('What do you expect to happen?')}{' '}
                                 <span className="font-normal text-muted-foreground">
-                                    (optional)
+                                    {t('(optional)')}
                                 </span>
                             </Label>
 
@@ -188,23 +194,26 @@ export default function CreatePlaytestDialog({
                                         event.target.value,
                                     )
                                 }
-                                placeholder="Going first is worth about a turn, which is more than the catch-up bonus covers."
+                                placeholder={t(
+                                    'Going first is worth about a turn, which is more than the catch-up bonus covers.',
+                                )}
                                 rows={2}
                             />
 
                             <InputError message={form.errors.hypothesis} />
 
                             <p className="text-xs text-muted-foreground">
-                                Writing this down first is what makes the result
-                                mean something afterwards.
+                                {t(
+                                    'Writing this down first is what makes the result mean something afterwards.',
+                                )}
                             </p>
                         </div>
 
                         <div className="grid gap-2">
                             <Label htmlFor="playtest-planned-at">
-                                Planned for{' '}
+                                {t('Planned for')}{' '}
                                 <span className="font-normal text-muted-foreground">
-                                    (optional)
+                                    {t('(optional)')}
                                 </span>
                             </Label>
 
@@ -229,7 +238,7 @@ export default function CreatePlaytestDialog({
                                 variant="outline"
                                 onClick={() => close(false)}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
 
                             <Button
@@ -238,7 +247,7 @@ export default function CreatePlaytestDialog({
                                 data-test="submit-create-playtest-button"
                             >
                                 {form.processing && <Spinner />}
-                                Plan playtest
+                                {t('Plan playtest')}
                             </Button>
                         </DialogFooter>
                     </form>

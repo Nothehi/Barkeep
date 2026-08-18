@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { formatElapsed } from '../hooks/use-elapsed-time';
 import type { UseSessionResult } from '../hooks/use-session';
 import SessionStatusBadge from './session-status-badge';
@@ -47,6 +48,8 @@ export default function ActiveSessionPanel({
     observationCount,
     feedbackCount,
 }: ActiveSessionPanelProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
     const [ending, setEnding] = useState(false);
     const [outcome, setOutcome] = useState('');
 
@@ -75,30 +78,30 @@ export default function ActiveSessionPanel({
                     <div className="space-y-1">
                         <dt className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                             <Users className="size-3" />
-                            Participants
+                            {t('Participants')}
                         </dt>
                         <dd className="text-lg font-semibold">
-                            {participantCount}
+                            {formatNumber(participantCount)}
                         </dd>
                     </div>
 
                     <div className="space-y-1">
                         <dt className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                             <Eye className="size-3" />
-                            Observations
+                            {t('Observations')}
                         </dt>
                         <dd className="text-lg font-semibold">
-                            {observationCount}
+                            {formatNumber(observationCount)}
                         </dd>
                     </div>
 
                     <div className="space-y-1">
                         <dt className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                             <MessageSquare className="size-3" />
-                            Feedback
+                            {t('Feedback')}
                         </dt>
                         <dd className="text-lg font-semibold">
-                            {feedbackCount}
+                            {formatNumber(feedbackCount)}
                         </dd>
                     </div>
                 </dl>
@@ -116,7 +119,7 @@ export default function ActiveSessionPanel({
                             ) : (
                                 <Play className="size-4" />
                             )}
-                            Start session
+                            {t('Start session')}
                         </Button>
                     )}
 
@@ -128,7 +131,7 @@ export default function ActiveSessionPanel({
                             data-test="end-session-button"
                         >
                             <Square className="size-4" />
-                            End session
+                            {t('End session')}
                         </Button>
                     )}
 
@@ -140,7 +143,7 @@ export default function ActiveSessionPanel({
                             onClick={session.cancel}
                             data-test="cancel-session-button"
                         >
-                            Cancel
+                            {t('Cancel')}
                         </Button>
                     )}
                 </div>
@@ -149,18 +152,20 @@ export default function ActiveSessionPanel({
             <Dialog open={ending} onOpenChange={setEnding}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>End this session</DialogTitle>
+                        <DialogTitle>{t('End this session')}</DialogTitle>
                         <DialogDescription>
-                            Say what this sitting settled, if you know. Nothing
-                            more can be added afterwards, which is what makes
-                            the record datable.
+                            {t(
+                                'Say what this sitting settled, if you know. Nothing more can be added afterwards, which is what makes the record datable.',
+                            )}
                         </DialogDescription>
                     </DialogHeader>
 
                     <Textarea
                         value={outcome}
                         onChange={(event) => setOutcome(event.target.value)}
-                        placeholder="The first-player advantage showed up again, but the catch-up bonus covered most of it."
+                        placeholder={t(
+                            'The first-player advantage showed up again, but the catch-up bonus covered most of it.',
+                        )}
                         rows={4}
                         data-test="session-outcome-input"
                     />
@@ -171,7 +176,7 @@ export default function ActiveSessionPanel({
                             variant="outline"
                             onClick={() => setEnding(false)}
                         >
-                            Keep going
+                            {t('Keep going')}
                         </Button>
 
                         <Button
@@ -184,7 +189,7 @@ export default function ActiveSessionPanel({
                             data-test="confirm-end-session-button"
                         >
                             {processing && <Spinner />}
-                            End session
+                            {t('End session')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

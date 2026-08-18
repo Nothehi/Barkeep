@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useFormatters, useTranslation } from '@/lib/i18n';
 import { useFeedback } from '../hooks/use-feedback';
 import type {
     Feedback,
@@ -55,6 +56,8 @@ export default function FeedbackList({
     game,
     playtest,
 }: FeedbackListProps) {
+    const { t } = useTranslation();
+    const { formatNumber } = useFormatters();
     const form = useFeedback(workspace, game, playtest, session.id, feedback);
 
     const canAdd = session.permissions.canCreateFeedback;
@@ -63,11 +66,15 @@ export default function FeedbackList({
     return (
         <section className="space-y-3" data-test="feedback-list">
             <h2 className="font-semibold">
-                Feedback{' '}
+                {t('Feedback')}{' '}
                 <span className="text-sm font-normal text-muted-foreground">
-                    what they told you
+                    {t('what they told you')}
                     {form.averageRating !== null &&
-                        ` · ${form.averageRating.toFixed(1)} average`}
+                        ` · ${t(':rating average', {
+                            rating: formatNumber(
+                                Number(form.averageRating.toFixed(1)),
+                            ),
+                        })}`}
                 </span>
             </h2>
 
@@ -93,9 +100,9 @@ export default function FeedbackList({
                                 form.submit();
                             }
                         }}
-                        placeholder="I didn't know what my best move was."
+                        placeholder={t("I didn't know what my best move was.")}
                         rows={2}
-                        aria-label="What did they say?"
+                        aria-label={t('What did they say?')}
                         data-test="feedback-input"
                     />
 
@@ -108,7 +115,7 @@ export default function FeedbackList({
                                     htmlFor="feedback-participant"
                                     className="text-xs"
                                 >
-                                    From
+                                    {t('From')}
                                 </Label>
 
                                 <Select
@@ -132,13 +139,14 @@ export default function FeedbackList({
 
                                     <SelectContent>
                                         <SelectItem value={ANONYMOUS}>
-                                            Anonymous
+                                            {t('Anonymous')}
                                         </SelectItem>
 
                                         {participants.map((participant) => (
                                             <SelectItem
                                                 key={participant.id}
                                                 value={participant.id}
+                                                dir="auto"
                                             >
                                                 {participant.display_name}
                                             </SelectItem>
@@ -153,7 +161,7 @@ export default function FeedbackList({
                                 htmlFor="feedback-rating"
                                 className="text-xs"
                             >
-                                Rating
+                                {t('Rating')}
                             </Label>
 
                             <Select
@@ -175,7 +183,7 @@ export default function FeedbackList({
 
                                 <SelectContent>
                                     <SelectItem value={NO_RATING}>
-                                        No rating
+                                        {t('No rating')}
                                     </SelectItem>
 
                                     {options.rating_scale.map((point) => (
@@ -199,7 +207,7 @@ export default function FeedbackList({
                         <Button
                             type="submit"
                             disabled={form.processing}
-                            className="ml-auto"
+                            className="ms-auto"
                             data-test="add-feedback-button"
                         >
                             {form.processing ? (
@@ -207,7 +215,7 @@ export default function FeedbackList({
                             ) : (
                                 <Plus className="size-4" />
                             )}
-                            Record
+                            {t('Record')}
                         </Button>
                     </div>
                 </form>
@@ -219,7 +227,7 @@ export default function FeedbackList({
                     data-test="feedback-empty"
                 >
                     <MessageSquare className="size-5" />
-                    Nobody has said anything yet.
+                    {t('Nobody has said anything yet.')}
                 </p>
             ) : (
                 <ul className="space-y-2">
@@ -229,12 +237,17 @@ export default function FeedbackList({
                             className="flex items-start justify-between gap-3 rounded-lg border p-3"
                         >
                             <div className="min-w-0 space-y-1">
-                                <p className="text-sm">“{item.content}”</p>
+                                <p className="text-sm" dir="auto">
+                                    “{item.content}”
+                                </p>
 
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <span className="text-xs text-muted-foreground">
+                                    <span
+                                        className="text-xs text-muted-foreground"
+                                        dir="auto"
+                                    >
                                         {item.participant?.display_name ??
-                                            'Anonymous'}
+                                            t('Anonymous')}
                                     </span>
 
                                     {item.rating_label && (
@@ -250,7 +263,7 @@ export default function FeedbackList({
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    aria-label="Remove feedback"
+                                    aria-label={t('Remove feedback')}
                                     onClick={() => form.remove(item.id)}
                                     data-test={`remove-feedback-${item.id}`}
                                 >

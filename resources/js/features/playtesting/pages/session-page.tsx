@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import type { User } from '@/features/auth';
 import type { Game } from '@/features/games';
 import type { Workspace } from '@/features/workspaces';
+import { useTranslation } from '@/lib/i18n';
 import playtests from '@/routes/playtests';
 import ActiveSessionPanel from '../components/active-session-panel';
 import FeedbackList from '../components/feedback-list';
@@ -61,6 +62,7 @@ export default function SessionPage({
     teammates: { data: teammates },
     options,
 }: SessionPageProps) {
+    const { t } = useTranslation();
     const session = useSession(
         workspace.slug,
         game.slug,
@@ -70,11 +72,13 @@ export default function SessionPage({
 
     return (
         <>
-            <Head title={`Session · ${playtest.title}`} />
+            <Head
+                title={t('Session · :playtest', { playtest: playtest.title })}
+            />
 
             <div className="space-y-6 px-4 py-6">
                 <div className="space-y-2">
-                    <Button variant="ghost" size="sm" asChild className="-ml-2">
+                    <Button variant="ghost" size="sm" asChild className="-ms-2">
                         <Link
                             href={playtests.show.url({
                                 workspace: workspace.slug,
@@ -82,8 +86,8 @@ export default function SessionPage({
                                 playtest: playtest.id,
                             })}
                         >
-                            <ArrowLeft className="size-4" />
-                            {playtest.title}
+                            <ArrowLeft className="size-4 rtl:rotate-180" />
+                            <span dir="auto">{playtest.title}</span>
                         </Link>
                     </Button>
 
@@ -136,9 +140,9 @@ export default function SessionPage({
 
                 <section className="space-y-3">
                     <h2 className="font-semibold">
-                        Timeline{' '}
+                        {t('Timeline')}{' '}
                         <span className="text-sm font-normal text-muted-foreground">
-                            how the session went
+                            {t('how the session went')}
                         </span>
                     </h2>
 
@@ -156,10 +160,13 @@ export default function SessionPage({
                                 data-test="session-notes"
                             >
                                 <h2 className="text-sm font-semibold text-muted-foreground">
-                                    Notes
+                                    {t('Notes')}
                                 </h2>
 
-                                <p className="text-sm whitespace-pre-line">
+                                <p
+                                    className="text-sm whitespace-pre-line"
+                                    dir="auto"
+                                >
                                     {sessionData.notes}
                                 </p>
                             </section>
@@ -171,10 +178,13 @@ export default function SessionPage({
                                 data-test="session-outcome"
                             >
                                 <h2 className="text-sm font-semibold text-muted-foreground">
-                                    Outcome
+                                    {t('Outcome')}
                                 </h2>
 
-                                <p className="text-sm whitespace-pre-line">
+                                <p
+                                    className="text-sm whitespace-pre-line"
+                                    dir="auto"
+                                >
                                     {sessionData.outcome}
                                 </p>
                             </section>

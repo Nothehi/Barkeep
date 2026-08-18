@@ -1,4 +1,5 @@
 import { FlaskConical } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 import type { PlaytestSummary } from '../types/playtest';
 import PlaytestCard from './playtest-card';
 
@@ -23,6 +24,8 @@ export default function PlaytestList({
     game,
     isFiltered,
 }: PlaytestListProps) {
+    const { t } = useTranslation();
+
     if (playtests.length === 0) {
         return (
             <div
@@ -34,14 +37,18 @@ export default function PlaytestList({
                 <div className="space-y-1">
                     <p className="font-medium">
                         {isFiltered
-                            ? 'No playtests match those filters'
-                            : 'No playtests yet'}
+                            ? t('No playtests match those filters')
+                            : t('No playtests yet')}
                     </p>
 
                     <p className="max-w-md text-sm text-muted-foreground">
                         {isFiltered
-                            ? 'Try a different search or clear the status filter.'
-                            : 'A playtest is a question about a version of this game — what you want to find out, and who you are going to find it out with.'}
+                            ? t(
+                                  'Try a different search or clear the status filter.',
+                              )
+                            : t(
+                                  'A playtest is a question about a version of this game — what you want to find out, and who you are going to find it out with.',
+                              )}
                     </p>
                 </div>
             </div>

@@ -1,6 +1,7 @@
 import { CalendarClock, CircleSlash, Radio, Square } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/lib/i18n';
 import type { SessionStatus } from '../types/playtest';
 
 type SessionStatusBadgeProps = {
@@ -39,12 +40,13 @@ export default function SessionStatusBadge({
     status,
     label,
 }: SessionStatusBadgeProps) {
+    const { t } = useTranslation();
     const { icon: Icon, variant } = PRESENTATION[status];
 
     return (
         <Badge variant={variant} data-test={`session-status-${status}`}>
             <Icon className="size-3" />
-            {label ?? FALLBACK_LABEL[status]}
+            {label ?? t(FALLBACK_LABEL[status])}
         </Badge>
     );
 }
