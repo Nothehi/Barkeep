@@ -19,5 +19,6 @@ require __DIR__.'/games.php';
 require __DIR__.'/mechanics.php';
 require __DIR__.'/playtests.php';
 require __DIR__.'/prototypes.php';
+require __DIR__.'/balance.php';
 require __DIR__.'/game-framework.php';
 require __DIR__.'/frameworks.php';
