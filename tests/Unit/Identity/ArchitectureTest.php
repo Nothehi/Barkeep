@@ -15,6 +15,7 @@ $otherContexts = [
     'Modules\Gamification',
     'Modules\Moderation',
     'Modules\Playtesting',
+    'Modules\PrototypeIteration',
     'Modules\Workspace',
 ];
 
