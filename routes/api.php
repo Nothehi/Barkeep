@@ -33,6 +33,22 @@ use Modules\Playtesting\Presentation\Http\Controllers\Api\PlaytestSummaryControl
 use Modules\Playtesting\Presentation\Http\Controllers\Api\SessionCancellationController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\SessionCompletionController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\SessionStartController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\DecisionController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\DecisionEvidenceController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\DecisionLifecycleController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\DesignChangeController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\ExperimentController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\ExperimentLifecycleController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\IterationController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\IterationGameVersionController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\IterationLifecycleController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\IterationPlaytestController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\IterationSummaryController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\IterationTimelineController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\PrototypeArchiveController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\PrototypeArtifactController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\PrototypeController;
+use Modules\PrototypeIteration\Presentation\Http\Controllers\Api\PrototypeVersionController;
 use Modules\Workspace\Presentation\Http\Controllers\Api\WorkspaceArchiveController;
 use Modules\Workspace\Presentation\Http\Controllers\Api\WorkspaceController;
 use Modules\Workspace\Presentation\Http\Controllers\Api\WorkspaceInvitationController;
@@ -193,6 +209,98 @@ Route::middleware(['auth', 'verified'])->group(function () {
                         Route::patch('feedback/{feedback}', [FeedbackController::class, 'update'])->name('api.workspaces.games.playtests.sessions.feedback.update');
                         Route::delete('feedback/{feedback}', [FeedbackController::class, 'destroy'])->name('api.workspaces.games.playtests.sessions.feedback.destroy');
                     });
+                });
+            });
+
+            /*
+             * Prototypes and iterations: what the studio built, and what it did with it.
+             *
+             * Nested the whole way down for the same reason playtests are, and the reason bears
+             * repeating because a flatter shape is genuinely tempting here — `/iterations/{id}` is a
+             * shorter address than this one. Each segment is resolved *through* the one before it by
+             * PrototypeIteration's own bindings, so a change id from somebody else's iteration fails
+             * to resolve rather than being caught later by a policy. Reaching an iteration without
+             * its game would mean looking the parent up from the child, which is the reverse-lookup
+             * pattern that turns a guessed uuid into cross-workspace access.
+             *
+             * Prototype versions are addressed by number — `versions/3` — because that is what a
+             * designer says, and a number is unique inside its prototype. Everything else is a uuid.
+             *
+             * There is no update or delete route for a prototype version, and the absence is the
+             * immutability rule as a routing property: once a version has been iterated on it is
+             * part of the design record, and the way forward is to cut the next one.
+             *
+             * Two shapes worth pointing at. Attaching a playtest carries the id in the body rather
+             * than the URL, so no route here binds a Playtesting model; detaching addresses the
+             * association instead. And `game-version` is section 48's deliberate seam — the
+             * designer's explicit decision that the design has moved on, never a side effect of
+             * completing a cycle.
+             */
+            Route::prefix('prototypes')->group(function () {
+                Route::get('/', [PrototypeController::class, 'index'])->name('api.workspaces.games.prototypes.index');
+                Route::post('/', [PrototypeController::class, 'store'])->name('api.workspaces.games.prototypes.store');
+
+                Route::prefix('{prototype}')->group(function () {
+                    Route::get('/', [PrototypeController::class, 'show'])->name('api.workspaces.games.prototypes.show');
+                    Route::patch('/', [PrototypeController::class, 'update'])->name('api.workspaces.games.prototypes.update');
+
+                    Route::post('archive', [PrototypeArchiveController::class, 'store'])->name('api.workspaces.games.prototypes.archive');
+
+                    Route::get('versions', [PrototypeVersionController::class, 'index'])->name('api.workspaces.games.prototypes.versions.index');
+                    Route::post('versions', [PrototypeVersionController::class, 'store'])->name('api.workspaces.games.prototypes.versions.store');
+
+                    Route::prefix('versions/{prototypeVersion}')->group(function () {
+                        Route::get('/', [PrototypeVersionController::class, 'show'])->name('api.workspaces.games.prototypes.versions.show');
+
+                        Route::get('artifacts', [PrototypeArtifactController::class, 'index'])->name('api.workspaces.games.prototypes.versions.artifacts.index');
+                        Route::post('artifacts', [PrototypeArtifactController::class, 'store'])->name('api.workspaces.games.prototypes.versions.artifacts.store');
+                        Route::delete('artifacts/{artifact}', [PrototypeArtifactController::class, 'destroy'])->name('api.workspaces.games.prototypes.versions.artifacts.destroy');
+                    });
+                });
+            });
+
+            Route::prefix('iterations')->group(function () {
+                Route::get('/', [IterationController::class, 'index'])->name('api.workspaces.games.iterations.index');
+                Route::post('/', [IterationController::class, 'store'])->name('api.workspaces.games.iterations.store');
+
+                Route::prefix('{iteration}')->group(function () {
+                    Route::get('/', [IterationController::class, 'show'])->name('api.workspaces.games.iterations.show');
+                    Route::patch('/', [IterationController::class, 'update'])->name('api.workspaces.games.iterations.update');
+
+                    Route::get('summary', [IterationSummaryController::class, 'show'])->name('api.workspaces.games.iterations.summary');
+                    Route::get('timeline', [IterationTimelineController::class, 'show'])->name('api.workspaces.games.iterations.timeline');
+
+                    Route::post('start', [IterationLifecycleController::class, 'start'])->name('api.workspaces.games.iterations.start');
+                    Route::post('complete', [IterationLifecycleController::class, 'complete'])->name('api.workspaces.games.iterations.complete');
+                    Route::post('cancel', [IterationLifecycleController::class, 'cancel'])->name('api.workspaces.games.iterations.cancel');
+
+                    Route::get('changes', [DesignChangeController::class, 'index'])->name('api.workspaces.games.iterations.changes.index');
+                    Route::post('changes', [DesignChangeController::class, 'store'])->name('api.workspaces.games.iterations.changes.store');
+                    Route::patch('changes/{change}', [DesignChangeController::class, 'update'])->name('api.workspaces.games.iterations.changes.update');
+                    Route::delete('changes/{change}', [DesignChangeController::class, 'destroy'])->name('api.workspaces.games.iterations.changes.destroy');
+
+                    Route::get('experiments', [ExperimentController::class, 'index'])->name('api.workspaces.games.iterations.experiments.index');
+                    Route::post('experiments', [ExperimentController::class, 'store'])->name('api.workspaces.games.iterations.experiments.store');
+                    Route::patch('experiments/{experiment}', [ExperimentController::class, 'update'])->name('api.workspaces.games.iterations.experiments.update');
+                    Route::post('experiments/{experiment}/start', [ExperimentLifecycleController::class, 'start'])->name('api.workspaces.games.iterations.experiments.start');
+                    Route::post('experiments/{experiment}/complete', [ExperimentLifecycleController::class, 'complete'])->name('api.workspaces.games.iterations.experiments.complete');
+                    Route::post('experiments/{experiment}/cancel', [ExperimentLifecycleController::class, 'cancel'])->name('api.workspaces.games.iterations.experiments.cancel');
+
+                    Route::get('decisions', [DecisionController::class, 'index'])->name('api.workspaces.games.iterations.decisions.index');
+                    Route::post('decisions', [DecisionController::class, 'store'])->name('api.workspaces.games.iterations.decisions.store');
+                    Route::patch('decisions/{decision}', [DecisionController::class, 'update'])->name('api.workspaces.games.iterations.decisions.update');
+                    Route::post('decisions/{decision}/accept', [DecisionLifecycleController::class, 'accept'])->name('api.workspaces.games.iterations.decisions.accept');
+                    Route::post('decisions/{decision}/reject', [DecisionLifecycleController::class, 'reject'])->name('api.workspaces.games.iterations.decisions.reject');
+                    Route::post('decisions/{decision}/defer', [DecisionLifecycleController::class, 'defer'])->name('api.workspaces.games.iterations.decisions.defer');
+
+                    Route::get('decisions/{decision}/evidence', [DecisionEvidenceController::class, 'index'])->name('api.workspaces.games.iterations.decisions.evidence.index');
+                    Route::post('decisions/{decision}/evidence', [DecisionEvidenceController::class, 'store'])->name('api.workspaces.games.iterations.decisions.evidence.store');
+
+                    Route::get('playtests', [IterationPlaytestController::class, 'index'])->name('api.workspaces.games.iterations.playtests.index');
+                    Route::post('playtests', [IterationPlaytestController::class, 'store'])->name('api.workspaces.games.iterations.playtests.store');
+                    Route::delete('playtests/{link}', [IterationPlaytestController::class, 'destroy'])->name('api.workspaces.games.iterations.playtests.destroy');
+
+                    Route::post('game-version', [IterationGameVersionController::class, 'store'])->name('api.workspaces.games.iterations.game-version.store');
                 });
             });
         });
