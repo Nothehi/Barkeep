@@ -285,6 +285,53 @@ final class PlaytestRepository
     }
 
     /**
+     * Find one of a game's observations by id, wherever in the game it was made.
+     *
+     * Published so that another context can resolve a citation of an observation
+     * without knowing how playtesting stores one. PrototypeIteration's design
+     * decisions may cite evidence, and the citation arrives as a bare id in a
+     * request body — so it has to be resolvable, scoped to the game, by the module
+     * that owns it.
+     *
+     * The scoping is the whole point and it is why this takes a game rather than an
+     * id alone. Two joins up to `playtests.game_id` mean an observation from
+     * another studio's project is not found, so a citation cannot be used to
+     * surface somebody else's evidence on a screen — or to discover that it exists.
+     *
+     * Nothing about the observation is copied out by the caller: it is read here,
+     * rendered, and stays the single copy. See section 28.
+     */
+    public function findObservationInGame(Game $game, string $observationId): ?PlaytestObservation
+    {
+        return PlaytestObservation::query()
+            ->whereKey($observationId)
+            ->whereHas(
+                'session.playtest',
+                fn (Builder $query) => $query->where('game_id', $game->getKey()),
+            )
+            ->with(['participant', 'session'])
+            ->first();
+    }
+
+    /**
+     * Find one of a game's feedback entries by id, wherever it was given.
+     *
+     * The same arrangement as {@see findObservationInGame()}, for what the players
+     * said rather than what the designers noticed, and scoped the same way.
+     */
+    public function findFeedbackInGame(Game $game, string $feedbackId): ?PlaytestFeedback
+    {
+        return PlaytestFeedback::query()
+            ->whereKey($feedbackId)
+            ->whereHas(
+                'session.playtest',
+                fn (Builder $query) => $query->where('game_id', $game->getKey()),
+            )
+            ->with(['participant', 'session'])
+            ->first();
+    }
+
+    /**
      * Match a term against a playtest's title, objective and hypothesis.
      *
      * Case folded on both sides so that searching "scoring" finds "Scoring is
