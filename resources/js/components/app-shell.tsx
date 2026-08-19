@@ -17,5 +17,16 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
         );
     }
 
-    return <SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider>;
+    /**
+     * The shell is exactly one viewport tall so the scrolling happens inside
+     * it rather than on the document. Chrome pins the document's scrollbar to
+     * the right of the window whatever `dir` says, but an element's scrollbar
+     * follows that element's direction — so an inner scroller is what puts the
+     * bar on the reader's left in Persian.
+     */
+    return (
+        <SidebarProvider defaultOpen={isOpen} className="h-svh">
+            {children}
+        </SidebarProvider>
+    );
 }

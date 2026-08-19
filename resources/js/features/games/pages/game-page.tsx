@@ -6,9 +6,11 @@ import type { Workspace } from '@/features/workspaces';
 import { useFormatters, useTranslation } from '@/lib/i18n';
 import versions from '@/routes/games/versions';
 import DesignPhasePicker from '../components/design-phase-picker';
+import DesignSummary from '../components/design-summary';
 import EditGameDialog from '../components/edit-game-dialog';
 import GameHeader from '../components/game-header';
 import GameProgress from '../components/game-progress';
+import { useGamePermissions } from '../hooks/use-game-permissions';
 import type { Game, GameDashboard, GameOptions } from '../types/game';
 
 type GamePageProps = {
@@ -22,11 +24,15 @@ type GamePageProps = {
  * A game's overview.
  *
  * Everything on this screen is something the platform can actually answer
- * today: what the game is, where it is, and how many times it has been
- * iterated. There are no playtest counts, no feedback summaries and no
- * balance readings, because the contexts that would produce them do not
- * exist — and a dashboard of invented numbers is worse than a small honest
- * one.
+ * today: what the game is, where it is, what has been decided about the design,
+ * and how many times it has been iterated. The design record is read back here
+ * rather than only in the form that writes it — thirteen answers were being
+ * collected in settings and shown nowhere, so the only way to reread your own
+ * pitch was to open the editor for it.
+ *
+ * There are still no playtest counts, no feedback summaries and no balance
+ * readings, because the contexts that would produce them do not exist — and a
+ * dashboard of invented numbers is worse than a small honest one.
  */
 export default function GamePage({
     workspace: { data: workspace },
@@ -36,7 +42,9 @@ export default function GamePage({
 }: GamePageProps) {
     const { t } = useTranslation();
     const { formatDate, formatNumber } = useFormatters();
+    const permissions = useGamePermissions(game);
     const latest = dashboard.latest_version?.data ?? null;
+    const designRecord = dashboard.design_record?.data ?? null;
 
     return (
         <>
@@ -50,69 +58,81 @@ export default function GamePage({
             <div className="space-y-6 px-4 py-6">
                 <GameHeader game={game} workspace={workspace.slug} />
 
-                <div className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <div className="flex items-start justify-between gap-3">
-                                <CardTitle>{t('About')}</CardTitle>
-                                <EditGameDialog
-                                    game={game}
-                                    workspace={workspace.slug}
-                                />
-                            </div>
-                        </CardHeader>
-
-                        <CardContent className="space-y-4">
-                            <p
-                                className="text-sm text-muted-foreground"
-                                dir="auto"
-                            >
-                                {game.description ?? t('No description yet.')}
-                            </p>
-
-                            <dl className="grid gap-3 text-sm sm:grid-cols-2">
-                                <div>
-                                    <dt className="text-muted-foreground">
-                                        {t('Address')}
-                                    </dt>
-                                    <dd className="font-medium" dir="ltr">
-                                        /{game.slug}
-                                    </dd>
+                <div className="grid items-start gap-4 lg:grid-cols-3">
+                    <div className="space-y-4 lg:col-span-2">
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-start justify-between gap-3">
+                                    <CardTitle>{t('About')}</CardTitle>
+                                    <EditGameDialog
+                                        game={game}
+                                        workspace={workspace.slug}
+                                    />
                                 </div>
+                            </CardHeader>
 
-                                <div>
-                                    <dt className="text-muted-foreground">
-                                        {t('Started')}
-                                    </dt>
-                                    <dd className="font-medium">
-                                        {game.created_at
-                                            ? formatDate(game.created_at)
-                                            : '—'}
-                                    </dd>
-                                </div>
+                            <CardContent className="space-y-4">
+                                <p
+                                    className="text-sm text-muted-foreground"
+                                    dir="auto"
+                                >
+                                    {game.description ??
+                                        t('No description yet.')}
+                                </p>
 
-                                <div>
-                                    <dt className="text-muted-foreground">
-                                        {t('Last updated')}
-                                    </dt>
-                                    <dd className="font-medium">
-                                        {game.updated_at
-                                            ? formatDate(game.updated_at)
-                                            : '—'}
-                                    </dd>
-                                </div>
+                                <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                                    <div>
+                                        <dt className="text-muted-foreground">
+                                            {t('Address')}
+                                        </dt>
+                                        <dd className="font-medium" dir="ltr">
+                                            /{game.slug}
+                                        </dd>
+                                    </div>
 
-                                <div>
-                                    <dt className="text-muted-foreground">
-                                        {t('Versions')}
-                                    </dt>
-                                    <dd className="font-medium">
-                                        {formatNumber(dashboard.versions_count)}
-                                    </dd>
-                                </div>
-                            </dl>
-                        </CardContent>
-                    </Card>
+                                    <div>
+                                        <dt className="text-muted-foreground">
+                                            {t('Started')}
+                                        </dt>
+                                        <dd className="font-medium">
+                                            {game.created_at
+                                                ? formatDate(game.created_at)
+                                                : '—'}
+                                        </dd>
+                                    </div>
+
+                                    <div>
+                                        <dt className="text-muted-foreground">
+                                            {t('Last updated')}
+                                        </dt>
+                                        <dd className="font-medium">
+                                            {game.updated_at
+                                                ? formatDate(game.updated_at)
+                                                : '—'}
+                                        </dd>
+                                    </div>
+
+                                    <div>
+                                        <dt className="text-muted-foreground">
+                                            {t('Versions')}
+                                        </dt>
+                                        <dd className="font-medium">
+                                            {formatNumber(
+                                                dashboard.versions_count,
+                                            )}
+                                        </dd>
+                                    </div>
+                                </dl>
+                            </CardContent>
+                        </Card>
+
+                        <DesignSummary
+                            workspace={workspace.slug}
+                            game={game.slug}
+                            record={designRecord}
+                            canEdit={permissions.canUpdateDesignRecord}
+                        />
+                    </div>
 
                     <div className="space-y-4">
                         <Card>

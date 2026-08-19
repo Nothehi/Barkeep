@@ -6,9 +6,20 @@ type Props = React.ComponentProps<'main'> & {
     variant?: AppVariant;
 };
 
+const scrollRegion = { 'scroll-region': '' };
+
 export function AppContent({ variant = 'sidebar', children, ...props }: Props) {
     if (variant === 'sidebar') {
-        return <SidebarInset {...props}>{children}</SidebarInset>;
+        /**
+         * `scroll-region` is how Inertia is told that this, not the document,
+         * is what to reset on a visit and restore on a back button — without
+         * it every page would open at wherever the last one was left.
+         */
+        return (
+            <SidebarInset {...scrollRegion} {...props}>
+                {children}
+            </SidebarInset>
+        );
     }
 
     return (

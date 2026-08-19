@@ -4,7 +4,9 @@ use Illuminate\Support\Facades\Event;
 use Modules\GameDesign\Domain\Enums\DesignPhase;
 use Modules\GameDesign\Domain\Enums\GameStatus;
 use Modules\GameDesign\Domain\Events\GameUpdated;
+use Modules\GameDesign\Domain\Models\DesignRecord;
 use Modules\GameDesign\Domain\Models\Game;
+use Modules\GameDesign\Domain\Models\Mechanic;
 use Modules\Identity\Domain\Models\User;
 use Modules\Workspace\Domain\Models\Workspace;
 
@@ -273,4 +275,46 @@ it('gives the overview screen its version summary', function () {
             ->where('game.data.slug', 'bears-and-bridges'));
 
     expect($game->fresh()?->versions()->count())->toBe(2);
+});
+
+/**
+ * The overview reads the design record back. It was being collected in settings
+ * and shown nowhere, so a designer could only reread their own pitch by opening
+ * the form that wrote it.
+ */
+it('gives the overview screen what has been decided about the design', function () {
+    $game = Game::factory()->inWorkspace($this->workspace)->withSlug('bears-and-bridges')->active()->create();
+
+    $record = DesignRecord::factory()->forGame($game)->decided()->create();
+    $record->mechanics()->attach(Mechanic::factory()->create(['name' => 'Worker Placement']));
+
+    $this->actingAs($this->designer)
+        ->get(route('games.show', ['studio', 'bears-and-bridges']))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('games/show')
+            ->where('dashboard.design_record.data.pitch', 'A game about building bridges before the river rises.')
+            ->where('dashboard.design_record.data.player_count_label', '2 to 4 players')
+            ->where('dashboard.design_record.data.play_time_label', '45 min to 1 h')
+            ->where('dashboard.design_record.data.target_age_min', 10)
+            ->where('dashboard.design_record.data.complexity', 'gateway')
+            ->where('dashboard.design_record.data.has_complete_core_loop', true)
+            ->where('dashboard.design_record.data.is_empty', false)
+            ->has('dashboard.design_record.data.mechanics', 1));
+});
+
+/**
+ * A game that has decided nothing carries no record at all, and the overview is
+ * told so rather than being handed a row of nulls it cannot tell apart from
+ * answers left deliberately blank.
+ */
+it('tells the overview screen when nothing about the design has been decided', function () {
+    Game::factory()->inWorkspace($this->workspace)->withSlug('bears-and-bridges')->active()->create();
+
+    $this->actingAs($this->designer)
+        ->get(route('games.show', ['studio', 'bears-and-bridges']))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('games/show')
+            ->where('dashboard.design_record', null));
 });

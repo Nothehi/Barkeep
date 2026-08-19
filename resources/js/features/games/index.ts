@@ -27,6 +27,7 @@ export { default as ChangeStatusDialog } from './components/change-status-dialog
 export { default as CreateGameDialog } from './components/create-game-dialog';
 export { default as CreateMechanicDialog } from './components/create-mechanic-dialog';
 export { default as DesignRecordForm } from './components/design-record-form';
+export { default as DesignSummary } from './components/design-summary';
 export { default as MechanicList } from './components/mechanic-list';
 export { default as MechanicsPicker } from './components/mechanics-picker';
 export { default as CreateVersionDialog } from './components/create-version-dialog';

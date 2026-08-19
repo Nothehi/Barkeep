@@ -19,6 +19,7 @@ $laterContexts = [
     'Modules\Gamification',
     'Modules\Knowledge',
     'Modules\Moderation',
+    'Modules\PrototypeIteration',
 ];
 
 arch('playtesting does not depend on any context built on top of it')

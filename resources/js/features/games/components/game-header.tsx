@@ -1,9 +1,11 @@
 import { Link } from '@inertiajs/react';
 import {
+    Boxes,
     Compass,
     FlaskConical,
     GitBranch,
     LayoutDashboard,
+    Repeat,
     Settings,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,7 +15,9 @@ import { cn } from '@/lib/utils';
 import games from '@/routes/games';
 import framework from '@/routes/games/framework';
 import versions from '@/routes/games/versions';
+import iterations from '@/routes/iterations';
 import playtests from '@/routes/playtests';
+import prototypes from '@/routes/prototypes';
 import { useGamePermissions } from '../hooks/use-game-permissions';
 import type { Game } from '../types/game';
 import ChangeStatusDialog from './change-status-dialog';
@@ -31,7 +35,12 @@ type GameHeaderProps = {
  * The tabs are links rather than a tab component because each one is a real
  * page with its own URL — refreshing on the versions tab should land back on
  * the versions tab. Each one is added when the context behind it exists and
- * not before; playtests appeared with the Playtesting module.
+ * not before; playtests appeared with the Playtesting module, prototypes and
+ * iterations with PrototypeIteration.
+ *
+ * The order follows the design loop rather than the order the modules were
+ * built: the design, then the thing built from it, then the work done on it,
+ * then the evidence gathered about it.
  *
  * What the header offers is driven by the server's permission map. Hiding the
  * settings link from somebody who cannot use it is a courtesy, not a control:
@@ -44,6 +53,8 @@ export default function GameHeader({ game, workspace }: GameHeaderProps) {
 
     const overviewUrl = games.show({ workspace, game: game.slug });
     const versionsUrl = versions.index({ workspace, game: game.slug });
+    const prototypesUrl = prototypes.index({ workspace, game: game.slug });
+    const iterationsUrl = iterations.index({ workspace, game: game.slug });
     const playtestsUrl = playtests.index({ workspace, game: game.slug });
     const frameworkUrl = framework.show({ workspace, game: game.slug });
     const settingsUrl = games.settings.edit({ workspace, game: game.slug });
@@ -59,6 +70,18 @@ export default function GameHeader({ game, workspace }: GameHeaderProps) {
             url: versionsUrl,
             label: t('Versions'),
             icon: GitBranch,
+            shown: true,
+        },
+        {
+            url: prototypesUrl,
+            label: t('Prototypes'),
+            icon: Boxes,
+            shown: true,
+        },
+        {
+            url: iterationsUrl,
+            label: t('Iterations'),
+            icon: Repeat,
             shown: true,
         },
         {

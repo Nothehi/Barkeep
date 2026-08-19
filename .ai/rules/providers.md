@@ -13,3 +13,10 @@ Laravel keeps one binder per route parameter name, so the service provider regis
 This makes the order in `bootstrap/providers.php` load-bearing for a second reason: DesignFramework must register after GameDesign or the delegation runs the wrong way.
 
 Before adding a `Route::bind`, grep `modules/*/Providers` for the name. The regression is held by "resolves a framework edition and a game version under the same parameter name" in tests/Feature/DesignFramework/FrameworkScreensTest.php.
+
+## PrototypeIteration avoids {version} and {playtest} on purpose
+Two parameter names in routes/prototypes.php were chosen around the global binder table rather than for style.
+
+`{prototypeVersion}` rather than `{version}`, because `{version}` is already bound twice — GameDesign resolves a game's iteration, DesignFramework an edition — and a third claim on it would silently break one of those chains. It also disambiguates a URL that carries a game version and a prototype version at once.
+
+`{link}` rather than `{playtest}` for detaching a playtest, because `{playtest}` belongs to Playtesting: binding it here would hand this module's controllers another context's Eloquent model and defeat the single-adapter boundary. Attaching sends the id in the request body for the same reason.

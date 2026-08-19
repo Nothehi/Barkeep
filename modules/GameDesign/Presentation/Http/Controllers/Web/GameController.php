@@ -17,6 +17,7 @@ use Modules\GameDesign\Domain\Models\Game;
 use Modules\GameDesign\Infrastructure\Authorization\GamePermissions;
 use Modules\GameDesign\Presentation\Http\Requests\CreateGameRequest;
 use Modules\GameDesign\Presentation\Http\Requests\GameFilterRequest;
+use Modules\GameDesign\Presentation\Http\Resources\DesignRecordResource;
 use Modules\GameDesign\Presentation\Http\Resources\GameResource;
 use Modules\GameDesign\Presentation\Http\Resources\GameSummaryResource;
 use Modules\GameDesign\Presentation\Http\Resources\GameVersionResource;
@@ -88,6 +89,15 @@ class GameController extends Controller
                 'latest_version' => $dashboard->latestVersion === null
                     ? null
                     : GameVersionResource::make($dashboard->latestVersion),
+
+                /*
+                 * Null when the designer has decided nothing, which is most
+                 * games. The screen draws an invitation to record the first
+                 * thing from that, rather than a summary full of dashes.
+                 */
+                'design_record' => $dashboard->designRecord === null
+                    ? null
+                    : DesignRecordResource::make($dashboard->designRecord),
             ],
             'options' => $this->options(),
         ]);

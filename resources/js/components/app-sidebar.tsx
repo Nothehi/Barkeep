@@ -5,7 +5,6 @@ import {
     FolderGit2,
     Gamepad2,
     LayoutGrid,
-    Library,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -23,7 +22,6 @@ import {
 import { useWorkspaces, WorkspaceSwitcher } from '@/features/workspaces';
 import { useLocale, useTranslation } from '@/lib/i18n';
 import { dashboard } from '@/routes';
-import frameworks from '@/routes/frameworks';
 import games from '@/routes/games';
 import mechanics from '@/routes/mechanics';
 import type { NavItem } from '@/types';
@@ -43,20 +41,9 @@ const navItemsFor = (t: (phrase: string) => string): NavItem[] => [
     },
     /*
      * Sits beside workspaces rather than inside one, because that is the truth
-     * about the domain: a methodology is the platform's, not a studio's. The
-     * catalogue is readable by everybody; only the accounts configured to
-     * administer frameworks can write one, and the screen says so itself.
-     */
-    {
-        title: t('Frameworks'),
-        href: frameworks.index(),
-        icon: Library,
-    },
-    /*
-     * Beside frameworks for the same reason, and it is the same reason twice:
-     * a methodology and a vocabulary are both the platform's rather than a
-     * studio's. Every game picks mechanics from this one list, which is the
-     * only thing that makes two games comparable.
+     * about the domain: a vocabulary is the platform's, not a studio's. Every
+     * game picks mechanics from this one list, which is the only thing that
+     * makes two games comparable.
      */
     {
         title: t('Mechanics'),

@@ -17,6 +17,7 @@ $laterContexts = [
     'Modules\Gamification',
     'Modules\Knowledge',
     'Modules\Moderation',
+    'Modules\PrototypeIteration',
 ];
 
 arch('the design framework does not depend on any context built on top of it')

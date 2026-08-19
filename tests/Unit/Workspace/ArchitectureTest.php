@@ -15,6 +15,7 @@ $laterContexts = [
     'Modules\Gamification',
     'Modules\Moderation',
     'Modules\Playtesting',
+    'Modules\PrototypeIteration',
 ];
 
 arch('workspace does not depend on any context built on top of it')
