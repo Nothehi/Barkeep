@@ -1,6 +1,10 @@
 import { Link } from '@inertiajs/react';
+import { Scale } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useFormatters, useTranslation } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
+import balance from '@/routes/balance';
 import versions from '@/routes/games/versions';
 import type { GameVersion } from '../types/game';
 
@@ -20,6 +24,11 @@ type GameVersionListProps = {
  * There is no diff between versions. A version records that an iteration
  * existed and what changed in prose; comparing them needs design documents,
  * which do not exist yet.
+ *
+ * Each row links to its own balance configuration, because an economy belongs
+ * to one design state rather than to the game. The link needs `relative z-10`
+ * to sit above the row's own full-bleed overlay link — without it the overlay
+ * swallows the click and both go to the version.
  */
 export default function GameVersionList({
     versions: list,
@@ -72,6 +81,27 @@ export default function GameVersionList({
                                 {t('Current')}
                             </Badge>
                         )}
+
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className={cn('relative z-10', {
+                                'ms-auto': index !== 0,
+                            })}
+                        >
+                            <Link
+                                href={balance.index({
+                                    workspace,
+                                    game,
+                                    version: version.version_number,
+                                })}
+                                data-test={`version-balance-link-${version.version_number}`}
+                            >
+                                <Scale className="size-3" />
+                                {t('Balance')}
+                            </Link>
+                        </Button>
                     </div>
 
                     {version.description && (

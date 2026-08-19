@@ -1,10 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Scale } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Workspace } from '@/features/workspaces';
 import { useFormatters, useTranslation } from '@/lib/i18n';
+import balance from '@/routes/balance';
 import versionRoutes from '@/routes/games/versions';
 import GameHeader from '../components/game-header';
 import type { Game, GameVersion } from '../types/game';
@@ -23,6 +24,12 @@ type GameVersionPageProps = {
  * and what changed. It is the anchor future work hangs off — a playtest
  * session will point at a version rather than at a game — so it has a URL of
  * its own from the start.
+ *
+ * The balance link lives here rather than on the game's own tab bar, and that
+ * placement is the module's foundational decision showing through: an economy
+ * belongs to one design state. Wood income was 2 in v1 and 3 in v2, and a
+ * game-level "Balance" tab would have had to pick one of them on the
+ * designer's behalf.
  */
 export default function GameVersionPage({
     workspace: { data: workspace },
@@ -45,17 +52,33 @@ export default function GameVersionPage({
             <div className="space-y-6 px-4 py-6">
                 <GameHeader game={game} workspace={workspace.slug} />
 
-                <Button variant="ghost" size="sm" asChild>
-                    <Link
-                        href={versionRoutes.index({
-                            workspace: workspace.slug,
-                            game: game.slug,
-                        })}
-                    >
-                        <ArrowLeft className="size-4 rtl:rotate-180" />
-                        {t('All versions')}
-                    </Link>
-                </Button>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Button variant="ghost" size="sm" asChild>
+                        <Link
+                            href={versionRoutes.index({
+                                workspace: workspace.slug,
+                                game: game.slug,
+                            })}
+                        >
+                            <ArrowLeft className="size-4 rtl:rotate-180" />
+                            {t('All versions')}
+                        </Link>
+                    </Button>
+
+                    <Button variant="outline" size="sm" asChild>
+                        <Link
+                            href={balance.index({
+                                workspace: workspace.slug,
+                                game: game.slug,
+                                version: version.version_number,
+                            })}
+                            data-test="version-balance-link"
+                        >
+                            <Scale className="size-4" />
+                            {t('Balance')}
+                        </Link>
+                    </Button>
+                </div>
 
                 <Card className="max-w-2xl">
                     <CardHeader>
