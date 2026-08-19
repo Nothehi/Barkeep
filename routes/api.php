@@ -22,6 +22,22 @@ use Modules\GameDesign\Presentation\Http\Controllers\Api\GameStatusController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\GameVersionController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\MechanicArchiveController;
 use Modules\GameDesign\Presentation\Http\Controllers\Api\MechanicController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\ActionCostController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\ActionEffectController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\ActionRewardController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\BalanceAnalysisController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\BalanceAssumptionController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\BalanceComparisonController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\BalanceObservationController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\BalanceProfileController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\BalanceProfileLifecycleController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\BalanceScenarioController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\BalanceSnapshotController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\BalanceVariableController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\EconomyActionController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\ResourceController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\ResourceFlowController;
+use Modules\GameEconomy\Presentation\Http\Controllers\Api\ScenarioVariableController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\FeedbackController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\ObservationController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\ParticipantController;
@@ -301,6 +317,107 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     Route::delete('playtests/{link}', [IterationPlaytestController::class, 'destroy'])->name('api.workspaces.games.iterations.playtests.destroy');
 
                     Route::post('game-version', [IterationGameVersionController::class, 'store'])->name('api.workspaces.games.iterations.game-version.store');
+                });
+            });
+
+            /*
+             * The balance configuration of one design state.
+             *
+             * Nested under `versions/{version}` rather than under the game, which is this module's
+             * foundational decision rather than a routing preference: wood income was 2 in v1 and 3
+             * in v2, and an address that named only the game would have no way to say which of
+             * those it meant.
+             *
+             * `{version}` is GameDesign's own binding, reused. Every segment below it resolves
+             * through the one before — a resource through its profile, a cost through its action, an
+             * override through its scenario — so a variable id from somebody else's configuration
+             * 404s at resolution rather than being caught later by a policy.
+             *
+             * Two shapes worth pointing at. `snapshots/compare` takes its pair as query parameters,
+             * because a comparison is a question about two records rather than a record owning
+             * another; both are still resolved through the profile in the controller. And
+             * `analysis` answers both verbs on one address: GET reads the findings silently, POST
+             * reads exactly the same findings and announces that somebody looked — neither writes
+             * anything, and neither persists the result.
+             */
+            Route::prefix('versions/{version}/balance-profiles')->group(function () {
+                Route::get('/', [BalanceProfileController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.index');
+                Route::post('/', [BalanceProfileController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.store');
+
+                Route::prefix('{profile}')->group(function () {
+                    Route::get('/', [BalanceProfileController::class, 'show'])->name('api.workspaces.games.versions.balance-profiles.show');
+                    Route::patch('/', [BalanceProfileController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.update');
+
+                    Route::post('activate', [BalanceProfileLifecycleController::class, 'activate'])->name('api.workspaces.games.versions.balance-profiles.activate');
+                    Route::post('archive', [BalanceProfileLifecycleController::class, 'archive'])->name('api.workspaces.games.versions.balance-profiles.archive');
+
+                    Route::get('resources', [ResourceController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.resources.index');
+                    Route::post('resources', [ResourceController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.resources.store');
+                    Route::get('resources/{resourceType}', [ResourceController::class, 'show'])->name('api.workspaces.games.versions.balance-profiles.resources.show');
+                    Route::patch('resources/{resourceType}', [ResourceController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.resources.update');
+                    Route::delete('resources/{resourceType}', [ResourceController::class, 'destroy'])->name('api.workspaces.games.versions.balance-profiles.resources.destroy');
+
+                    Route::get('flows', [ResourceFlowController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.flows.index');
+                    Route::post('flows', [ResourceFlowController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.flows.store');
+                    Route::patch('flows/{flow}', [ResourceFlowController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.flows.update');
+                    Route::delete('flows/{flow}', [ResourceFlowController::class, 'destroy'])->name('api.workspaces.games.versions.balance-profiles.flows.destroy');
+
+                    Route::get('actions', [EconomyActionController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.actions.index');
+                    Route::post('actions', [EconomyActionController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.actions.store');
+
+                    Route::prefix('actions/{economyAction}')->group(function () {
+                        Route::get('/', [EconomyActionController::class, 'show'])->name('api.workspaces.games.versions.balance-profiles.actions.show');
+                        Route::patch('/', [EconomyActionController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.actions.update');
+                        Route::delete('/', [EconomyActionController::class, 'destroy'])->name('api.workspaces.games.versions.balance-profiles.actions.destroy');
+
+                        Route::get('costs', [ActionCostController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.actions.costs.index');
+                        Route::post('costs', [ActionCostController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.actions.costs.store');
+                        Route::patch('costs/{cost}', [ActionCostController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.actions.costs.update');
+                        Route::delete('costs/{cost}', [ActionCostController::class, 'destroy'])->name('api.workspaces.games.versions.balance-profiles.actions.costs.destroy');
+
+                        Route::get('rewards', [ActionRewardController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.actions.rewards.index');
+                        Route::post('rewards', [ActionRewardController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.actions.rewards.store');
+                        Route::patch('rewards/{reward}', [ActionRewardController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.actions.rewards.update');
+                        Route::delete('rewards/{reward}', [ActionRewardController::class, 'destroy'])->name('api.workspaces.games.versions.balance-profiles.actions.rewards.destroy');
+
+                        Route::get('effects', [ActionEffectController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.actions.effects.index');
+                        Route::post('effects', [ActionEffectController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.actions.effects.store');
+                        Route::patch('effects/{effect}', [ActionEffectController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.actions.effects.update');
+                        Route::delete('effects/{effect}', [ActionEffectController::class, 'destroy'])->name('api.workspaces.games.versions.balance-profiles.actions.effects.destroy');
+                    });
+
+                    Route::get('variables', [BalanceVariableController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.variables.index');
+                    Route::post('variables', [BalanceVariableController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.variables.store');
+                    Route::patch('variables/{variable}', [BalanceVariableController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.variables.update');
+                    Route::delete('variables/{variable}', [BalanceVariableController::class, 'destroy'])->name('api.workspaces.games.versions.balance-profiles.variables.destroy');
+
+                    Route::get('scenarios', [BalanceScenarioController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.scenarios.index');
+                    Route::post('scenarios', [BalanceScenarioController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.scenarios.store');
+
+                    Route::prefix('scenarios/{scenario}')->group(function () {
+                        Route::get('/', [BalanceScenarioController::class, 'show'])->name('api.workspaces.games.versions.balance-profiles.scenarios.show');
+                        Route::patch('/', [BalanceScenarioController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.scenarios.update');
+                        Route::post('archive', [BalanceScenarioController::class, 'archive'])->name('api.workspaces.games.versions.balance-profiles.scenarios.archive');
+
+                        Route::get('variables', [ScenarioVariableController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.scenarios.variables.index');
+                        Route::post('variables', [ScenarioVariableController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.scenarios.variables.store');
+                        Route::delete('variables/{override}', [ScenarioVariableController::class, 'destroy'])->name('api.workspaces.games.versions.balance-profiles.scenarios.variables.destroy');
+                    });
+
+                    Route::get('assumptions', [BalanceAssumptionController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.assumptions.index');
+                    Route::post('assumptions', [BalanceAssumptionController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.assumptions.store');
+                    Route::patch('assumptions/{assumption}', [BalanceAssumptionController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.assumptions.update');
+
+                    Route::get('observations', [BalanceObservationController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.observations.index');
+                    Route::post('observations', [BalanceObservationController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.observations.store');
+                    Route::patch('observations/{balanceObservation}', [BalanceObservationController::class, 'update'])->name('api.workspaces.games.versions.balance-profiles.observations.update');
+
+                    Route::get('analysis', [BalanceAnalysisController::class, 'show'])->name('api.workspaces.games.versions.balance-profiles.analysis.show');
+                    Route::post('analysis', [BalanceAnalysisController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.analysis.store');
+
+                    Route::get('snapshots', [BalanceSnapshotController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.snapshots.index');
+                    Route::post('snapshots', [BalanceSnapshotController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.snapshots.store');
+                    Route::get('snapshots/compare', [BalanceComparisonController::class, 'show'])->name('api.workspaces.games.versions.balance-profiles.snapshots.compare');
                 });
             });
         });

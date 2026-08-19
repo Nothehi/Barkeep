@@ -3,6 +3,7 @@
 use App\Providers\AppServiceProvider;
 use Modules\DesignFramework\Providers\DesignFrameworkServiceProvider;
 use Modules\GameDesign\Providers\GameDesignServiceProvider;
+use Modules\GameEconomy\Providers\GameEconomyServiceProvider;
 use Modules\Identity\Providers\IdentityServiceProvider;
 use Modules\Playtesting\Providers\PlaytestingServiceProvider;
 use Modules\PrototypeIteration\Providers\PrototypeIterationServiceProvider;
@@ -27,7 +28,18 @@ use Modules\Workspace\Providers\WorkspaceServiceProvider;
  * describes method, and neither imports the other. Architecture tests on both
  * sides hold that line.
  *
- * PrototypeIteration is registered last because it is the only module that
+ * GameEconomy is registered last. It reads GameDesign — every balance profile
+ * belongs to a design version — and its route bindings resolve *through* the
+ * `{version}` binding GameDesign declares, so that binding has to exist before
+ * its own. It deliberately does not claim `{version}` itself; see
+ * `.ai/rules/providers.md` for what happens when two providers bind one name.
+ *
+ * It is a sibling of Playtesting, DesignFramework and PrototypeIteration rather
+ * than a dependant of any of them: it models the quantitative systems that need
+ * balancing, where those record evidence, method and work. None of the four
+ * imports another.
+ *
+ * PrototypeIteration is registered before it because it is the only module that
  * reads two others: GameDesign, for the design versions a prototype and an
  * iteration are built against, and Playtesting, for the evidence a cycle was
  * judged on. Both of those bindings have to exist before its own resolve
@@ -42,4 +54,5 @@ return [
     PlaytestingServiceProvider::class,
     DesignFrameworkServiceProvider::class,
     PrototypeIterationServiceProvider::class,
+    GameEconomyServiceProvider::class,
 ];

@@ -20,3 +20,10 @@ Two parameter names in routes/prototypes.php were chosen around the global binde
 `{prototypeVersion}` rather than `{version}`, because `{version}` is already bound twice — GameDesign resolves a game's iteration, DesignFramework an edition — and a third claim on it would silently break one of those chains. It also disambiguates a URL that carries a game version and a prototype version at once.
 
 `{link}` rather than `{playtest}` for detaching a playtest, because `{playtest}` belongs to Playtesting: binding it here would hand this module's controllers another context's Eloquent model and defeat the single-adapter boundary. Attaching sends the id in the request body for the same reason.
+
+## GameEconomy reuses {version} and renames three parameters around the binder table
+GameEconomy binds `{profile}`, `{resourceType}`, `{flow}`, `{economyAction}`, `{cost}`, `{reward}`, `{effect}`, `{variable}`, `{scenario}`, `{override}`, `{assumption}` and `{balanceObservation}`.
+
+It deliberately does **not** bind `{version}` — GameDesign already resolves a game's design state under that name, which is exactly what a balance profile needs, and a third claim on it would break GameDesign's chain and DesignFramework's delegation through it.
+
+Three names were widened to avoid collisions: `{economyAction}` and `{resourceType}` rather than `{action}`/`{resource}` (both far too generic to claim globally), and `{balanceObservation}` rather than `{observation}`, which belongs to Playtesting — binding it here would break every playtest evidence route in the application.
