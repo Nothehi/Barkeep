@@ -8,6 +8,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | modules/GameDesign/** | .ai/rules/game-design.md |
 | resources/js/** | .ai/rules/js.md |
 | lang/** | .ai/rules/lang.md |
+| modules/PrototypeIteration/** | .ai/rules/prototype-iteration.md |
 | modules/*/Providers/*ServiceProvider.php | .ai/rules/providers.md |
 | database/seeders/** | .ai/rules/seeders.md |
 | modules/Workspace/** | .ai/rules/workspace.md |
