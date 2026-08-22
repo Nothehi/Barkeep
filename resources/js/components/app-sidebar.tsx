@@ -1,11 +1,5 @@
 import { Link } from '@inertiajs/react';
-import {
-    Blocks,
-    BookOpen,
-    FolderGit2,
-    Gamepad2,
-    LayoutGrid,
-} from 'lucide-react';
+import { Blocks, FolderGit2, Gamepad2, LayoutGrid } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -39,6 +33,13 @@ const navItemsFor = (t: (phrase: string) => string): NavItem[] => [
         href: dashboard(),
         icon: LayoutGrid,
     },
+];
+
+/**
+ * Reference material rather than a place you work, which is why it sits down
+ * here instead of in the group above.
+ */
+const footerNavItemsFor = (t: (phrase: string) => string): NavItem[] => [
     /*
      * Sits beside workspaces rather than inside one, because that is the truth
      * about the domain: a vocabulary is the platform's, not a studio's. Every
@@ -50,18 +51,10 @@ const navItemsFor = (t: (phrase: string) => string): NavItem[] => [
         href: mechanics.index(),
         icon: Blocks,
     },
-];
-
-const footerNavItemsFor = (t: (phrase: string) => string): NavItem[] => [
     {
         title: t('Repository'),
         href: 'https://github.com/laravel/react-starter-kit',
         icon: FolderGit2,
-    },
-    {
-        title: t('Documentation'),
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
     },
 ];
 
