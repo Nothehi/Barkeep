@@ -37,5 +37,22 @@ class DatabaseSeeder extends Seeder
          */
         $this->call(MechanicSeeder::class);
         $this->call(DesignFrameworkSeeder::class);
+
+        /*
+         * The worked example is the opposite: a fictional studio, its games and
+         * two years of its playtests. Useful to develop and demonstrate against
+         * and wrong to ship, so it is called here only where the database is
+         * somebody's own.
+         *
+         * On a shared or production install, run it deliberately:
+         * `php artisan db:seed --class=SampleDataSeeder`.
+         */
+        if (app()->environment('local')) {
+            if (app()->isLocale('fa')) {
+                $this->call(SampleFaDataSeeder::class);
+            } else {
+                $this->call(SampleDataSeeder::class);
+            }
+        }
     }
 }

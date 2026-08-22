@@ -59,7 +59,7 @@ class DesignFrameworkSeeder extends Seeder
     /**
      * The framework's address, and the handle everything else is keyed by.
      */
-    private const SLUG = 'board-game-design';
+    public const SLUG = 'board-game-design';
 
     /**
      * Seed the methodology.
@@ -67,22 +67,21 @@ class DesignFrameworkSeeder extends Seeder
     public function run(): void
     {
         $author = $this->author();
+        $edition = $this->edition();
 
-        $framework = Framework::query()->firstOrNew(['slug' => self::SLUG]);
+        $framework = Framework::query()->firstOrNew(['slug' => $edition['slug']]);
 
         $framework->fill([
-            'name' => 'Board Game Design Framework',
-            'description' => 'A structured path from an idea to a game somebody else can play, in ten stages. '
-                .'Every stage names what to work on, what to ask of the design, and what has to be true '
-                .'before moving on.',
+            'name' => $edition['name'],
+            'description' => $edition['description'],
         ]);
 
-        $framework->slug ??= self::SLUG;
+        $framework->slug ??= $edition['slug'];
         $framework->status = FrameworkStatus::Published;
         $framework->created_by ??= $author->id;
         $framework->save();
 
-        $version = $this->version($framework, $author);
+        $version = $this->version($framework, $author, $edition['version']);
 
         $position = 0;
 
@@ -102,6 +101,43 @@ class DesignFrameworkSeeder extends Seeder
         }
 
         $this->command->info("Seeded [{$framework->name}] {$version->label()} with {$position} phases.");
+    }
+
+    /**
+     * Which methodology this is, and what its first edition is called.
+     *
+     * Held apart from the content because a second edition of the framework tables — another
+     * methodology, or the same one written in another language — differs from this one in exactly
+     * these four strings and in `phases()`, and in nothing else about how the rows are written.
+     *
+     * @return array{slug: string, name: string, description: string, version: array{name: string, description: string}}
+     */
+    protected function edition(): array
+    {
+        return [
+            'slug' => self::SLUG,
+            'name' => 'Board Game Design Framework',
+            'description' => 'A structured path from an idea to a game somebody else can play, in ten stages. '
+                .'Every stage names what to work on, what to ask of the design, and what has to be true '
+                .'before moving on.',
+            'version' => [
+                'name' => 'First edition',
+                'description' => 'The methodology as Barkeep ships it.',
+            ],
+        ];
+    }
+
+    /**
+     * The address a title is filed under.
+     *
+     * Derived from the title where the title is in English, and taken from the row where it is not:
+     * `Str::slug('ایده‌پردازی')` is `aydhprdazy`, which is a URL segment nobody can read and nobody
+     * can guess. A phase's address appears in the URL, so an edition written in another script
+     * carries its own Latin addresses rather than having them transliterated for it.
+     */
+    protected function address(string $title, ?string $slug = null): string
+    {
+        return $slug ?? Str::slug($title);
     }
 
     /**
@@ -127,7 +163,10 @@ class DesignFrameworkSeeder extends Seeder
      * nothing should be announced during a migration. What matters is that games adopting it get a
      * frozen edition — which is exactly what a published status means.
      */
-    private function version(Framework $framework, User $author): FrameworkVersion
+    /**
+     * @param  array{name: string, description: string}  $edition
+     */
+    private function version(Framework $framework, User $author, array $edition): FrameworkVersion
     {
         $version = FrameworkVersion::query()->firstOrNew([
             'framework_id' => $framework->id,
@@ -135,8 +174,8 @@ class DesignFrameworkSeeder extends Seeder
         ]);
 
         $version->fill([
-            'name' => 'First edition',
-            'description' => 'The methodology as Barkeep ships it.',
+            'name' => $edition['name'],
+            'description' => $edition['description'],
         ]);
 
         $version->framework_id = $framework->id;
@@ -156,7 +195,7 @@ class DesignFrameworkSeeder extends Seeder
      */
     private function phase(FrameworkVersion $version, array $definition, int $position): DesignPhaseDefinition
     {
-        $slug = Str::slug((string) $definition['name']);
+        $slug = $this->address((string) $definition['name'], $definition['slug'] ?? null);
 
         $phase = DesignPhaseDefinition::query()->firstOrNew([
             'framework_version_id' => $version->id,
@@ -202,10 +241,8 @@ class DesignFrameworkSeeder extends Seeder
         $position = 0;
 
         foreach ($rows as $row) {
-            [$title, $body] = $row;
+            ['title' => $title, 'body' => $body, 'fact' => $fact, 'slug' => $slug] = $this->parts($row);
             $position++;
-
-            $slug = Str::slug($title);
 
             $content = $type::query()->firstOrNew([
                 'framework_version_id' => $version->id,
@@ -225,7 +262,7 @@ class DesignFrameworkSeeder extends Seeder
              * what says which — a principle has no column for one.
              */
             if ($content instanceof AnsweredByADesignFact) {
-                $content->setAttribute('satisfied_by', $row[2] ?? null);
+                $content->setAttribute('satisfied_by', $fact);
             }
 
             $content->save();
@@ -239,7 +276,7 @@ class DesignFrameworkSeeder extends Seeder
      * paired ones stop being tickable: "Player count decided" used to be a box somebody checked on
      * their own word, and it is now met by going and deciding the player count.
      *
-     * @param  array{title: string, description: string, items: array<int, string|array{0: string, 1: string}>}  $definition
+     * @param  array{title: string, slug?: string, description: string, items: array<int, string|array<int|string, string|null>>}  $definition
      */
     private function checklist(
         FrameworkVersion $version,
@@ -247,7 +284,7 @@ class DesignFrameworkSeeder extends Seeder
         array $definition,
         int $position,
     ): void {
-        $slug = Str::slug($definition['title']);
+        $slug = $this->address($definition['title'], $definition['slug'] ?? null);
 
         $checklist = Checklist::query()->firstOrNew([
             'framework_version_id' => $version->id,
@@ -271,9 +308,7 @@ class DesignFrameworkSeeder extends Seeder
         foreach ($definition['items'] as $row) {
             $itemPosition++;
 
-            [$title, $fact] = is_array($row) ? $row : [$row, null];
-
-            $itemSlug = Str::slug($title);
+            ['title' => $title, 'fact' => $fact, 'slug' => $itemSlug] = $this->requirement($row);
 
             $item = ChecklistItem::query()->firstOrNew([
                 'checklist_id' => $checklist->id,
@@ -291,6 +326,52 @@ class DesignFrameworkSeeder extends Seeder
     }
 
     /**
+     * Read one content row into its parts.
+     *
+     * Rows are written positionally — title, body, and the design fact that answers it — because
+     * that is the shortest way to write a list of them and the shape this file's own content uses.
+     * A row may instead be written as a map, and then it may carry a `slug`: an edition whose
+     * titles are not in English has to, because `address()` cannot derive a usable one from them.
+     *
+     * @param  array<int|string, string|null>  $row
+     * @return array{title: string, body: string, fact: string|null, slug: string}
+     */
+    private function parts(array $row): array
+    {
+        $title = (string) ($row['title'] ?? $row[0]);
+
+        return [
+            'title' => $title,
+            'body' => (string) ($row['body'] ?? $row[1] ?? ''),
+            'fact' => $row['fact'] ?? $row[2] ?? null,
+            'slug' => $this->address($title, $row['slug'] ?? null),
+        ];
+    }
+
+    /**
+     * Read one checklist requirement into its parts.
+     *
+     * Deliberately not `parts()`. A requirement has no body, so the fact that meets it sits where a
+     * content row keeps its body — and reading one with the other's rules is how "Player count
+     * decided" quietly stops being answered by the player count being decided.
+     *
+     * @param  string|array<int|string, string|null>  $row
+     * @return array{title: string, fact: string|null, slug: string}
+     */
+    private function requirement(string|array $row): array
+    {
+        $row = is_array($row) ? $row : [$row];
+
+        $title = (string) ($row['title'] ?? $row[0]);
+
+        return [
+            'title' => $title,
+            'fact' => $row['fact'] ?? $row[1] ?? null,
+            'slug' => $this->address($title, $row['slug'] ?? null),
+        ];
+    }
+
+    /**
      * The methodology itself.
      *
      * Ten stages, in the order a design actually moves through them — with the caveat every designer
@@ -303,7 +384,7 @@ class DesignFrameworkSeeder extends Seeder
      *
      * @return array<int, array<string, mixed>>
      */
-    private function phases(): array
+    protected function phases(): array
     {
         return [
             [
