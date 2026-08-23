@@ -29,3 +29,14 @@ Persian content carries an explicit Latin `slug`; it is never derived. `Str::slu
 `DesignFrameworkSeeder::parts()` and `::requirement()` are deliberately separate readers. A content row is [title, body, fact]; a checklist item is [title, fact] with no body. Reading an item with `parts()` puts the fact where the body goes, and "Player count decided" quietly stops being answered by the design record.
 
 Unrelated but load-bearing: the unit tests assert English output, so they fail wholesale if `APP_LOCALE`/`APP_FALLBACK_LOCALE` is set to `fa` in `.env`. English is the catalogue key and must stay the fallback (see .ai/rules/lang.md).
+
+## The sample clone goes through RuleSetCloner, and rule slugs use underscores
+`SampleRulesSeeder` seeds Harbourmaster three times — v2 archived, v3 in play, and a v3 draft. The draft is produced by calling `RuleSetCloner` rather than by writing the copy out by hand, for the same reason snapshots go through `SnapshotWriter`: a hand-written clone would drift out of step with what the button does the first time the cloner learned about a new table. It is also the only honest fiction available, since an active rule set refuses every edit.
+
+Cloning is the one thing in the sample data that is *not* re-applied on a re-run. `clonedRuleSet()` returns early if the copy already exists, because a clone is a copy of a moment and re-cloning would pull later changes to the source into a draft somebody has since edited.
+
+`SampleRulesSeeder::address()` slugs with `Str::slug($name, '_')`, not the hyphens `SampleEconomySeeder::address()` uses. These are `RuleSlug`s: they never appear in a URL, and the underscore form is what `RuleSlug::fromName` derives — so a record created through the interface and one seeded here agree. `SampleFaDataSeederTest` therefore checks the rules tables against `^[a-z0-9]+(_[a-z0-9]+)*$` and every other table against the hyphenated form.
+
+A rule action stores an economy *handle* (`berth-a-ship`) and never a cost. Those handles are hyphenated, because that is what SampleEconomySeeder wrote — the two alphabets meeting in one row is deliberate, and `SampleDataSeederTest` asserts every handle resolves.
+
+The drafts are imperfect on purpose: Kiln and قنات each have an action with no phase, which is a validation *error* and is why neither could be activated. The two active sets have none, because activation would have refused them.
