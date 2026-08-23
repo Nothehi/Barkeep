@@ -197,6 +197,24 @@ final class EconomyDirectory
     }
 
     /**
+     * An exact decimal, without the trailing zeros the column stores it with.
+     *
+     * `decimal(20, 6)` means one crew comes back as `1.000000`, and "1.000000
+     * Crew, 2.000000 Stone" is not a sentence anybody wants beside a rule. Done
+     * by trimming the string rather than by casting: parsing to a float to
+     * format it would undo the exactness the economy's whole `Quantity` type
+     * exists to protect, in the one place this module touches its numbers.
+     */
+    private function readable(string $amount): string
+    {
+        if (! str_contains($amount, '.')) {
+            return $amount;
+        }
+
+        return rtrim(rtrim($amount, '0'), '.');
+    }
+
+    /**
      * Word what an economy action moves, in one line.
      *
      * The amounts come from the economy's own `Quantity` values through their
@@ -207,12 +225,12 @@ final class EconomyDirectory
     private function describe(EconomyAction $action): ?string
     {
         $costs = $action->costs
-            ->map(fn (ActionCost $cost): string => trim($cost->amount->value.' '.$cost->resource->name))
+            ->map(fn (ActionCost $cost): string => trim($this->readable($cost->amount->value).' '.$cost->resource->name))
             ->filter()
             ->all();
 
         $rewards = $action->rewards
-            ->map(fn (ActionReward $reward): string => trim($reward->amount->value.' '.$reward->resource->name))
+            ->map(fn (ActionReward $reward): string => trim($this->readable($reward->amount->value).' '.$reward->resource->name))
             ->filter()
             ->all();
 
