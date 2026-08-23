@@ -4,6 +4,7 @@ use App\Providers\AppServiceProvider;
 use Modules\DesignFramework\Providers\DesignFrameworkServiceProvider;
 use Modules\GameDesign\Providers\GameDesignServiceProvider;
 use Modules\GameEconomy\Providers\GameEconomyServiceProvider;
+use Modules\GameRules\Providers\GameRulesServiceProvider;
 use Modules\Identity\Providers\IdentityServiceProvider;
 use Modules\Playtesting\Providers\PlaytestingServiceProvider;
 use Modules\PrototypeIteration\Providers\PrototypeIterationServiceProvider;
@@ -45,6 +46,20 @@ use Modules\Workspace\Providers\WorkspaceServiceProvider;
  * judged on. Both of those bindings have to exist before its own resolve
  * through them. It does not depend on DesignFramework and DesignFramework does
  * not depend on it; they are siblings describing method and recording work.
+ *
+ * GameRules is registered last, after GameEconomy, and both halves of that
+ * matter. It reads GameDesign — every rule set belongs to a design version — so
+ * its route bindings resolve through the `{version}` binding GameDesign
+ * declares. And it reads GameEconomy, through exactly one adapter, so that a
+ * rule action can show what it costs without holding a copy of the number: the
+ * economy has to be registered before the module that reads it.
+ *
+ * The direction is one-way and stays that way. GameEconomy does not know
+ * GameRules exists, and an architecture test on each side holds the line. Seven
+ * of this module's route parameters are longer than they would naturally be —
+ * `{gameRule}`, `{gamePhase}`, `{ruleMechanic}`, `{ruleAction}`, `{ruleEffect}`,
+ * `{ruleCondition}` — because the short forms were already claimed by the
+ * modules above it in this list; see `.ai/rules/providers.md`.
  */
 return [
     AppServiceProvider::class,
@@ -55,4 +70,5 @@ return [
     DesignFrameworkServiceProvider::class,
     PrototypeIterationServiceProvider::class,
     GameEconomyServiceProvider::class,
+    GameRulesServiceProvider::class,
 ];
