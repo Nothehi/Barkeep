@@ -8,6 +8,11 @@ use Modules\DesignFramework\Domain\Models\GameFramework;
 use Modules\GameDesign\Domain\Models\Game;
 use Modules\GameEconomy\Domain\Models\BalanceProfile;
 use Modules\GameEconomy\Domain\Models\BalanceSnapshot;
+use Modules\GameRules\Domain\Models\GameRule;
+use Modules\GameRules\Domain\Models\RuleSet;
+use Modules\GameRules\Domain\ValueObjects\ValidationError;
+use Modules\GameRules\Infrastructure\Analysis\RuleSetValidator;
+use Modules\GameRules\Infrastructure\GameEconomy\EconomyDirectory;
 use Modules\Identity\Domain\Models\User;
 use Modules\Playtesting\Domain\Models\Playtest;
 use Modules\PrototypeIteration\Domain\Enums\EvidenceType;
@@ -145,6 +150,120 @@ it('captures snapshots in the shape the comparison screen reads', function () {
     }
 });
 
+it('keeps a rule set for each design version that has one', function () {
+    $this->seed(SampleDataSeeder::class);
+
+    $harbourmaster = Game::query()->where('slug', 'harbourmaster')->firstOrFail();
+
+    $sets = RuleSet::query()
+        ->whereIn('game_version_id', $harbourmaster->versions()->pluck('id'))
+        ->get();
+
+    /* The v2 rules archived, the v3 rules in play, and the v3 draft cloned from them. */
+    expect($sets)->toHaveCount(3)
+        ->and($sets->where('status', 'active'))->toHaveCount(1)
+        ->and($sets->where('status', 'archived'))->toHaveCount(1);
+});
+
+it('clones the rules in play rather than editing them', function () {
+    $this->seed(SampleDataSeeder::class);
+
+    $live = RuleSet::query()->where('name', 'Contract rework rules')->firstOrFail();
+    $draft = RuleSet::query()->where('name', 'Three-cycle draft')->firstOrFail();
+
+    expect($draft->cloned_from_rule_set_id)->toBe($live->id)
+        ->and($draft->game_version_id)->toBe($live->game_version_id)
+        ->and($draft->status->value)->toBe('draft');
+
+    /*
+     * The guarantee cloning exists for. Nothing in the copy is a row in the
+     * original, so the length iteration can change its draft without touching
+     * the rules four playtests were run under.
+     */
+    foreach (['phases', 'rules', 'actions', 'conditions'] as $relation) {
+        expect($draft->{$relation}()->pluck('id')->intersect($live->{$relation}()->pluck('id')))
+            ->toBeEmpty("the clone shares a {$relation} row with its source");
+    }
+
+    expect($live->conditions()->where('name', 'Four cycles are over')->value('value'))->toBe('4')
+        ->and($draft->conditions()->where('name', 'Three cycles are over')->value('value'))->toBe('3')
+        ->and($draft->rules()->count())->toBeGreaterThan($live->rules()->count());
+});
+
+it('points every rule action at an economy action that resolves', function () {
+    $this->seed(SampleDataSeeder::class);
+
+    $economy = app(EconomyDirectory::class);
+    $wired = 0;
+
+    foreach (RuleSet::query()->with('version')->get() as $ruleSet) {
+        $actions = $ruleSet->actions()->whereNotNull('economy_action_slug')->pluck('economy_action_slug')->all();
+        $resources = $ruleSet->effects()->whereNotNull('economy_resource_slug')->pluck('economy_resource_slug')
+            ->merge($ruleSet->requirements()->whereNotNull('economy_resource_slug')->pluck('economy_resource_slug'))
+            ->unique()
+            ->values()
+            ->all();
+
+        $wired += count($actions);
+
+        expect($economy->unresolvedHandles($ruleSet->version, $actions, $resources))
+            ->toBeEmpty("[{$ruleSet->name}] names an economy record that is not in its version's profile");
+    }
+
+    expect($wired)->toBeGreaterThan(0);
+});
+
+it('reads a cost off the economy rather than storing one', function () {
+    $this->seed(SampleDataSeeder::class);
+
+    $live = RuleSet::query()->where('name', 'Contract rework rules')->firstOrFail();
+
+    $reference = app(EconomyDirectory::class)->resolveAction($live->version, 'fulfil-a-contract');
+
+    expect($reference)->not->toBeNull()
+        ->and($reference->isResolved)->toBeTrue()
+        ->and($reference->label)->toBe('Fulfil a contract')
+        ->and($reference->summary)->toContain('Crate');
+
+    /*
+     * The amounts in the summary come from the balance profile. The rules
+     * themselves hold a direction and a handle — "+4 reputation" — and never a
+     * bare quantity, so there is no second copy of the number to disagree with
+     * the first.
+     */
+    $amounts = $live->effects()->whereNotNull('economy_resource_slug')->pluck('value')->filter();
+
+    expect($amounts)->not->toBeEmpty()
+        ->and($amounts->reject(fn (string $value): bool => str_starts_with($value, '+') || str_starts_with($value, '-')))
+        ->toBeEmpty('a rule effect is holding a bare amount the economy already owns');
+});
+
+it('leaves the half-written rules with something for the validator to say', function () {
+    $this->seed(SampleDataSeeder::class);
+
+    $validator = app(RuleSetValidator::class);
+
+    $errorsIn = fn (RuleSet $set): int => count(array_filter(
+        $validator->validate($set),
+        fn (ValidationError $finding): bool => $finding->isError(),
+    ));
+
+    /*
+     * A draft nobody has finished has an action with no phase, which is an error
+     * and is why it could not be activated. The two sets that *are* in play have
+     * none, because activating them would have been refused otherwise.
+     */
+    expect($errorsIn(RuleSet::query()->where('name', 'Two-kiln rules')->firstOrFail()))->toBeGreaterThan(0);
+
+    foreach (RuleSet::query()->where('status', 'active')->get() as $active) {
+        expect($errorsIn($active))->toBe(0, "[{$active->name}] is in play with an error in it");
+    }
+
+    $warnings = count($validator->validate(RuleSet::query()->where('name', 'Two-kiln rules')->firstOrFail()));
+
+    expect($warnings)->toBeGreaterThan(1);
+});
+
 it('edits rather than duplicates when it is run again', function () {
     $tally = fn (): array => [
         'users' => User::query()->count(),
@@ -154,6 +273,8 @@ it('edits rather than duplicates when it is run again', function () {
         'evidence' => DecisionEvidence::query()->count(),
         'profiles' => BalanceProfile::query()->count(),
         'snapshots' => BalanceSnapshot::query()->count(),
+        'ruleSets' => RuleSet::query()->count(),
+        'rules' => GameRule::query()->count(),
     ];
 
     $this->seed(SampleDataSeeder::class);

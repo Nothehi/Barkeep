@@ -27,3 +27,12 @@ GameEconomy binds `{profile}`, `{resourceType}`, `{flow}`, `{economyAction}`, `{
 It deliberately does **not** bind `{version}` — GameDesign already resolves a game's design state under that name, which is exactly what a balance profile needs, and a third claim on it would break GameDesign's chain and DesignFramework's delegation through it.
 
 Three names were widened to avoid collisions: `{economyAction}` and `{resourceType}` rather than `{action}`/`{resource}` (both far too generic to claim globally), and `{balanceObservation}` rather than `{observation}`, which belongs to Playtesting — binding it here would break every playtest evidence route in the application.
+
+## GameRules renames seven parameters around the binder table
+GameRules binds `{ruleSet}`, `{gameRule}`, `{ruleMechanic}`, `{gamePhase}`, `{transition}`, `{ruleAction}`, `{requirement}`, `{ruleCondition}`, `{conditionGroup}`, `{membership}`, `{ruleEffect}`, `{trigger}`, `{victoryCondition}`, `{defeatCondition}`, `{endCondition}` and `{reference}`.
+
+It deliberately does **not** bind `{version}` — GameDesign resolves a game's design state under that name, which is exactly what a rule set needs, and a third claim would break GameDesign's chain and DesignFramework's delegation through it.
+
+Seven names are longer than they would naturally be, each because the short form was already taken: `{gameRule}` not `{rule}` (too generic, and Laravel has a `Rule` facade), `{gamePhase}` not `{phase}` (DesignFramework's), `{ruleMechanic}` not `{mechanic}` (GameDesign's), `{ruleAction}` not `{action}`, `{ruleEffect}` not `{effect}` (GameEconomy's), `{ruleCondition}` not `{condition}`. The same renaming reaches the database: `rule_mechanics`, not `mechanics`, because GameDesign's `mechanics` table is the shared seeded design vocabulary and means something else.
+
+GameRulesServiceProvider registers last in bootstrap/providers.php — after GameDesign because its bindings resolve through `{version}`, and after GameEconomy because `EconomyDirectory` reads it. The direction is one-way; architecture tests on both sides hold it.

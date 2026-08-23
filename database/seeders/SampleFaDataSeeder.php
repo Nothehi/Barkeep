@@ -50,6 +50,7 @@ class SampleFaDataSeeder extends Seeder
             SampleFaPlaytestSeeder::class,
             SampleFaPrototypeSeeder::class,
             SampleFaEconomySeeder::class,
+            SampleFaRulesSeeder::class,
         ]);
     }
 }

@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Scale } from 'lucide-react';
+import { ArrowLeft, Scale, Scroll } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import type { Workspace } from '@/features/workspaces';
 import { useFormatters, useTranslation } from '@/lib/i18n';
 import balance from '@/routes/balance';
 import versionRoutes from '@/routes/games/versions';
+import ruleRoutes from '@/routes/rules';
 import GameHeader from '../components/game-header';
 import type { Game, GameVersion } from '../types/game';
 
@@ -25,11 +26,11 @@ type GameVersionPageProps = {
  * session will point at a version rather than at a game — so it has a URL of
  * its own from the start.
  *
- * The balance link lives here rather than on the game's own tab bar, and that
- * placement is the module's foundational decision showing through: an economy
- * belongs to one design state. Wood income was 2 in v1 and 3 in v2, and a
- * game-level "Balance" tab would have had to pick one of them on the
- * designer's behalf.
+ * The balance and rules links live here rather than on the game's own tab bar,
+ * and that placement is those modules' foundational decision showing through:
+ * an economy and a rule system each belong to one design state. Wood income was
+ * 2 in v1 and 3 in v2, combat used one die in v1 and two in v2, and a
+ * game-level tab would have had to pick one of them on the designer's behalf.
  */
 export default function GameVersionPage({
     workspace: { data: workspace },
@@ -65,19 +66,35 @@ export default function GameVersionPage({
                         </Link>
                     </Button>
 
-                    <Button variant="outline" size="sm" asChild>
-                        <Link
-                            href={balance.index({
-                                workspace: workspace.slug,
-                                game: game.slug,
-                                version: version.version_number,
-                            })}
-                            data-test="version-balance-link"
-                        >
-                            <Scale className="size-4" />
-                            {t('Balance')}
-                        </Link>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                            <Link
+                                href={ruleRoutes.index({
+                                    workspace: workspace.slug,
+                                    game: game.slug,
+                                    version: version.version_number,
+                                })}
+                                data-test="version-rules-link"
+                            >
+                                <Scroll className="size-4" />
+                                {t('Rules')}
+                            </Link>
+                        </Button>
+
+                        <Button variant="outline" size="sm" asChild>
+                            <Link
+                                href={balance.index({
+                                    workspace: workspace.slug,
+                                    game: game.slug,
+                                    version: version.version_number,
+                                })}
+                                data-test="version-balance-link"
+                            >
+                                <Scale className="size-4" />
+                                {t('Balance')}
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 <Card className="max-w-2xl">

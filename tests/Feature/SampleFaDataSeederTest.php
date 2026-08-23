@@ -15,6 +15,11 @@ use Modules\DesignFramework\Domain\Models\GameFramework;
 use Modules\GameDesign\Domain\Models\Game;
 use Modules\GameEconomy\Domain\Models\BalanceVariable;
 use Modules\GameEconomy\Domain\Models\ResourceType;
+use Modules\GameRules\Domain\Models\GamePhase;
+use Modules\GameRules\Domain\Models\GameRule;
+use Modules\GameRules\Domain\Models\RuleAction;
+use Modules\GameRules\Domain\Models\RuleMechanic;
+use Modules\GameRules\Domain\Models\RuleSet;
 use Modules\Identity\Domain\Models\User;
 use Modules\PrototypeIteration\Domain\Enums\EvidenceType;
 use Modules\PrototypeIteration\Domain\Models\DecisionEvidence;
@@ -186,6 +191,67 @@ it('keeps each studio out of the other\'s workspaces', function () {
         ->and($gamesOf(SampleStudioSeeder::LANTERN))->not->toContain('karvansara');
 });
 
+it('gives every Persian rule a Latin address, with underscores', function () {
+    $this->seed(SampleFaDataSeeder::class);
+
+    /*
+     * A different alphabet from the one above, and deliberately so. These are
+     * `RuleSlug`s rather than the slugs GameDesign puts in URLs: they never
+     * appear in an address, so they use underscores, matching what
+     * `RuleSlug::fromName` derives and what a clone matches a copied record on.
+     * Latin for the same reason everything else here is — `Str::slug('برپایی')`
+     * is `brpayy`, which nobody can read and nobody can guess.
+     */
+    $addresses = collect([
+        'game_rules' => GameRule::query()->pluck('slug'),
+        'game_phases' => GamePhase::query()->pluck('slug'),
+        'rule_actions' => RuleAction::query()->pluck('slug'),
+        'rule_mechanics' => RuleMechanic::query()->pluck('slug'),
+    ]);
+
+    foreach ($addresses as $table => $slugs) {
+        expect($slugs)->not->toBeEmpty("{$table} seeded nothing");
+
+        $nonAscii = $slugs->reject(fn (string $slug) => (bool) preg_match('/^[a-z0-9]+(_[a-z0-9]+)*$/', $slug));
+
+        expect($nonAscii)->toBeEmpty("{$table} has a non-Latin address: ".$nonAscii->implode(', '));
+    }
+});
+
+it('keeps the Persian rules in Persian and the English ones in English', function () {
+    $this->seed(SampleDataSeeder::class);
+    $this->seed(SampleFaDataSeeder::class);
+
+    $persian = '/\p{Arabic}/u';
+
+    $namesFor = fn (string $gameSlug) => RuleSet::query()
+        ->whereIn('game_version_id', Game::query()->where('slug', $gameSlug)->firstOrFail()->versions()->select('id'))
+        ->get()
+        ->flatMap(fn (RuleSet $set) => $set->rules()->pluck('name'));
+
+    $workshop = $namesFor('karvansara');
+    $studio = $namesFor('harbourmaster');
+
+    expect($workshop)->not->toBeEmpty()
+        ->and($studio)->not->toBeEmpty()
+        ->and($workshop->reject(fn (string $name) => (bool) preg_match($persian, $name)))->toBeEmpty()
+        ->and($studio->filter(fn (string $name) => (bool) preg_match($persian, $name)))->toBeEmpty();
+});
+
+it('clones the Persian rules in play rather than editing them', function () {
+    $this->seed(SampleFaDataSeeder::class);
+
+    $live = RuleSet::query()->where('name', 'قواعد بازنویسی مهمان‌داری')->firstOrFail();
+    $draft = RuleSet::query()->where('name', 'پیش‌نویس سه‌گردشی')->firstOrFail();
+
+    expect($draft->cloned_from_rule_set_id)->toBe($live->id)
+        ->and($draft->phases()->pluck('id')->intersect($live->phases()->pluck('id')))->toBeEmpty();
+
+    /* The copied phases keep their Latin addresses, which is what the copy matched on. */
+    expect($draft->phases()->pluck('slug')->sort()->values())
+        ->toEqual($live->phases()->pluck('slug')->sort()->values());
+});
+
 it('edits rather than duplicates when it is run again', function () {
     $tally = fn (): array => [
         'frameworks' => Framework::query()->count(),
@@ -194,6 +260,8 @@ it('edits rather than duplicates when it is run again', function () {
         'games' => Game::query()->count(),
         'evidence' => DecisionEvidence::query()->count(),
         'resources' => ResourceType::query()->count(),
+        'ruleSets' => RuleSet::query()->count(),
+        'rules' => GameRule::query()->count(),
     ];
 
     $this->seed(SampleFaDataSeeder::class);

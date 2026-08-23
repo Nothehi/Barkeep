@@ -78,6 +78,15 @@ class SampleDataSeeder extends Seeder
              * rather than games so that the old ones stay interpretable.
              */
             SampleEconomySeeder::class,
+
+            /*
+             * The rules behind three of them, hung off the same versions and for
+             * the same reason. Last, because a rule action points at an economy
+             * action by handle: the economy has to exist for the handle to
+             * resolve, and Harbourmaster's live rules are the one place in the
+             * sample data where the two modules meet.
+             */
+            SampleRulesSeeder::class,
         ]);
     }
 }

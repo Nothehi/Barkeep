@@ -38,6 +38,23 @@ use Modules\GameEconomy\Presentation\Http\Controllers\Api\EconomyActionControlle
 use Modules\GameEconomy\Presentation\Http\Controllers\Api\ResourceController;
 use Modules\GameEconomy\Presentation\Http\Controllers\Api\ResourceFlowController;
 use Modules\GameEconomy\Presentation\Http\Controllers\Api\ScenarioVariableController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\ConditionGroupController as RuleConditionGroupController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\DefeatConditionController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\GameEndConditionController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\GamePhaseController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\GameRuleController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\MechanicController as RuleMechanicController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\PhaseTransitionController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\RuleActionController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\RuleAnalysisController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\RuleConditionController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\RuleEffectController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\RuleReferenceController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\RuleRequirementController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\RuleSetController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\RuleSetLifecycleController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\RuleTriggerController;
+use Modules\GameRules\Presentation\Http\Controllers\Api\VictoryConditionController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\FeedbackController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\ObservationController;
 use Modules\Playtesting\Presentation\Http\Controllers\Api\ParticipantController;
@@ -418,6 +435,131 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     Route::get('snapshots', [BalanceSnapshotController::class, 'index'])->name('api.workspaces.games.versions.balance-profiles.snapshots.index');
                     Route::post('snapshots', [BalanceSnapshotController::class, 'store'])->name('api.workspaces.games.versions.balance-profiles.snapshots.store');
                     Route::get('snapshots/compare', [BalanceComparisonController::class, 'show'])->name('api.workspaces.games.versions.balance-profiles.snapshots.compare');
+                });
+            });
+
+            /*
+             * The rule system of one design state.
+             *
+             * Nested under `versions/{version}` for the same reason the balance profile is, and it
+             * is the same reason: combat was resolved with one die in v1 and two in v2, and an
+             * address that named only the game would have no way to say which of those it meant.
+             *
+             * Section 40 of the module brief sketches flat addresses — `/rule-sets/{id}`,
+             * `/game-phases/{id}`. They are deliberately not built that way. Reaching a rule set
+             * without its version would mean looking the parent up *from* the child, which is the
+             * reverse-lookup pattern that turns a guessed id into cross-workspace access; every
+             * other module in this file made the same call. Each segment below resolves through the
+             * one before it, so a phase id from somebody else's rule system 404s at resolution
+             * rather than being caught later by a policy.
+             *
+             * `{version}` is GameDesign's binding, reused. Seven names here are longer than they
+             * would naturally be — `{gameRule}`, `{gamePhase}`, `{ruleMechanic}`, `{ruleAction}`,
+             * `{ruleEffect}`, `{ruleCondition}` — because the short forms are already claimed by
+             * GameDesign, DesignFramework and GameEconomy. See `.ai/rules/providers.md`.
+             *
+             * `clone` answers 201 with the new draft: it is what an active rule set offers instead
+             * of editing, so the caller almost always wants to work on the copy.
+             */
+            Route::prefix('versions/{version}/rule-sets')->group(function () {
+                Route::get('/', [RuleSetController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.index');
+                Route::post('/', [RuleSetController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.store');
+
+                Route::prefix('{ruleSet}')->group(function () {
+                    Route::get('/', [RuleSetController::class, 'show'])->name('api.workspaces.games.versions.rule-sets.show');
+                    Route::patch('/', [RuleSetController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.update');
+
+                    Route::post('activate', [RuleSetLifecycleController::class, 'activate'])->name('api.workspaces.games.versions.rule-sets.activate');
+                    Route::post('archive', [RuleSetLifecycleController::class, 'archive'])->name('api.workspaces.games.versions.rule-sets.archive');
+                    Route::post('clone', [RuleSetLifecycleController::class, 'clone'])->name('api.workspaces.games.versions.rule-sets.clone');
+
+                    Route::get('rules', [GameRuleController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.rules.index');
+                    Route::post('rules', [GameRuleController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.rules.store');
+                    Route::post('rules/order', [GameRuleController::class, 'reorder'])->name('api.workspaces.games.versions.rule-sets.rules.order');
+
+                    Route::prefix('rules/{gameRule}')->group(function () {
+                        Route::get('/', [GameRuleController::class, 'show'])->name('api.workspaces.games.versions.rule-sets.rules.show');
+                        Route::patch('/', [GameRuleController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.rules.update');
+                        Route::delete('/', [GameRuleController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.rules.destroy');
+
+                        Route::post('references', [RuleReferenceController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.rules.references.store');
+                        Route::delete('references/{reference}', [RuleReferenceController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.rules.references.destroy');
+                    });
+
+                    Route::get('references', [RuleReferenceController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.references.index');
+
+                    Route::get('mechanics', [RuleMechanicController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.mechanics.index');
+                    Route::post('mechanics', [RuleMechanicController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.mechanics.store');
+                    Route::patch('mechanics/{ruleMechanic}', [RuleMechanicController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.mechanics.update');
+                    Route::delete('mechanics/{ruleMechanic}', [RuleMechanicController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.mechanics.destroy');
+
+                    Route::get('phases', [GamePhaseController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.phases.index');
+                    Route::post('phases', [GamePhaseController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.phases.store');
+                    Route::patch('phases/{gamePhase}', [GamePhaseController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.phases.update');
+                    Route::delete('phases/{gamePhase}', [GamePhaseController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.phases.destroy');
+
+                    Route::get('transitions', [PhaseTransitionController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.transitions.index');
+                    Route::post('transitions', [PhaseTransitionController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.transitions.store');
+                    Route::patch('transitions/{transition}', [PhaseTransitionController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.transitions.update');
+                    Route::delete('transitions/{transition}', [PhaseTransitionController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.transitions.destroy');
+
+                    Route::get('actions', [RuleActionController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.actions.index');
+                    Route::post('actions', [RuleActionController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.actions.store');
+                    Route::post('actions/order', [RuleActionController::class, 'reorder'])->name('api.workspaces.games.versions.rule-sets.actions.order');
+                    Route::get('actions/{ruleAction}', [RuleActionController::class, 'show'])->name('api.workspaces.games.versions.rule-sets.actions.show');
+                    Route::patch('actions/{ruleAction}', [RuleActionController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.actions.update');
+                    Route::delete('actions/{ruleAction}', [RuleActionController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.actions.destroy');
+
+                    Route::get('requirements', [RuleRequirementController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.requirements.index');
+                    Route::post('requirements', [RuleRequirementController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.requirements.store');
+                    Route::patch('requirements/{requirement}', [RuleRequirementController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.requirements.update');
+                    Route::delete('requirements/{requirement}', [RuleRequirementController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.requirements.destroy');
+
+                    Route::get('effects', [RuleEffectController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.effects.index');
+                    Route::post('effects', [RuleEffectController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.effects.store');
+                    Route::patch('effects/{ruleEffect}', [RuleEffectController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.effects.update');
+                    Route::delete('effects/{ruleEffect}', [RuleEffectController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.effects.destroy');
+
+                    Route::get('conditions', [RuleConditionController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.conditions.index');
+                    Route::post('conditions', [RuleConditionController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.conditions.store');
+                    Route::patch('conditions/{ruleCondition}', [RuleConditionController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.conditions.update');
+                    Route::delete('conditions/{ruleCondition}', [RuleConditionController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.conditions.destroy');
+
+                    Route::get('condition-groups', [RuleConditionGroupController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.condition-groups.index');
+                    Route::post('condition-groups', [RuleConditionGroupController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.condition-groups.store');
+
+                    Route::prefix('condition-groups/{conditionGroup}')->group(function () {
+                        Route::patch('/', [RuleConditionGroupController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.condition-groups.update');
+                        Route::delete('/', [RuleConditionGroupController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.condition-groups.destroy');
+
+                        Route::post('conditions', [RuleConditionGroupController::class, 'storeCondition'])->name('api.workspaces.games.versions.rule-sets.condition-groups.conditions.store');
+                        Route::delete('conditions/{membership}', [RuleConditionGroupController::class, 'destroyCondition'])->name('api.workspaces.games.versions.rule-sets.condition-groups.conditions.destroy');
+                    });
+
+                    Route::get('triggers', [RuleTriggerController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.triggers.index');
+                    Route::post('triggers', [RuleTriggerController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.triggers.store');
+                    Route::patch('triggers/{trigger}', [RuleTriggerController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.triggers.update');
+                    Route::delete('triggers/{trigger}', [RuleTriggerController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.triggers.destroy');
+
+                    Route::get('victory-conditions', [VictoryConditionController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.victory-conditions.index');
+                    Route::post('victory-conditions', [VictoryConditionController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.victory-conditions.store');
+                    Route::patch('victory-conditions/{victoryCondition}', [VictoryConditionController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.victory-conditions.update');
+                    Route::delete('victory-conditions/{victoryCondition}', [VictoryConditionController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.victory-conditions.destroy');
+
+                    Route::get('defeat-conditions', [DefeatConditionController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.defeat-conditions.index');
+                    Route::post('defeat-conditions', [DefeatConditionController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.defeat-conditions.store');
+                    Route::patch('defeat-conditions/{defeatCondition}', [DefeatConditionController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.defeat-conditions.update');
+                    Route::delete('defeat-conditions/{defeatCondition}', [DefeatConditionController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.defeat-conditions.destroy');
+
+                    Route::get('end-conditions', [GameEndConditionController::class, 'index'])->name('api.workspaces.games.versions.rule-sets.end-conditions.index');
+                    Route::post('end-conditions', [GameEndConditionController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.end-conditions.store');
+                    Route::patch('end-conditions/{endCondition}', [GameEndConditionController::class, 'update'])->name('api.workspaces.games.versions.rule-sets.end-conditions.update');
+                    Route::delete('end-conditions/{endCondition}', [GameEndConditionController::class, 'destroy'])->name('api.workspaces.games.versions.rule-sets.end-conditions.destroy');
+
+                    Route::get('analysis', [RuleAnalysisController::class, 'show'])->name('api.workspaces.games.versions.rule-sets.analysis.show');
+                    Route::post('analysis', [RuleAnalysisController::class, 'store'])->name('api.workspaces.games.versions.rule-sets.analysis.store');
+                    Route::get('graph', [RuleAnalysisController::class, 'graph'])->name('api.workspaces.games.versions.rule-sets.graph');
+                    Route::post('validate', [RuleAnalysisController::class, 'validateRuleSet'])->name('api.workspaces.games.versions.rule-sets.validate');
                 });
             });
         });
