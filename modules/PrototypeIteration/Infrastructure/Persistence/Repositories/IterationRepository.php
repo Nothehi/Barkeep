@@ -9,12 +9,14 @@ use Modules\PrototypeIteration\Application\DTOs\IterationFilters;
 use Modules\PrototypeIteration\Application\DTOs\IterationSummary;
 use Modules\PrototypeIteration\Domain\Enums\DecisionStatus;
 use Modules\PrototypeIteration\Domain\Enums\ExperimentStatus;
+use Modules\PrototypeIteration\Domain\Enums\IterationStatus;
 use Modules\PrototypeIteration\Domain\Models\DecisionEvidence;
 use Modules\PrototypeIteration\Domain\Models\DesignChange;
 use Modules\PrototypeIteration\Domain\Models\DesignDecision;
 use Modules\PrototypeIteration\Domain\Models\DesignExperiment;
 use Modules\PrototypeIteration\Domain\Models\Iteration;
 use Modules\PrototypeIteration\Domain\Models\IterationPlaytest;
+use Modules\Workspace\Domain\Models\Workspace;
 
 /**
  * Every read the module performs against its iteration tables.
@@ -75,6 +77,50 @@ final class IterationRepository
             ->get();
 
         return $this->withGame($game, $iterations);
+    }
+
+    /**
+     * How many design cycles have been run across a workspace's games.
+     *
+     * Scoped through the game for the same reason as everything else here: an
+     * iteration knows its game, and the game knows which studio it belongs to.
+     * The only caller is the app's home screen, which is about a studio rather
+     * than about one design.
+     */
+    public function countForWorkspace(Workspace $workspace): int
+    {
+        return $this->inWorkspace($workspace)->count();
+    }
+
+    /**
+     * How many of a workspace's cycles are still open.
+     *
+     * Planned and in progress counted together rather than in progress alone,
+     * because both are work somebody is expected to come back to — and a studio
+     * with nine planned cycles and none started has a queue, which is exactly
+     * the thing a home screen should be able to say out loud.
+     */
+    public function openCountForWorkspace(Workspace $workspace): int
+    {
+        return $this->inWorkspace($workspace)
+            ->whereIn('status', [IterationStatus::Planned, IterationStatus::InProgress])
+            ->count();
+    }
+
+    /**
+     * Every iteration belonging to a workspace, as a query still to be refined.
+     *
+     * One place says what "in this workspace" means, so the two methods above
+     * cannot drift onto different definitions of it.
+     *
+     * @return Builder<Iteration>
+     */
+    private function inWorkspace(Workspace $workspace): Builder
+    {
+        return Iteration::query()->whereHas(
+            'game',
+            fn (Builder $query) => $query->where('workspace_id', $workspace->getKey()),
+        );
     }
 
     /**

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -10,7 +11,7 @@ Route::inertia('/', 'welcome')->name('home');
  * that has not said which is asked before it gets any further.
  */
 Route::middleware(['auth', 'verified', 'workspace.selected'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'show'])->name('dashboard');
 });
 
 require __DIR__.'/settings.php';

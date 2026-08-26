@@ -15,6 +15,7 @@ use Modules\Playtesting\Domain\Models\PlaytestObservation;
 use Modules\Playtesting\Domain\Models\PlaytestParticipant;
 use Modules\Playtesting\Domain\Models\PlaytestSession;
 use Modules\Playtesting\Domain\ValueObjects\SessionDuration;
+use Modules\Workspace\Domain\Models\Workspace;
 
 /**
  * Every read the module performs against its own tables.
@@ -210,6 +211,91 @@ final class PlaytestRepository
     public function hasSessions(Playtest $playtest): bool
     {
         return $playtest->sessions()->exists();
+    }
+
+    /**
+     * How many playtests have been planned across a workspace's games.
+     *
+     * Scoped through the game rather than from a workspace column, because a
+     * playtest does not know about tenancy — it knows its game, and the game
+     * knows where it lives. That is the whole ownership chain this module
+     * relies on, followed one link further than usual.
+     */
+    public function countForWorkspace(Workspace $workspace): int
+    {
+        return $this->inWorkspace($workspace)->count();
+    }
+
+    /**
+     * How many sittings have been held across a workspace's games.
+     */
+    public function countSessionsForWorkspace(Workspace $workspace): int
+    {
+        return PlaytestSession::query()
+            ->whereHas(
+                'playtest.game',
+                fn (Builder $query) => $query->where('workspace_id', $workspace->getKey()),
+            )
+            ->count();
+    }
+
+    /**
+     * How a workspace's investigations are spread across the lifecycle.
+     *
+     * Sparse, like the equivalent in GameDesign: the database can only report
+     * the values it holds rows for, and the caller has the enum that knows the
+     * full set.
+     *
+     * @return array<string, int> keyed by the status value
+     */
+    public function statusTallyForWorkspace(Workspace $workspace): array
+    {
+        /** @var array<string, int> $tally */
+        $tally = $this->inWorkspace($workspace)
+            ->groupBy('status')
+            ->selectRaw('status as value, COUNT(*) as total')
+            ->pluck('total', 'value')
+            ->all();
+
+        return array_map('intval', $tally);
+    }
+
+    /**
+     * The investigations most recently under way anywhere in the workspace.
+     *
+     * The game comes with each one because the row is being read outside a
+     * game's own screen: "does the two-player opening still stall?" means
+     * nothing on a studio-wide list without the project it belongs to. Loading
+     * it eagerly is what keeps that from being one query per row.
+     *
+     * @return Collection<int, Playtest>
+     */
+    public function recentForWorkspace(Workspace $workspace, int $limit): Collection
+    {
+        return $this->inWorkspace($workspace)
+            ->with(['game', 'version'])
+            ->withCount('sessions')
+            ->orderByRaw('CASE WHEN planned_at IS NULL THEN 1 ELSE 0 END')
+            ->orderByDesc('planned_at')
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Every playtest belonging to a workspace, as a query still to be refined.
+     *
+     * One place says what "in this workspace" means, so the three methods
+     * above cannot drift onto different definitions of it.
+     *
+     * @return Builder<Playtest>
+     */
+    private function inWorkspace(Workspace $workspace): Builder
+    {
+        return Playtest::query()->whereHas(
+            'game',
+            fn (Builder $query) => $query->where('workspace_id', $workspace->getKey()),
+        );
     }
 
     /**

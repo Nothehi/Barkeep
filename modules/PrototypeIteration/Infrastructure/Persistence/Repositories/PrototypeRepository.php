@@ -11,6 +11,7 @@ use Modules\PrototypeIteration\Domain\Models\Prototype;
 use Modules\PrototypeIteration\Domain\Models\PrototypeArtifact;
 use Modules\PrototypeIteration\Domain\Models\PrototypeVersion;
 use Modules\PrototypeIteration\Domain\ValueObjects\PrototypeVersionNumber;
+use Modules\Workspace\Domain\Models\Workspace;
 
 /**
  * Every read the module performs against its prototype tables.
@@ -64,6 +65,21 @@ final class PrototypeRepository
             ->get();
 
         return $this->withGame($game, $prototypes);
+    }
+
+    /**
+     * How many prototypes have been built across a workspace's games.
+     *
+     * Scoped through the game rather than from a workspace column, because a
+     * prototype does not know about tenancy — it knows its game, and the game
+     * knows where it lives. The only caller is the app's home screen, which is
+     * about a studio rather than about one design.
+     */
+    public function countForWorkspace(Workspace $workspace): int
+    {
+        return Prototype::query()
+            ->whereHas('game', fn (Builder $query) => $query->where('workspace_id', $workspace->getKey()))
+            ->count();
     }
 
     /**
