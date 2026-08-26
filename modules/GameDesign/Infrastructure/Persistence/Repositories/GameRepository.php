@@ -157,6 +157,117 @@ final class GameRepository
     }
 
     /**
+     * How many games a workspace holds.
+     */
+    public function countForWorkspace(Workspace $workspace): int
+    {
+        return $this->gamesIn($workspace)->count();
+    }
+
+    /**
+     * How many iterations have been cut across a workspace's games.
+     *
+     * Counted through the game rather than from a column on the workspace,
+     * because the workspace does not own versions and a denormalised total
+     * would be a second answer waiting to disagree with this one.
+     */
+    public function countVersionsInWorkspace(Workspace $workspace): int
+    {
+        return GameVersion::query()
+            ->whereHas('game', fn (Builder $query) => $query->where('workspace_id', $workspace->getKey()))
+            ->count();
+    }
+
+    /**
+     * How a workspace's games are spread across the lifecycle.
+     *
+     * Sparse on purpose: the database can only report the values it holds rows
+     * for, and inventing the missing ones here would mean this method knowing
+     * which enum it just grouped by. The caller has that enum and fills the
+     * gaps — see {@see GetWorkspaceDesignActivity}.
+     *
+     * @return array<string, int> keyed by the status value
+     */
+    public function statusTallyForWorkspace(Workspace $workspace): array
+    {
+        return $this->asTally(
+            $this->gamesIn($workspace)
+                ->groupBy('status')
+                ->selectRaw('status as value, COUNT(*) as total')
+        );
+    }
+
+    /**
+     * How far along a workspace's games are.
+     *
+     * Sparse for the same reason as the tally above.
+     *
+     * @return array<string, int> keyed by the phase value
+     */
+    public function designPhaseTallyForWorkspace(Workspace $workspace): array
+    {
+        return $this->asTally(
+            $this->gamesIn($workspace)
+                ->groupBy('design_phase')
+                ->selectRaw('design_phase as value, COUNT(*) as total')
+        );
+    }
+
+    /**
+     * The games somebody in this workspace touched most recently.
+     *
+     * A separate method rather than a slice of {@see forWorkspace()} because
+     * the caller only wants a handful: taking five from a list of every game
+     * in a studio would read the whole table to throw most of it away, and
+     * this runs on the screen every sign in lands on.
+     *
+     * @return Collection<int, Game>
+     */
+    public function recentlyUpdatedInWorkspace(Workspace $workspace, int $limit): Collection
+    {
+        $games = $this->gamesIn($workspace)
+            ->withCount('versions')
+            ->orderByDesc('updated_at')
+            ->orderBy('name')
+            ->limit($limit)
+            ->get();
+
+        return $this->withWorkspace($workspace, $games);
+    }
+
+    /**
+     * The games belonging to a workspace, as a query still to be refined.
+     *
+     * Shared by the workspace-wide reads above so they cannot drift onto
+     * different ideas of what "in this workspace" means.
+     *
+     * @return Builder<Game>
+     */
+    private function gamesIn(Workspace $workspace): Builder
+    {
+        return Game::query()->where('workspace_id', $workspace->getKey());
+    }
+
+    /**
+     * Read a grouped count back as a map of value to total.
+     *
+     * The two tallies above differ only in the column they group by, and that
+     * column stays a literal in each of them rather than being passed in here:
+     * a method that interpolated a caller's string into `selectRaw` would be
+     * the shape of an injection even while every caller passed a constant.
+     *
+     * @param  Builder<Game>  $query  already grouped, selecting `value` and `total`
+     * @return array<string, int>
+     */
+    private function asTally(Builder $query): array
+    {
+        /** @var array<string, int> $tally */
+        $tally = $query->pluck('total', 'value')->all();
+
+        return array_map('intval', $tally);
+    }
+
+    /**
      * Match a term against a game's name and description.
      *
      * Case folded on both sides so that searching "bears" finds "Bears &
