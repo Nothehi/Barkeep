@@ -1,32 +1,14 @@
-import { Head } from '@inertiajs/react';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-import { useTranslation } from '@/lib/i18n';
+import { DashboardPage } from '@/features/dashboard';
+import type { DashboardPageProps } from '@/features/dashboard';
 import { dashboard } from '@/routes';
 
-export default function Dashboard() {
-    const { t } = useTranslation();
-
-    return (
-        <>
-            <Head title={t('Dashboard')} />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                </div>
-            </div>
-        </>
-    );
+/**
+ * A wrapper rather than a re-export, unlike every other page in this
+ * directory: the breadcrumb has to be attached to the component Inertia
+ * renders, and a re-exported binding is not somewhere a property can be hung.
+ */
+export default function Dashboard(props: DashboardPageProps) {
+    return <DashboardPage {...props} />;
 }
 
 Dashboard.layout = {
