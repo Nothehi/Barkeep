@@ -19,6 +19,13 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!--
+            The suite asserts English output, so the locale cannot be left to
+            whatever `.env` happens to hold: a developer running the app in
+            Persian would otherwise see the unit tests fail wholesale.
+        -->
+        <env name="APP_FALLBACK_LOCALE" value="en"/>
+        <env name="APP_LOCALE" value="en"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
