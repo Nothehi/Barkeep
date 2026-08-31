@@ -29,6 +29,16 @@ services:
       - "${WEB_PORT:-8080}:8000"
     environment:
       RUN_MIGRATIONS: "true"
+    networks:
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.barkeep.rule=Host(`barkeep.ir`)"
+      - "traefik.http.routers.barkeep.entrypoints=websecure"
+      - "traefik.http.routers.barkeep.tls.certresolver=le"
+      # Traefik reaches the container directly over traefik_proxy, so this is
+      # the port Octane binds inside the container — not the published one.
+      - "traefik.http.services.barkeep.loadbalancer.server.port=8000"
 
   queue:
     <<: *image
@@ -39,6 +49,10 @@ services:
     depends_on:
       web:
         condition: service_healthy
+
+networks:
+  traefik_proxy:
+    external: true
 
 volumes:
   storage:
