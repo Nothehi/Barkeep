@@ -1,0 +1,66 @@
+# Local development stack:
+#
+#   docker compose -f .docker/compose.yaml up --build
+#
+# App:  http://localhost:8000     Vite dev server: http://localhost:5173
+#
+# vendor/ and node_modules/ live in named volumes so the container's artefacts
+# never overwrite the host's (and vice versa). The first `up` installs both.
+
+name: barkeep
+
+x-app: &app
+  build:
+    # Paths here resolve against this file's directory, so the context is the
+    # repository root one level up.
+    context: ..
+    dockerfile: .docker/dev/Dockerfile
+  image: barkeep-dev
+  volumes:
+    - ..:/app
+    - vendor:/app/vendor
+    - node_modules:/app/node_modules
+  environment:
+    APP_URL: http://localhost:8000
+    # Tells laravel-vite-plugin to bind 0.0.0.0 and write a hot file the
+    # browser can actually reach.
+    LARAVEL_SAIL: 1
+    # config/octane.php defaults this to roadrunner.
+    OCTANE_SERVER: swoole
+
+services:
+  app:
+    <<: *app
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    # --watch reloads the workers on PHP changes via chokidar; add --poll if
+    # your filesystem does not deliver inotify events into the container.
+    command: php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --watch
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1:8000/up')===false?1:0);"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      # The first boot installs Composer and npm dependencies into the volumes.
+      start_period: 300s
+
+  vite:
+    <<: *app
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    command: npm run dev
+    depends_on:
+      app:
+        condition: service_healthy
+
+  queue:
+    <<: *app
+    command: php artisan queue:work --tries=3 --timeout=90
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  vendor:
+  node_modules:

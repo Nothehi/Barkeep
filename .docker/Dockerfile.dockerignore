@@ -1,0 +1,76 @@
+# Everything the image builds for itself, or must never be baked in.
+
+.git
+.gitignore
+.gitattributes
+.github
+
+node_modules
+vendor
+public/build
+public/hot
+public/storage
+public/fonts-manifest.dev.json
+bootstrap/ssr
+bootstrap/cache/*.php
+
+# Wayfinder output — regenerated during the asset build.
+resources/js/actions
+resources/js/routes
+resources/js/wayfinder
+
+# Local state. The SQLite file and storage tree are volumes at runtime.
+.env
+.env.*
+!.env.example
+database/database.sqlite
+storage/app/public/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+storage/pail
+storage/inertia-devtools
+*.key
+
+.phpunit.cache
+.phpunit.result.cache
+.phpactor.json
+
+# Agent / editor / tooling metadata.
+.agents
+.ai
+.claude
+.codex
+.idea
+.vscode
+.zed
+.fleet
+.nova
+graphify-out
+AGENTS.md
+CLAUDE.md
+boost.json
+.mcp.json
+
+# The runtime stage COPYs .docker/php, .docker/certs and .docker/entrypoint.sh,
+# so the directory itself has to stay in the context. The assets stage deletes
+# it from the application tree afterwards.
+.docker/compose*.yaml
+.docker/Dockerfile
+.docker/*.dockerignore
+.docker/dev
+.docker/.env.docker*
+
+# Dev tooling — excluded from the release image. The dev stack bind-mounts the
+# working tree, so it is unaffected by these.
+tests
+phpunit.xml
+phpstan.neon
+pint.json
+eslint.config.js
+.prettierrc
+.prettierignore
+.editorconfig
+components.json
+pnpm-workspace.yaml

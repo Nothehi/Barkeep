@@ -1,0 +1,13 @@
+# The dev image is a toolchain only — the working tree is bind-mounted at run
+# time, never copied in. So the context is an allowlist of the two paths this
+# Dockerfile actually COPYs, which keeps the context transfer near-instant.
+#
+# Re-including a path requires re-including each of its parents first: Docker
+# will not resurrect a file whose directory is still excluded.
+*
+!.docker
+.docker/*
+!.docker/certs
+!.docker/dev
+.docker/dev/*
+!.docker/dev/entrypoint.sh
