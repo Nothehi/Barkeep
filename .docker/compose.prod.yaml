@@ -1,10 +1,24 @@
 # Production-shaped stack, for verifying the release image locally or as a
 # starting point for a single-host deployment.
 #
+# The image is not built here. .github/workflows/release.yml runs CI, builds
+# .docker/Dockerfile and pushes it to ghcr.io/nothehi/barkeep; this file only
+# ever pulls that result, because a deploy host has no repository checkout to
+# build from. Deploying is:
+#
+#   docker compose -f .docker/compose.prod.yaml pull
+#   docker compose -f .docker/compose.prod.yaml up -d
+#
 # Locally:
 #   cp .docker/.env.docker.example .docker/.env.docker   # then set APP_KEY
 #   docker compose --env-file .docker/.env.docker \
-#     -f .docker/compose.prod.yaml up --build
+#     -f .docker/compose.prod.yaml pull
+#   docker compose --env-file .docker/.env.docker \
+#     -f .docker/compose.prod.yaml up
+#
+# To run a locally built image instead of a published one, build and tag it,
+# then set APP_TAG to that tag and APP_PULL_POLICY=missing:
+#   docker build -f .docker/Dockerfile --target runtime -t ghcr.io/nothehi/barkeep:dev .
 #
 # On a managed host (Dockhand, Portainer, plain `docker compose`) there is no
 # .env.docker on disk — Dockhand keeps stack env in its own database and never
@@ -61,13 +75,14 @@ x-env: &env
   MAIL_FROM_NAME: "${MAIL_FROM_NAME:-Barkeep}"
 
 x-image: &image
-  build:
-    # Paths here resolve against this file's directory, so the context is the
-    # repository root one level up.
-    context: ..
-    dockerfile: .docker/Dockerfile
-    target: runtime
-  image: barkeep:latest
+  # Published by .github/workflows/release.yml. APP_TAG selects which release
+  # this host runs: `latest` tracks main, and a semver tag (`1.4.0`) or a commit
+  # SHA (`sha-<40 hex>`) pins it for a rollback.
+  image: "${APP_IMAGE:-ghcr.io/nothehi/barkeep}:${APP_TAG:-latest}"
+  # `latest` moves under the same name, so a redeploy has to re-resolve it or
+  # the host keeps serving the image it already has. Set `missing` when running
+  # an image you built locally and never pushed.
+  pull_policy: "${APP_PULL_POLICY:-always}"
   # Deliberately no `env_file:` here. A service-level env_file always loses to
   # `environment:`, so with x-env covering every variable it would be silently
   # ignored. Local overrides go through compose's --env-file instead (see the

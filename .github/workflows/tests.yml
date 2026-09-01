@@ -1,10 +1,12 @@
 name: tests
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
+  # release.yml gates the image build on this exact job instead of duplicating
+  # the setup. That is also how main gets covered: pushes to main are not
+  # triggered here, because release.yml calls this workflow and running both
+  # would double every CI minute on the branch.
+  workflow_call:
 
 permissions:
   contents: read
