@@ -5,6 +5,7 @@
 
 ARG PHP_VERSION=8.4
 ARG NODE_VERSION=22
+ARG SWOOLE_VERSION=6.2.2
 # Override to pull base images through a registry mirror, e.g.
 #   docker build --build-arg REGISTRY=mirror.example.com .
 ARG REGISTRY=docker.io
@@ -40,9 +41,14 @@ WORKDIR /app
 FROM node-base AS node-modules
 
 # Optional trust anchors for TLS-inspecting networks. Empty by default — see
-# .docker/certs/README.md.
+# .docker/certs/README.md. The slim Node image ships no trust store at all, so
+# `ca-certificates` has to be installed before it can be extended; its postinst
+# folds the certificates copied above into the generated bundle.
 COPY .docker/certs/ /usr/local/share/ca-certificates/
-RUN update-ca-certificates
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && rm -rf /var/lib/apt/lists/* \
+ && update-ca-certificates
 ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
 
 WORKDIR /app
@@ -109,8 +115,19 @@ RUN update-ca-certificates
 
 COPY --from=ext-installer /usr/bin/install-php-extensions /usr/local/bin/
 
-# swoole is compiled from PECL here, which is the slow step of this stage.
-RUN install-php-extensions bcmath intl zip pcntl opcache swoole-6.2.2 \
+COPY .docker/swoole-source.sh /usr/local/bin/swoole-source
+
+# swoole is compiled from source here, which is the slow step of this stage.
+# PHP_MODULESOURCECODEPATH_swoole points install-php-extensions at the unpacked
+# tree instead of PECL, and it still resolves swoole's system dependencies and
+# applies its own configure flags. The source is removed in the layer that
+# fetched it so it stays out of the image.
+ARG SWOOLE_VERSION
+RUN chmod +x /usr/local/bin/swoole-source \
+ && swoole-source "${SWOOLE_VERSION}" /usr/src/swoole \
+ && export PHP_MODULESOURCECODEPATH_swoole=/usr/src/swoole \
+ && install-php-extensions bcmath intl zip pcntl opcache "swoole-${SWOOLE_VERSION}" \
+ && rm -rf /usr/src/swoole \
  && apt-get update \
  && apt-get install -y --no-install-recommends gosu \
  && rm -rf /var/lib/apt/lists/* /var/www/html

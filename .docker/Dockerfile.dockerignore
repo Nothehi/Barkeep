@@ -53,7 +53,8 @@ CLAUDE.md
 boost.json
 .mcp.json
 
-# The runtime stage COPYs .docker/php, .docker/certs and .docker/entrypoint.sh,
+# The runtime stage COPYs .docker/php, .docker/certs, .docker/entrypoint.sh and
+# .docker/swoole-source.sh,
 # so the directory itself has to stay in the context. The assets stage deletes
 # it from the application tree afterwards.
 .docker/compose*.yaml
