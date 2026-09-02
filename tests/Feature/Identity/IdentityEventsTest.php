@@ -4,6 +4,7 @@ use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use Laravel\Fortify\Features;
 use Modules\Identity\Application\Commands\ActivateUser;
 use Modules\Identity\Application\Commands\DisableUser;
 use Modules\Identity\Application\Commands\SuspendUser;
@@ -94,6 +95,8 @@ test('logging out announces it', function () {
 });
 
 test('verifying an email address announces it', function () {
+    $this->skipUnlessFortifyHas(Features::emailVerification());
+
     Event::fake([UserEmailVerified::class]);
 
     $user = User::factory()->unverified()->create();

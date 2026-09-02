@@ -7,7 +7,6 @@ export type UseAuthResult = {
     user: User | null;
     status: AuthStatus;
     isAuthenticated: boolean;
-    isEmailVerified: boolean;
     logout: () => void;
 };
 
@@ -30,7 +29,6 @@ export function useAuth(): UseAuthResult {
             user,
             status: user ? 'authenticated' : 'unauthenticated',
             isAuthenticated: user !== null,
-            isEmailVerified: user?.email_verified_at != null,
             logout,
         }),
         [user, logout],

@@ -10,7 +10,6 @@ export { default as ForgotPasswordForm } from './components/forgot-password-form
 export { default as LoginForm } from './components/login-form';
 export { default as RegisterForm } from './components/register-form';
 export { default as ResetPasswordForm } from './components/reset-password-form';
-export { default as VerifyEmailForm } from './components/verify-email-form';
 export { useAuth } from './hooks/use-auth';
 export type { UseAuthResult } from './hooks/use-auth';
 export type { Auth, AuthStatus, User, UserStatus } from './types/auth';

@@ -1,5 +1,4 @@
 import { Form, Head } from '@inertiajs/react';
-import { Link } from '@inertiajs/react';
 import ProfileController from '@/actions/Modules/Identity/Presentation/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
@@ -10,16 +9,9 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/features/auth';
 import { useTranslation } from '@/lib/i18n';
 import { edit } from '@/routes/profile';
-import { send } from '@/routes/verification';
 
-export default function Profile({
-    mustVerifyEmail,
-    status,
-}: {
-    mustVerifyEmail: boolean;
-    status?: string;
-}) {
-    const { user, isEmailVerified } = useAuth();
+export default function Profile() {
+    const { user } = useAuth();
     const { t } = useTranslation();
 
     if (!user) {
@@ -88,31 +80,6 @@ export default function Profile({
                                     message={errors.email}
                                 />
                             </div>
-
-                            {mustVerifyEmail && !isEmailVerified && (
-                                <div>
-                                    <p className="-mt-4 text-sm text-muted-foreground">
-                                        {t('Your email address is unverified.')}{' '}
-                                        <Link
-                                            href={send()}
-                                            as="button"
-                                            className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                        >
-                                            {t(
-                                                'Click here to re-send the verification email.',
-                                            )}
-                                        </Link>
-                                    </p>
-
-                                    {status === 'verification-link-sent' && (
-                                        <div className="mt-2 text-sm font-medium text-green-600">
-                                            {t(
-                                                'A new verification link has been sent to your email address.',
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
 
                             <div className="flex items-center gap-4">
                                 <Button
