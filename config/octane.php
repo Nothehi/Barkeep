@@ -236,4 +236,17 @@ return [
 
     'state_file' => env('OCTANE_STATE_FILE', storage_path('logs/octane-server-state.json')),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Swoole Options
+    |--------------------------------------------------------------------------
+    */
+
+    'swoole' => [
+        'options' => [
+            'enable_static_handler' => true,
+            'document_root' => public_path(),
+        ],
+    ],
+
 ];
