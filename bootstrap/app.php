@@ -24,6 +24,25 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         /**
+         * Traefik terminates TLS and forwards plain HTTP to Octane, so how the
+         * visitor actually reached the site survives only in `X-Forwarded-*`.
+         * Reading those headers is what keeps every absolute URL the page emits
+         * on the scheme it was asked for. Getting it wrong is not a cosmetic
+         * problem: the root template addresses the bundle absolutely, so an
+         * `https://` page given `http://` asset URLs has every script and
+         * stylesheet blocked as mixed content, React never mounts and `#app` is
+         * left empty. Forcing the scheme instead of deriving it fails the same
+         * way in the other direction, against the port the stack publishes.
+         *
+         * Only proxies on a private subnet are trusted, rather than `*`. That
+         * published port is reachable without going through Traefik, and a
+         * forwarded header arriving from a public address is a forgery — one
+         * that would otherwise let its sender choose the scheme, the host, and
+         * the client address that rate limiting and every log line believe.
+         */
+        $middleware->trustProxies(at: ['PRIVATE_SUBNETS']);
+
+        /**
          * `locale` joins these for the same reason `appearance` is here: the
          * root Blade template has to write `lang` and `dir` on `<html>` before
          * anything is decrypted, and which language somebody reads in is not a

@@ -56,9 +56,12 @@ x-env: &env
   DB_DATABASE: "${DB_DATABASE:-/var/www/html/storage/database/database.sqlite}"
 
   OCTANE_SERVER: "${OCTANE_SERVER:-swoole}"
-  # Traefik terminates TLS and forwards plain HTTP, so Octane has to be told
-  # the request was secure or every generated URL comes out as http://.
-  OCTANE_HTTPS: "${OCTANE_HTTPS:-true}"
+  # Off deliberately. This setting forces https onto every generated URL
+  # regardless of the request, which breaks the published port below: assets
+  # addressed https:// on a plain-HTTP origin do not load at all, and the page
+  # arrives blank. bootstrap/app.php trusts Traefik's X-Forwarded-Proto
+  # instead, so a request that did arrive over TLS still gets https:// URLs.
+  OCTANE_HTTPS: "${OCTANE_HTTPS:-false}"
 
   SESSION_DRIVER: "${SESSION_DRIVER:-database}"
   SESSION_LIFETIME: "${SESSION_LIFETIME:-120}"
