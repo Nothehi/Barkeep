@@ -11,6 +11,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | modules/Identity/** | .ai/rules/identity.md |
 | resources/js/** | .ai/rules/js.md |
 | lang/** | .ai/rules/lang.md |
+| resources/js/features/marketing/** | .ai/rules/marketing.md |
 | modules/PrototypeIteration/** | .ai/rules/prototype-iteration.md |
 | modules/*/Providers/*ServiceProvider.php | .ai/rules/providers.md |
 | database/seeders/** | .ai/rules/seeders.md |
