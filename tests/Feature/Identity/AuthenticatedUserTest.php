@@ -38,6 +38,14 @@ test('no authentication secret is ever shared with the client', function () {
         );
 });
 
+test('an unverified email address does not block access to the application', function () {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->get(route('profile.edit'))
+        ->assertOk();
+});
+
 test('guests are shared no account at all', function () {
     $this->get(route('home'))
         ->assertInertia(fn (Assert $page) => $page->where('auth.user', null));
