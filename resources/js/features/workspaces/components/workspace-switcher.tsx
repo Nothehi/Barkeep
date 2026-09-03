@@ -137,7 +137,9 @@ export default function WorkspaceSwitcher() {
                         {current && (
                             <DropdownMenuItem
                                 onSelect={() =>
-                                    router.visit(workspaces.show.url(current.slug))
+                                    router.visit(
+                                        workspaces.show.url(current.slug),
+                                    )
                                 }
                                 className="gap-2"
                                 data-test="manage-workspace"
@@ -148,7 +150,9 @@ export default function WorkspaceSwitcher() {
                         )}
 
                         <DropdownMenuItem
-                            onSelect={() => router.visit(workspaces.create.url())}
+                            onSelect={() =>
+                                router.visit(workspaces.create.url())
+                            }
                             className="gap-2"
                         >
                             <Plus className="size-4" />
