@@ -60,7 +60,7 @@ export default function SiteHeader() {
                 <div className="ms-auto flex items-center gap-1 md:ms-0">
                     <LanguageSwitcher />
 
-                    {auth.user ? (
+                    {auth?.user ? (
                         <Button size="sm" asChild>
                             <Link href={dashboard()}>{t('Dashboard')}</Link>
                         </Button>

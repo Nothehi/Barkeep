@@ -61,7 +61,7 @@ export default function Hero() {
                     </p>
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
-                        {auth.user ? (
+                        {auth?.user ? (
                             <Button size="lg" asChild>
                                 <Link href={dashboard()}>
                                     {t('Dashboard')}
