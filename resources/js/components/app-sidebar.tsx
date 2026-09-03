@@ -30,7 +30,7 @@ import type { NavItem } from '@/types';
 const navItemsFor = (t: (phrase: string) => string): NavItem[] => [
     {
         title: t('Dashboard'),
-        href: dashboard(),
+        href: dashboard.url(),
         icon: LayoutGrid,
     },
 ];
@@ -48,7 +48,7 @@ const footerNavItemsFor = (t: (phrase: string) => string): NavItem[] => [
      */
     {
         title: t('Mechanics'),
-        href: mechanics.index(),
+        href: mechanics.index.url(),
         icon: Blocks,
     },
     {
@@ -77,7 +77,7 @@ export function AppSidebar() {
               ...mainNavItems,
               {
                   title: t('Games'),
-                  href: games.index(current.slug),
+                  href: games.index.url(current.slug),
                   icon: Gamepad2,
               },
           ]
@@ -99,7 +99,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={dashboard.url()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

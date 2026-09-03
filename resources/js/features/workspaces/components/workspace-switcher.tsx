@@ -62,7 +62,7 @@ export default function WorkspaceSwitcher() {
                          */
                         className="group-data-[collapsible=icon]:p-2!"
                     >
-                        <Link href={workspaces.create()}>
+                        <Link href={workspaces.create.url()}>
                             <Plus className="size-4" />
                             <span className="truncate font-medium">
                                 {t('Create workspace')}
@@ -137,7 +137,7 @@ export default function WorkspaceSwitcher() {
                         {current && (
                             <DropdownMenuItem
                                 onSelect={() =>
-                                    router.visit(workspaces.show(current.slug))
+                                    router.visit(workspaces.show.url(current.slug))
                                 }
                                 className="gap-2"
                                 data-test="manage-workspace"
@@ -148,7 +148,7 @@ export default function WorkspaceSwitcher() {
                         )}
 
                         <DropdownMenuItem
-                            onSelect={() => router.visit(workspaces.create())}
+                            onSelect={() => router.visit(workspaces.create.url())}
                             className="gap-2"
                         >
                             <Plus className="size-4" />

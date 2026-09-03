@@ -22,7 +22,7 @@ export function NavUser() {
     const isMobile = useIsMobile();
     const { direction } = useLocale();
 
-    if (!auth.user) {
+    if (!auth?.user) {
         return null;
     }
 
