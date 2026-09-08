@@ -40,3 +40,10 @@ Cloning is the one thing in the sample data that is *not* re-applied on a re-run
 A rule action stores an economy *handle* (`berth-a-ship`) and never a cost. Those handles are hyphenated, because that is what SampleEconomySeeder wrote — the two alphabets meeting in one row is deliberate, and `SampleDataSeederTest` asserts every handle resolves.
 
 The drafts are imperfect on purpose: Kiln and قنات each have an action with no phase, which is a validation *error* and is why neither could be activated. The two active sets have none, because activation would have refused them.
+
+## Content seeders must not use model factories
+`.docker/Dockerfile` builds vendor/ with `composer install --no-dev`, so `fakerphp/faker` is absent in production. Laravel only defines its faker helper when Faker is installed, so any factory call aborts the whole `db:seed` inside UserFactory's definition before a single content row is written.
+
+`MechanicSeeder`, `DesignFrameworkSeeder` and `FaDesignFrameworkSeeder` run on every install and must therefore write rows directly (`User::query()->create()`, `firstOrNew()` — the pattern `SampleStudioSeeder::account()` already uses). Factories are only legal behind `DatabaseSeeder`'s `app()->environment('local')` guard, where the throwaway `test@example.com` login now lives.
+
+`tests/Feature/ContentSeederTest.php` holds this by scanning those three files for `::factory(` and `fake()`.

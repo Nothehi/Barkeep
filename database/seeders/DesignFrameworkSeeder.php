@@ -146,13 +146,20 @@ class DesignFrameworkSeeder extends Seeder
      * Whoever exists — a framework belongs to the platform rather than to a person, and the column is
      * only there so the row has a creator. A fresh database with no accounts gets one, because the
      * seeder should work on an empty install.
+     *
+     * Written directly rather than through a model factory. This is a content seeder and it runs on
+     * production installs, where `fakerphp/faker` is not installed and Laravel therefore leaves its
+     * faker helper undefined — a factory there dies in UserFactory's own definition, before it ever
+     * reaches the two attributes this seeder actually cares about.
      */
     private function author(): User
     {
         return User::query()->oldest()->first()
-            ?? User::factory()->create([
+            ?? User::query()->create([
                 'name' => 'Barkeep',
                 'email' => 'framework@barkeep.test',
+                'password' => Str::random(32),
+                'email_verified_at' => now(),
             ]);
     }
 

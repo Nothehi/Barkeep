@@ -15,13 +15,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
         /*
          * Both of these are content rather than test data, and both are keyed by
          * address so that running them again edits rather than duplicates.
@@ -48,6 +41,17 @@ class DatabaseSeeder extends Seeder
          * `php artisan db:seed --class=SampleDataSeeder`.
          */
         if (app()->environment('local')) {
+            /*
+             * The throwaway login, alongside the sample data rather than above it.
+             * `User::factory()` needs `fakerphp/faker`, which is a dev dependency and
+             * absent from a production image — so a factory call in the unguarded part
+             * of this seeder takes the content seeders down with it.
+             */
+            User::factory()->create([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+            ]);
+
             if (app()->isLocale('fa')) {
                 $this->call(SampleFaDataSeeder::class);
             } else {
